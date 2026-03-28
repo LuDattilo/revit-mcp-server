@@ -7,7 +7,7 @@ namespace revit_mcp_plugin.UI
     {
         private MCPDockablePanel _panel;
 
-        public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("A1B2C3D4-E5F6-7890-ABCD-123456789ABC"));
+        public static readonly DockablePaneId PaneId = new DockablePaneId(new Guid("4dbb6508-9f47-4b2c-b13c-823caff775ad"));
 
         public void SetupDockablePane(DockablePaneProviderData data)
         {
