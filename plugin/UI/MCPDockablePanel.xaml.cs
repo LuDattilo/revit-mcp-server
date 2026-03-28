@@ -1,27 +1,20 @@
 using System;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Microsoft.Web.WebView2.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace revit_mcp_plugin.UI
 {
     public partial class MCPDockablePanel : Page
     {
         private static MCPDockablePanel _instance;
+        private readonly ObservableCollection<ChatMessage> _messages = new ObservableCollection<ChatMessage>();
         private readonly DispatcherTimer _statusTimer;
-        private bool _webViewInitialized;
-        private bool _chatTabActive = true;
-
-        private const string CLAUDE_URL = "https://claude.ai/new";
-        private const int MCP_PORT = 8080;
+        private readonly ClaudeRevitClient _client;
+        private bool _isProcessing;
 
         public static MCPDockablePanel Instance => _instance;
 
@@ -29,50 +22,26 @@ namespace revit_mcp_plugin.UI
         {
             InitializeComponent();
             _instance = this;
+            ChatMessages.ItemsSource = _messages;
+            _client = new ClaudeRevitClient();
 
             _statusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _statusTimer.Tick += (s, e) => UpdateStatus();
+
+            AddMessage("assistant", "Ciao! Sono Claude integrato in Revit con accesso diretto al modello.\n\n" +
+                "Posso eseguire comandi sul progetto aperto. Prova:\n" +
+                "- \"Che progetto ho aperto?\"\n" +
+                "- \"Fai un audit del modello\"\n" +
+                "- \"Crea un livello a 15000mm\"\n" +
+                "- \"Mostra i warning\"\n" +
+                "- \"Crea 4 muri a rettangolo 10x8 metri\"");
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             _statusTimer.Start();
             UpdateStatus();
-            await InitWebView();
-        }
-
-        private async Task InitWebView()
-        {
-            if (_webViewInitialized) return;
-            try
-            {
-                string userDataFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "RevitMCP", "WebView2");
-                Directory.CreateDirectory(userDataFolder);
-
-                var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
-                await WebBrowser.EnsureCoreWebView2Async(env);
-                _webViewInitialized = true;
-
-                WebBrowser.CoreWebView2.Settings.IsStatusBarEnabled = false;
-                WebBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
-                WebBrowser.CoreWebView2.Navigate(CLAUDE_URL);
-
-                WebBrowser.CoreWebView2.NavigationCompleted += (s, e2) =>
-                {
-                    Dispatcher.BeginInvoke(new Action(() => LoadingOverlay.Visibility = Visibility.Collapsed));
-                };
-            }
-            catch (Exception ex)
-            {
-                var stack = LoadingOverlay.Child as StackPanel;
-                if (stack?.Children.Count >= 2)
-                {
-                    (stack.Children[0] as TextBlock).Text = "WebView2 non disponibile";
-                    (stack.Children[1] as TextBlock).Text = $"Installa WebView2 Runtime da Microsoft.\n{ex.Message}";
-                }
-            }
+            ChatInput.Focus();
         }
 
         private void UpdateStatus()
@@ -89,195 +58,126 @@ namespace revit_mcp_plugin.UI
             catch { }
         }
 
-        // --- Tab switching ---
-
-        private void TabChat_Click(object sender, RoutedEventArgs e)
+        private void ChatInput_KeyDown(object sender, KeyEventArgs e)
         {
-            _chatTabActive = true;
-            ChatPanel.Visibility = Visibility.Visible;
-            CommandsPanel.Visibility = Visibility.Collapsed;
-            TabChat.Background = new SolidColorBrush(Color.FromRgb(91, 91, 214));
-            TabChat.Foreground = Brushes.White;
-            TabCommands.Background = new SolidColorBrush(Color.FromRgb(42, 42, 60));
-            TabCommands.Foreground = new SolidColorBrush(Color.FromRgb(144, 144, 168));
-        }
-
-        private void TabCommands_Click(object sender, RoutedEventArgs e)
-        {
-            _chatTabActive = false;
-            ChatPanel.Visibility = Visibility.Collapsed;
-            CommandsPanel.Visibility = Visibility.Visible;
-            TabCommands.Background = new SolidColorBrush(Color.FromRgb(91, 91, 214));
-            TabCommands.Foreground = Brushes.White;
-            TabChat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 60));
-            TabChat.Foreground = new SolidColorBrush(Color.FromRgb(144, 144, 168));
-        }
-
-        // --- Quick Commands ---
-
-        private async void QuickCmd_Click(object sender, RoutedEventArgs e)
-        {
-            var btn = sender as Button;
-            string tag = btn?.Tag?.ToString();
-            if (string.IsNullOrEmpty(tag)) return;
-
-            if (!Core.SocketService.Instance.IsRunning)
+            if (e.Key == Key.Enter && !_isProcessing)
             {
-                ResultText.Text = "Server MCP non attivo.\nClicca 'Revit MCP Switch' nel ribbon.";
-                ResultText.Foreground = new SolidColorBrush(Color.FromRgb(255, 100, 100));
-                return;
+                Send_Click(sender, e);
+                e.Handled = true;
             }
+        }
 
-            ResultText.Text = $"Esecuzione: {tag}...";
-            ResultText.Foreground = new SolidColorBrush(Color.FromRgb(150, 150, 200));
-            btn.IsEnabled = false;
+        private async void Send_Click(object sender, RoutedEventArgs e)
+        {
+            string input = ChatInput.Text?.Trim();
+            if (string.IsNullOrEmpty(input) || _isProcessing) return;
+
+            ChatInput.Text = "";
+            AddMessage("user", input);
+
+            _isProcessing = true;
+            SendButton.IsEnabled = false;
+            TypingIndicator.Visibility = Visibility.Visible;
+            TypingText.Text = "Claude sta pensando...";
 
             try
             {
-                string result = await ExecuteCommand(tag);
-                ResultText.Text = result;
-                ResultText.Foreground = new SolidColorBrush(Color.FromRgb(192, 192, 216));
+                if (!Core.SocketService.Instance.IsRunning)
+                {
+                    AddMessage("assistant", "Server MCP non attivo. Clicca 'Revit MCP Switch' nel ribbon per avviarlo.");
+                    return;
+                }
+
+                string response = await _client.SendMessage(input);
+                AddMessage("assistant", response);
             }
             catch (Exception ex)
             {
-                ResultText.Text = $"Errore: {ex.Message}";
-                ResultText.Foreground = new SolidColorBrush(Color.FromRgb(255, 100, 100));
+                AddMessage("assistant", $"Errore: {ex.Message}");
             }
             finally
             {
-                btn.IsEnabled = true;
+                _isProcessing = false;
+                SendButton.IsEnabled = true;
+                TypingIndicator.Visibility = Visibility.Collapsed;
             }
         }
 
-        private async Task<string> ExecuteCommand(string tag)
+        private void AddMessage(string role, string text)
         {
-            string method;
-            JObject parameters = new JObject();
-
-            switch (tag)
+            Dispatcher.BeginInvoke(new Action(() =>
             {
-                case "get_project_info":
-                    method = "get_project_info";
+                _messages.Add(new ChatMessage(role, text));
+                ChatScrollViewer.ScrollToEnd();
+            }));
+        }
+
+        public void OnToolExecuting(string toolName)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                TypingText.Text = $"Eseguo: {toolName}...";
+                _messages.Add(new ChatMessage("tool", $"[{toolName}]"));
+                ChatScrollViewer.ScrollToEnd();
+            }));
+        }
+
+        public void LogCommand(string commandName, bool success, string message, double durationMs) { }
+
+        private void ClearChat_Click(object sender, MouseButtonEventArgs e)
+        {
+            _messages.Clear();
+            _client.ClearHistory();
+        }
+    }
+
+    public class ChatMessage
+    {
+        public string Role { get; }
+        public string Text { get; }
+        public string RoleLabel { get; }
+        public Thickness LabelMargin { get; }
+        public Thickness BubbleMargin { get; }
+        public string BubbleAlignment { get; }
+        public SolidColorBrush TextColor { get; }
+        public SolidColorBrush BubbleBackground { get; }
+        public FontFamily FontFamily { get; }
+
+        public ChatMessage(string role, string text)
+        {
+            Role = role;
+            Text = text;
+
+            switch (role)
+            {
+                case "user":
+                    RoleLabel = "Tu";
+                    LabelMargin = new Thickness(0, 2, 12, 0);
+                    BubbleMargin = new Thickness(50, 0, 8, 0);
+                    BubbleAlignment = "Right";
+                    TextColor = new SolidColorBrush(Color.FromRgb(224, 224, 240));
+                    BubbleBackground = new SolidColorBrush(Color.FromRgb(59, 59, 92));
+                    FontFamily = new FontFamily("Segoe UI");
                     break;
-                case "analyze_model_statistics":
-                    method = "analyze_model_statistics";
-                    parameters["includeDetailedTypes"] = false;
-                    break;
-                case "get_warnings":
-                    method = "get_warnings";
-                    parameters["maxWarnings"] = 50;
-                    break;
-                case "get_materials":
-                    method = "get_materials";
-                    break;
-                case "export_room_data":
-                    method = "export_room_data";
-                    break;
-                case "get_material_quantities":
-                    method = "get_material_quantities";
-                    break;
-                case "create_level_dialog":
-                    method = "create_level";
-                    parameters["data"] = JArray.Parse("[{\"name\": \"MCP New Level\", \"elevation\": 6000, \"createFloorPlan\": true}]");
-                    break;
-                case "create_3d":
-                    method = "create_view";
-                    parameters["viewType"] = "3D";
-                    parameters["name"] = $"MCP 3D {DateTime.Now:HHmmss}";
-                    parameters["detailLevel"] = "Fine";
-                    break;
-                case "create_section":
-                    method = "create_view";
-                    parameters["viewType"] = "Section";
-                    parameters["name"] = $"MCP Section {DateTime.Now:HHmmss}";
-                    parameters["direction"] = JObject.Parse("{\"x\": 0, \"y\": 1, \"z\": 0}");
-                    parameters["scale"] = 50;
-                    break;
-                case "create_sheet_dialog":
-                    method = "create_sheet";
-                    parameters["sheetNumber"] = $"MCP-{DateTime.Now:HHmmss}";
-                    parameters["sheetName"] = "MCP Generated Sheet";
-                    break;
-                case "create_schedule_columns":
-                    method = "create_schedule";
-                    parameters["categoryName"] = "OST_StructuralColumns";
-                    parameters["name"] = $"MCP Columns {DateTime.Now:HHmmss}";
-                    parameters["fields"] = JArray.Parse("[{\"parameterName\": \"Family and Type\"}, {\"parameterName\": \"Base Level\"}, {\"parameterName\": \"Length\"}]");
-                    break;
-                case "create_schedule_beams":
-                    method = "create_schedule";
-                    parameters["categoryName"] = "OST_StructuralFraming";
-                    parameters["name"] = $"MCP Beams {DateTime.Now:HHmmss}";
-                    parameters["fields"] = JArray.Parse("[{\"parameterName\": \"Family and Type\"}, {\"parameterName\": \"Length\"}, {\"parameterName\": \"Reference Level\"}]");
-                    break;
-                case "purge_preview":
-                    method = "purge_unused";
-                    parameters["dryRun"] = true;
-                    break;
-                case "purge_execute":
-                    method = "purge_unused";
-                    parameters["dryRun"] = false;
-                    break;
-                case "say_hello":
-                    method = "say_hello";
-                    parameters["message"] = "Ciao da MCP Panel!";
+                case "tool":
+                    RoleLabel = "";
+                    LabelMargin = new Thickness(12, 2, 0, 0);
+                    BubbleMargin = new Thickness(8, 0, 50, 0);
+                    BubbleAlignment = "Left";
+                    TextColor = new SolidColorBrush(Color.FromRgb(100, 200, 120));
+                    BubbleBackground = new SolidColorBrush(Color.FromRgb(30, 42, 30));
+                    FontFamily = new FontFamily("Consolas");
                     break;
                 default:
-                    return $"Comando sconosciuto: {tag}";
-            }
-
-            return await SendMcpCommand(method, parameters);
-        }
-
-        private async Task<string> SendMcpCommand(string method, JObject parameters)
-        {
-            var jsonRpc = new JObject
-            {
-                ["jsonrpc"] = "2.0",
-                ["id"] = Guid.NewGuid().ToString(),
-                ["method"] = method,
-                ["params"] = parameters
-            };
-
-            using (var client = new TcpClient())
-            {
-                await client.ConnectAsync("127.0.0.1", MCP_PORT);
-                var stream = client.GetStream();
-
-                byte[] data = Encoding.UTF8.GetBytes(jsonRpc.ToString(Formatting.None));
-                await stream.WriteAsync(data, 0, data.Length);
-
-                byte[] buffer = new byte[65536];
-                var sb = new StringBuilder();
-                client.ReceiveTimeout = 30000;
-
-                do
-                {
-                    int read = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (read == 0) break;
-                    sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-                    await Task.Delay(100); // small delay to let data arrive
-                }
-                while (stream.DataAvailable);
-
-                string responseStr = sb.ToString();
-
-                try
-                {
-                    var response = JObject.Parse(responseStr);
-                    if (response["result"] != null)
-                        return response["result"].ToString(Formatting.Indented);
-                    if (response["error"] != null)
-                        return $"Errore: {response["error"]?["message"]}";
-                }
-                catch { }
-
-                return responseStr;
+                    RoleLabel = "Claude";
+                    LabelMargin = new Thickness(12, 2, 0, 0);
+                    BubbleMargin = new Thickness(8, 0, 50, 0);
+                    BubbleAlignment = "Left";
+                    TextColor = new SolidColorBrush(Color.FromRgb(200, 200, 220));
+                    BubbleBackground = new SolidColorBrush(Color.FromRgb(42, 42, 60));
+                    FontFamily = new FontFamily("Segoe UI");
+                    break;
             }
         }
-
-        // Called from SocketService
-        public void LogCommand(string commandName, bool success, string message, double durationMs) { }
-        public void OnToolExecuting(string toolName) { }
     }
 }
