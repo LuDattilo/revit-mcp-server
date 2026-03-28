@@ -28,6 +28,12 @@ namespace revit_mcp_plugin.UI
             _statusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _statusTimer.Tick += (s, e) => UpdateStatus();
 
+            ChatInput.TextChanged += (s, e) =>
+            {
+                Placeholder.Visibility = string.IsNullOrEmpty(ChatInput.Text)
+                    ? Visibility.Visible : Visibility.Collapsed;
+            };
+
             AddMessage("assistant",
                 "Ciao! Sono Claude, il tuo assistente per Revit.\n\n" +
                 "Ho accesso diretto al modello aperto e posso eseguire operazioni in tempo reale. " +
@@ -157,9 +163,9 @@ namespace revit_mcp_plugin.UI
                     RoleLabel = "Tu";
                     AvatarLetter = "L";
                     AvatarBackground = UserBlue;
-                    RoleLabelColor = UserBlue;
-                    TextColor = new SolidColorBrush(Color.FromRgb(30, 30, 30));
-                    RowBackground = new SolidColorBrush(Color.FromRgb(247, 245, 243));
+                    RoleLabelColor = new SolidColorBrush(Color.FromRgb(26, 26, 26));
+                    TextColor = new SolidColorBrush(Color.FromRgb(26, 26, 26));
+                    RowBackground = new SolidColorBrush(Colors.White);
                     FontFamily = new FontFamily("Segoe UI");
                     break;
                 case "tool":
@@ -168,16 +174,16 @@ namespace revit_mcp_plugin.UI
                     AvatarBackground = ToolGreen;
                     RoleLabelColor = ToolGreen;
                     TextColor = new SolidColorBrush(Color.FromRgb(46, 125, 50));
-                    RowBackground = new SolidColorBrush(Color.FromRgb(240, 247, 240));
+                    RowBackground = new SolidColorBrush(Color.FromRgb(250, 249, 247));
                     FontFamily = new FontFamily("Consolas");
                     break;
                 default:
                     RoleLabel = "Claude";
                     AvatarLetter = "C";
                     AvatarBackground = ClaudeOrange;
-                    RoleLabelColor = ClaudeOrange;
-                    TextColor = new SolidColorBrush(Color.FromRgb(55, 55, 55));
-                    RowBackground = new SolidColorBrush(Color.FromRgb(239, 236, 232));
+                    RoleLabelColor = new SolidColorBrush(Color.FromRgb(26, 26, 26));
+                    TextColor = new SolidColorBrush(Color.FromRgb(55, 53, 47));
+                    RowBackground = new SolidColorBrush(Color.FromRgb(250, 249, 247));
                     FontFamily = new FontFamily("Segoe UI");
                     break;
             }

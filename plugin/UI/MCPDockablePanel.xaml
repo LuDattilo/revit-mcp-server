@@ -1,7 +1,7 @@
 <Page x:Class="revit_mcp_plugin.UI.MCPDockablePanel"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="#F7F5F3" Loaded="Page_Loaded">
+      Background="White" Loaded="Page_Loaded">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -11,64 +11,56 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Top Bar -->
-        <Border Grid.Row="0" Background="White" Padding="16,10" BorderBrush="#E5E2DD" BorderThickness="0,0,0,1">
+        <!-- Top Bar - minimal like claude.ai -->
+        <Border Grid.Row="0" Background="White" Padding="14,10" BorderBrush="#EDEBE8" BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Claude logo -->
-                <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14"
-                        Background="#D97757" Margin="0,0,10,0">
-                    <TextBlock Text="C" Foreground="White" FontSize="14" FontWeight="Bold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Claude for Revit" Foreground="#1A1A1A" FontSize="13" FontWeight="SemiBold"/>
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse x:Name="StatusIndicator" Width="6" Height="6" Fill="#E53935" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="StatusText" Text="MCP Offline" Foreground="#999" FontSize="10"/>
-                    </StackPanel>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Claude for Revit" Foreground="#1A1A1A" FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="  ⌄" Foreground="#999" FontSize="12" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <TextBlock Grid.Column="2" Text="Nuova chat" Foreground="#D97757" FontSize="11"
-                           Cursor="Hand" MouseLeftButtonDown="ClearChat_Click"
-                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusIndicator" Width="7" Height="7" Margin="0,0,5,0"/>
+                    <TextBlock x:Name="StatusText" FontSize="11" VerticalAlignment="Center"/>
+                    <TextBlock Text="  |  " Foreground="#DDD" FontSize="11"/>
+                    <TextBlock Text="Nuova chat" Foreground="#D97757" FontSize="11"
+                               Cursor="Hand" MouseLeftButtonDown="ClearChat_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Messages Area -->
-        <ScrollViewer Grid.Row="1" x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto"
-                      Background="#F7F5F3">
+        <!-- Messages -->
+        <ScrollViewer Grid.Row="1" x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto" Background="White">
             <ItemsControl x:Name="ChatMessages">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{Binding RowBackground}" Padding="16,14"
-                                BorderBrush="#EDE9E3" BorderThickness="0,0,0,1">
-                            <Grid MaxWidth="680" HorizontalAlignment="Stretch">
+                        <Border Background="{Binding RowBackground}" Padding="20,16"
+                                BorderBrush="#F0EEEB" BorderThickness="0,0,0,1">
+                            <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Avatar -->
-                                <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13"
-                                        Background="{Binding AvatarBackground}" Margin="0,1,12,0" VerticalAlignment="Top">
-                                    <TextBlock Text="{Binding AvatarLetter}" Foreground="White" FontSize="11" FontWeight="Bold"
+                                <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6"
+                                        Background="{Binding AvatarBackground}" Margin="0,2,14,0" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding AvatarLetter}" Foreground="White" FontSize="11" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
 
-                                <!-- Message -->
+                                <!-- Content -->
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{Binding RoleLabel}" Foreground="{Binding RoleLabelColor}"
-                                               FontSize="12" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                               FontSize="13" FontWeight="SemiBold" Margin="0,0,0,4"/>
                                     <TextBlock Text="{Binding Text}" Foreground="{Binding TextColor}"
-                                               FontSize="13" TextWrapping="Wrap" FontFamily="{Binding FontFamily}"
-                                               LineHeight="21"/>
+                                               FontSize="14" TextWrapping="Wrap" FontFamily="{Binding FontFamily}"
+                                               LineHeight="22"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -77,44 +69,71 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- Typing indicator -->
+        <!-- Typing -->
         <Border Grid.Row="2" x:Name="TypingIndicator" Visibility="Collapsed"
-                Background="#EFECE8" Padding="16,10" BorderBrush="#E5E2DD" BorderThickness="0,0,0,1">
-            <Grid MaxWidth="680">
+                Background="#FAF9F7" Padding="20,12">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13"
-                        Background="#D97757" Margin="0,0,12,0">
-                    <TextBlock Text="C" Foreground="White" FontSize="11" FontWeight="Bold"
+                <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6"
+                        Background="#D97757" Margin="0,0,14,0">
+                    <TextBlock Text="C" Foreground="White" FontSize="11" FontWeight="SemiBold"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <TextBlock Grid.Column="1" x:Name="TypingText" Text="Claude sta pensando..."
-                           Foreground="#999" FontSize="13" FontStyle="Italic" VerticalAlignment="Center"/>
+                           Foreground="#999" FontSize="14" FontStyle="Italic" VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
-        <!-- Input Area -->
-        <Border Grid.Row="3" Background="White" Padding="16,12" BorderBrush="#E5E2DD" BorderThickness="0,1,0,0">
-            <Border Background="#F2F0EC" CornerRadius="12" Padding="4"
-                    BorderBrush="#DDD9D3" BorderThickness="1">
+        <!-- Input - claude.ai exact style -->
+        <Border Grid.Row="3" Background="White" Padding="16,10,16,16">
+            <Border Background="White" CornerRadius="22"
+                    BorderBrush="#D4D1CC" BorderThickness="1"
+                    Padding="2">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="ChatInput" Grid.Column="0"
-                             Background="Transparent" Foreground="#1A1A1A" CaretBrush="#1A1A1A"
-                             BorderThickness="0" Padding="12,10" FontSize="13"
-                             AcceptsReturn="False" KeyDown="ChatInput_KeyDown"
-                             VerticalContentAlignment="Center"/>
-                    <Button x:Name="SendButton" Grid.Column="1" Click="Send_Click"
-                            Background="Transparent" BorderThickness="0"
-                            Padding="10,8" Margin="0,0,4,0" Cursor="Hand">
-                        <Path Data="M2,21L23,12L2,3V10L17,12L2,14V21Z" Fill="#D97757"
-                              Width="18" Height="18" Stretch="Uniform"/>
-                    </Button>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Text input -->
+                    <Grid Grid.Row="0">
+                        <TextBox x:Name="ChatInput"
+                                 Background="Transparent" Foreground="#1A1A1A" CaretBrush="#1A1A1A"
+                                 BorderThickness="0" Padding="16,14,50,14" FontSize="14"
+                                 AcceptsReturn="False" KeyDown="ChatInput_KeyDown"
+                                 VerticalContentAlignment="Center"
+                                 FontFamily="Segoe UI"/>
+                        <!-- Placeholder -->
+                        <TextBlock x:Name="Placeholder" Text="Rispondi..." IsHitTestVisible="False"
+                                   Foreground="#AAA" FontSize="14" Padding="18,14,0,0"
+                                   FontFamily="Segoe UI"/>
+                    </Grid>
+
+                    <!-- Bottom bar with send button -->
+                    <Grid Grid.Row="1" Margin="8,0,8,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Model label -->
+                        <TextBlock Grid.Column="0" Text="Sonnet 4" Foreground="#AAA" FontSize="11"
+                                   VerticalAlignment="Center" Margin="8,0,0,0"/>
+
+                        <!-- Send button -->
+                        <Button x:Name="SendButton" Grid.Column="1" Click="Send_Click"
+                                Background="Transparent" BorderThickness="0"
+                                Padding="0" Cursor="Hand" VerticalAlignment="Center">
+                            <Border Width="28" Height="28" CornerRadius="14" Background="#D97757">
+                                <Path Data="M5,3L19,12L5,21Z" Fill="White"
+                                      Width="9" Height="11" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
+                            </Border>
+                        </Button>
+                    </Grid>
                 </Grid>
             </Border>
         </Border>
