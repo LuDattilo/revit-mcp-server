@@ -282,90 +282,96 @@ Categorie comuni: OST_Walls, OST_Floors, OST_Doors, OST_Windows, OST_StructuralC
             _conversationHistory.Clear();
         }
 
+        private JArray _cachedToolDefinitions;
+
         private JArray GetToolDefinitions()
         {
-            return JArray.Parse(@"[
-  {
-    ""name"": ""get_project_info"",
-    ""description"": ""Ottieni info sul progetto Revit attivo: nome, indirizzo, autore, livelli, fasi, link."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {}}
-  },
-  {
-    ""name"": ""analyze_model_statistics"",
-    ""description"": ""Analizza il modello: conteggio elementi per categoria, tipi, famiglie, livelli."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {""includeDetailedTypes"": {""type"": ""boolean"", ""description"": ""Include dettaglio tipi (default: false)""}}}
-  },
-  {
-    ""name"": ""get_warnings"",
-    ""description"": ""Ottieni tutti i warning/errori del modello Revit."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {""maxWarnings"": {""type"": ""integer"", ""description"": ""Max warnings (default: 50)""}}}
-  },
-  {
-    ""name"": ""create_level"",
-    ""description"": ""Crea livelli a elevazioni specificate (mm). Ogni livello puo generare floor plan e ceiling plan."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""data""], ""properties"": {""data"": {""type"": ""array"", ""items"": {""type"": ""object"", ""required"": [""name"", ""elevation""], ""properties"": {""name"": {""type"": ""string""}, ""elevation"": {""type"": ""number"", ""description"": ""Elevazione in mm""}, ""createFloorPlan"": {""type"": ""boolean""}, ""createCeilingPlan"": {""type"": ""boolean""}}}}}}
-  },
-  {
-    ""name"": ""create_view"",
-    ""description"": ""Crea viste: FloorPlan, CeilingPlan, Section, 3D. Coordinate in mm."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""viewType""], ""properties"": {""viewType"": {""type"": ""string"", ""enum"": [""FloorPlan"", ""CeilingPlan"", ""Section"", ""3D""]}, ""name"": {""type"": ""string""}, ""scale"": {""type"": ""integer""}, ""detailLevel"": {""type"": ""string"", ""enum"": [""Coarse"", ""Medium"", ""Fine""]}, ""levelElevation"": {""type"": ""number""}, ""direction"": {""type"": ""object"", ""properties"": {""x"": {""type"": ""number""}, ""y"": {""type"": ""number""}, ""z"": {""type"": ""number""}}}}}
-  },
-  {
-    ""name"": ""create_sheet"",
-    ""description"": ""Crea sheet (tavole) con title block."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {""sheetNumber"": {""type"": ""string""}, ""sheetName"": {""type"": ""string""}}}
-  },
-  {
-    ""name"": ""create_line_based_element"",
-    ""description"": ""Crea muri o altri elementi lineari. Coordinate in mm."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""data""], ""properties"": {""data"": {""type"": ""array"", ""items"": {""type"": ""object"", ""required"": [""category"", ""locationLine"", ""thickness"", ""height"", ""baseLevel"", ""baseOffset""], ""properties"": {""category"": {""type"": ""string""}, ""locationLine"": {""type"": ""object"", ""properties"": {""p0"": {""type"": ""object"", ""properties"": {""x"": {""type"": ""number""}, ""y"": {""type"": ""number""}, ""z"": {""type"": ""number""}}}, ""p1"": {""type"": ""object"", ""properties"": {""x"": {""type"": ""number""}, ""y"": {""type"": ""number""}, ""z"": {""type"": ""number""}}}}}, ""thickness"": {""type"": ""number""}, ""height"": {""type"": ""number""}, ""baseLevel"": {""type"": ""number""}, ""baseOffset"": {""type"": ""number""}}}}}}
-  },
-  {
-    ""name"": ""create_room"",
-    ""description"": ""Crea stanze in posizioni specificate (mm). Devono essere dentro muri chiusi."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""data""], ""properties"": {""data"": {""type"": ""array"", ""items"": {""type"": ""object"", ""required"": [""name"", ""location""], ""properties"": {""name"": {""type"": ""string""}, ""number"": {""type"": ""string""}, ""location"": {""type"": ""object"", ""properties"": {""x"": {""type"": ""number""}, ""y"": {""type"": ""number""}, ""z"": {""type"": ""number""}}}}}}}}
-  },
-  {
-    ""name"": ""create_grid"",
-    ""description"": ""Crea sistema di griglie con spaziatura automatica (mm)."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""xCount"", ""xSpacing"", ""yCount"", ""ySpacing""], ""properties"": {""xCount"": {""type"": ""integer""}, ""xSpacing"": {""type"": ""number""}, ""yCount"": {""type"": ""integer""}, ""ySpacing"": {""type"": ""number""}, ""xStartLabel"": {""type"": ""string""}, ""yStartLabel"": {""type"": ""string""}, ""xStartPosition"": {""type"": ""number""}, ""yStartPosition"": {""type"": ""number""}}}
-  },
-  {
-    ""name"": ""create_schedule"",
-    ""description"": ""Crea schedule (abachi) per categoria di elementi."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""categoryName""], ""properties"": {""categoryName"": {""type"": ""string"", ""description"": ""Es: OST_Walls, OST_Doors, OST_StructuralColumns""}, ""name"": {""type"": ""string""}, ""fields"": {""type"": ""array"", ""items"": {""type"": ""object"", ""properties"": {""parameterName"": {""type"": ""string""}}}}}}
-  },
-  {
-    ""name"": ""batch_rename"",
-    ""description"": ""Rinomina in batch viste, sheet, livelli, griglie o stanze."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {""targetCategory"": {""type"": ""string"", ""enum"": [""Views"", ""Sheets"", ""Levels"", ""Grids"", ""Rooms""]}, ""findText"": {""type"": ""string""}, ""replaceText"": {""type"": ""string""}, ""prefix"": {""type"": ""string""}, ""suffix"": {""type"": ""string""}, ""dryRun"": {""type"": ""boolean""}}}
-  },
-  {
-    ""name"": ""delete_element"",
-    ""description"": ""Elimina elementi per ID."",
-    ""input_schema"": {""type"": ""object"", ""required"": [""elementIds""], ""properties"": {""elementIds"": {""type"": ""array"", ""items"": {""type"": ""integer""}}}}
-  },
-  {
-    ""name"": ""export_room_data"",
-    ""description"": ""Esporta dati di tutte le stanze: nome, numero, livello, area, volume, perimetro."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {}}
-  },
-  {
-    ""name"": ""get_materials"",
-    ""description"": ""Lista tutti i materiali del progetto con colore e proprieta."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {}}
-  },
-  {
-    ""name"": ""purge_unused"",
-    ""description"": ""Identifica e opzionalmente rimuovi famiglie, tipi e materiali non usati."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {""dryRun"": {""type"": ""boolean"", ""description"": ""true = solo preview, false = elimina""}}}
-  },
-  {
-    ""name"": ""say_hello"",
-    ""description"": ""Mostra un dialog in Revit con un messaggio. Utile per test di connessione."",
-    ""input_schema"": {""type"": ""object"", ""properties"": {""message"": {""type"": ""string""}}}
-  }
-]");
+            if (_cachedToolDefinitions != null)
+                return _cachedToolDefinitions;
+
+            _cachedToolDefinitions = LoadToolsFromCommandJson() ?? BuildFallbackTools();
+            return _cachedToolDefinitions;
+        }
+
+        private JArray LoadToolsFromCommandJson()
+        {
+            try
+            {
+                // Find command.json relative to plugin DLL: Commands/RevitMCPCommandSet/command.json
+                string dllDir = Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "";
+                string commandJsonPath = Path.Combine(dllDir, "Commands", "RevitMCPCommandSet", "command.json");
+
+                if (!File.Exists(commandJsonPath))
+                    return null;
+
+                var json = JObject.Parse(File.ReadAllText(commandJsonPath));
+                var commands = json["commands"] as JArray;
+                if (commands == null || commands.Count == 0)
+                    return null;
+
+                var tools = new JArray();
+                foreach (var cmd in commands)
+                {
+                    string name = cmd["commandName"]?.ToString();
+                    string desc = cmd["description"]?.ToString();
+                    if (string.IsNullOrEmpty(name)) continue;
+
+                    tools.Add(new JObject
+                    {
+                        ["name"] = name,
+                        ["description"] = desc ?? name,
+                        ["input_schema"] = new JObject
+                        {
+                            ["type"] = "object",
+                            ["properties"] = new JObject()
+                        }
+                    });
+                }
+
+                return tools.Count > 0 ? tools : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private JArray BuildFallbackTools()
+        {
+            // Minimal fallback if command.json is not found
+            var tools = new JArray();
+            var fallbackCommands = new[]
+            {
+                ("get_project_info", "Get project info: name, address, author, levels, phases, links"),
+                ("analyze_model_statistics", "Analyze model: element counts by category, types, families, levels"),
+                ("get_warnings", "Get all warnings/errors from the Revit model"),
+                ("create_level", "Create levels at specified elevations (mm)"),
+                ("create_line_based_element", "Create walls or other line-based elements (mm)"),
+                ("create_room", "Create rooms at specified positions (mm)"),
+                ("create_grid", "Create grid system with automatic spacing (mm)"),
+                ("delete_element", "Delete elements by ID"),
+                ("export_room_data", "Export all room data: name, number, level, area, volume"),
+                ("get_materials", "List all project materials with color and properties"),
+                ("purge_unused", "Identify and optionally remove unused families, types, materials"),
+                ("say_hello", "Show a dialog in Revit with a message (connection test)")
+            };
+
+            foreach (var (name, desc) in fallbackCommands)
+            {
+                tools.Add(new JObject
+                {
+                    ["name"] = name,
+                    ["description"] = desc,
+                    ["input_schema"] = new JObject
+                    {
+                        ["type"] = "object",
+                        ["properties"] = new JObject()
+                    }
+                });
+            }
+
+            return tools;
         }
     }
 }
