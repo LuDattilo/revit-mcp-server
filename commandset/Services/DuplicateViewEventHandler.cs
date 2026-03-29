@@ -28,6 +28,7 @@ namespace RevitMCPCommandSet.Services
                 var doc = app.ActiveUIDocument.Document;
                 var option = ParseOption(DuplicateOption);
                 var results = new List<object>();
+                int successCount = 0;
 
                 using (var transaction = new Transaction(doc, "Duplicate Views"))
                 {
@@ -49,6 +50,7 @@ namespace RevitMCPCommandSet.Services
                                 newView.Name = $"{NewNamePrefix}{baseName}{NewNameSuffix}";
                             }
 
+                            successCount++;
                             results.Add(new
                             {
 #if REVIT2024_OR_GREATER
@@ -84,7 +86,6 @@ namespace RevitMCPCommandSet.Services
                     transaction.Commit();
                 }
 
-                int successCount = results.Count(r => ((dynamic)r).success);
                 Result = new AIResult<object>
                 {
                     Success = successCount > 0,

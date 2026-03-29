@@ -45,7 +45,7 @@ namespace RevitMCPCommandSet.Services.AnnotationComponents
                             View view;
                             if (data.ViewId > 0)
                             {
-                                view = doc.GetElement(ElementIdExtensions.FromLong(data.ViewId)) as View;
+                                view = doc.GetElement(Utils.ElementIdExtensions.FromLong(data.ViewId)) as View;
                                 if (view == null)
                                     throw new ArgumentException($"View with ID {data.ViewId} not found");
                             }
@@ -55,7 +55,7 @@ namespace RevitMCPCommandSet.Services.AnnotationComponents
                             }
 
                             ElementId typeId = data.TextNoteTypeId > 0
-                                ? ElementIdExtensions.FromLong(data.TextNoteTypeId)
+                                ? Utils.ElementIdExtensions.FromLong(data.TextNoteTypeId)
                                 : defaultTextNoteTypeId;
 
                             XYZ position = JZPoint.ToXYZ(data.Position);
