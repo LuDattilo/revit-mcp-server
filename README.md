@@ -13,9 +13,9 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 mcp-servers-for-revit permette a client AI come Claude, Cline e altri strumenti compatibili MCP di leggere, creare, modificare e cancellare elementi nei progetti Revit in tempo reale. Espone oltre 80 tool che coprono informazioni di progetto, analisi del modello, creazione di elementi, operazioni batch, esportazione dati e altro.
 
 > [!NOTE]
-> Originally forked from [revit-mcp](https://github.com/romanzarkhin/revit-mcp) by Roman Zarkhin. This version adds 80+ tools (up from 15), multi-version Revit support (2023-2026), language-independent operation, and an embedded Claude chat panel.
+> Based on the work by the [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) organization, which originally forked and expanded [revit-mcp](https://github.com/romanzarkhin/revit-mcp) by Roman Zarkhin. This fork adds language-independent operation and an embedded Claude chat panel.
 >
-> Originariamente fork di [revit-mcp](https://github.com/romanzarkhin/revit-mcp) di Roman Zarkhin. Questa versione aggiunge oltre 80 tool (dai 15 originali), supporto multi-versione Revit (2023-2026), funzionamento indipendente dalla lingua e un pannello chat Claude integrato.
+> Basato sul lavoro dell'organizzazione [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit), che ha originariamente forkato e ampliato [revit-mcp](https://github.com/romanzarkhin/revit-mcp) di Roman Zarkhin. Questo fork aggiunge funzionamento indipendente dalla lingua e un pannello chat Claude integrato.
 
 ## Key Features / Funzionalita principali
 
@@ -482,13 +482,17 @@ git push origin main --tags
 
 ## Acknowledgements / Ringraziamenti
 
-This project started as a fork of [revit-mcp](https://github.com/romanzarkhin/revit-mcp) by Roman Zarkhin ([mcpservers.org listing](https://mcpservers.org/servers/romanzarkhin/revit-mcp)), which provided the original 15-tool MCP server for Revit. It was later merged with the expanded work by the [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) team:
+This project is built upon the work of the **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit)** organization, which developed the 80+ tool MCP server for Revit across three repositories:
 
-Questo progetto e nato come fork di [revit-mcp](https://github.com/romanzarkhin/revit-mcp) di Roman Zarkhin ([listing mcpservers.org](https://mcpservers.org/servers/romanzarkhin/revit-mcp)), che ha fornito il server MCP originale con 15 tool per Revit. E stato successivamente unito al lavoro ampliato dal team [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit):
+Questo progetto si basa sul lavoro dell'organizzazione **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit)**, che ha sviluppato il server MCP con oltre 80 tool per Revit in tre repository:
 
-- [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) - Original MCP server
-- [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin) - Revit plugin
-- [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) - Command set
+- [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) — MCP server (Node.js)
+- [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin) — Revit plugin (C#)
+- [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) — Command set
+
+The original MCP server concept for Revit was created by **Roman Zarkhin** in [revit-mcp](https://github.com/romanzarkhin/revit-mcp) ([mcpservers.org listing](https://mcpservers.org/servers/romanzarkhin/revit-mcp)).
+
+Il concept originale del server MCP per Revit e stato creato da **Roman Zarkhin** in [revit-mcp](https://github.com/romanzarkhin/revit-mcp) ([listing mcpservers.org](https://mcpservers.org/servers/romanzarkhin/revit-mcp)).
 
 ## License / Licenza
 
