@@ -13,9 +13,9 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 mcp-servers-for-revit permette a client AI come Claude, Cline e altri strumenti compatibili MCP di leggere, creare, modificare e cancellare elementi nei progetti Revit in tempo reale. Espone oltre 80 tool che coprono informazioni di progetto, analisi del modello, creazione di elementi, operazioni batch, esportazione dati e altro.
 
 > [!NOTE]
-> Based on the work by the [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) organization, which originally forked and expanded [revit-mcp](https://github.com/romanzarkhin/revit-mcp) by Roman Zarkhin. This fork adds language-independent operation and an embedded Claude chat panel.
+> Based on [revit-mcp](https://github.com/romanzarkhin/revit-mcp) by Roman Zarkhin (original 15-tool concept), expanded to 80+ tools by the [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) community, and consolidated into a single repo by [sparx-fire](https://sparx-fire.com) (Bobby Galli). This fork adds language-independent operation, an embedded Claude chat panel, and a PowerShell installer.
 >
-> Basato sul lavoro dell'organizzazione [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit), che ha originariamente forkato e ampliato [revit-mcp](https://github.com/romanzarkhin/revit-mcp) di Roman Zarkhin. Questo fork aggiunge funzionamento indipendente dalla lingua e un pannello chat Claude integrato.
+> Basato su [revit-mcp](https://github.com/romanzarkhin/revit-mcp) di Roman Zarkhin (concept originale con 15 tool), ampliato a oltre 80 tool dalla community [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit), e consolidato in un unico repo da [sparx-fire](https://sparx-fire.com) (Bobby Galli). Questo fork aggiunge funzionamento indipendente dalla lingua, un pannello chat Claude integrato e un installer PowerShell.
 
 ## Key Features / Funzionalita principali
 
@@ -482,17 +482,12 @@ git push origin main --tags
 
 ## Acknowledgements / Ringraziamenti
 
-This project is built upon the work of the **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit)** organization, which developed the 80+ tool MCP server for Revit across three repositories:
-
-Questo progetto si basa sul lavoro dell'organizzazione **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit)**, che ha sviluppato il server MCP con oltre 80 tool per Revit in tre repository:
-
-- [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) — MCP server (Node.js)
-- [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin) — Revit plugin (C#)
-- [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) — Command set
-
-The original MCP server concept for Revit was created by **Roman Zarkhin** in [revit-mcp](https://github.com/romanzarkhin/revit-mcp) ([mcpservers.org listing](https://mcpservers.org/servers/romanzarkhin/revit-mcp)).
-
-Il concept originale del server MCP per Revit e stato creato da **Roman Zarkhin** in [revit-mcp](https://github.com/romanzarkhin/revit-mcp) ([listing mcpservers.org](https://mcpservers.org/servers/romanzarkhin/revit-mcp)).
+| | Credit | Link |
+|---|--------|------|
+| **Original concept** | **Roman Zarkhin** — created the first MCP server for Revit (15 tools) | [romanzarkhin/revit-mcp](https://github.com/romanzarkhin/revit-mcp) |
+| **Expansion to 80+ tools** | **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) community** — lisiting01, jmcouffin, huyan1458, bobbyg603, chuongmep and others expanded the project across three repos | [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp), [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin), [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) |
+| **Consolidated repo** | **[sparx-fire](https://sparx-fire.com)** (Bobby Galli) — merged the three repos into a single solution | [mcp-servers-for-revit/mcp-servers-for-revit](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) |
+| **This fork** | **LuDattilo** — language-independent operation, embedded Claude chat panel, PowerShell installer, bilingual docs | [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server) |
 
 ## License / Licenza
 
