@@ -203,21 +203,34 @@ namespace RevitMCPCommandSet.Services
 
         private ElementId FindParameterInCategories(Document doc, List<ElementId> categoryIds, string paramName)
         {
-            // Try to find the parameter by collecting an element from the categories
             foreach (var catId in categoryIds)
             {
-                var elements = new FilteredElementCollector(doc)
+                // Search instance parameters
+                var instance = new FilteredElementCollector(doc)
                     .OfCategoryId(catId)
                     .WhereElementIsNotElementType()
                     .FirstOrDefault();
 
-                if (elements != null)
+                if (instance != null)
                 {
-                    foreach (Parameter param in elements.Parameters)
+                    foreach (Parameter param in instance.Parameters)
                     {
                         if (param.Definition.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase))
-                        {
                             return param.Id;
+                    }
+
+                    // Search type parameters
+                    var typeId = instance.GetTypeId();
+                    if (typeId != null && typeId != ElementId.InvalidElementId)
+                    {
+                        var typeElem = doc.GetElement(typeId);
+                        if (typeElem != null)
+                        {
+                            foreach (Parameter param in typeElem.Parameters)
+                            {
+                                if (param.Definition.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase))
+                                    return param.Id;
+                            }
                         }
                     }
                 }

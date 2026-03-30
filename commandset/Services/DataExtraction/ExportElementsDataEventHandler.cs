@@ -98,10 +98,17 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                 // Build next-step guidance
                 var guidance = BuildGuidance(columns, filteredCount);
 
+                string filterHint = "";
+                if (filteredCount == 0 && totalCount > 0 && !string.IsNullOrEmpty(FilterParameterName))
+                {
+                    filterHint = $" Note: filter '{FilterParameterName}' {FilterOperator} '{FilterValue}' matched 0 of {totalCount} elements. " +
+                                 "Check parameter name (may be localized) and value format.";
+                }
+
                 Result = new AIResult<object>
                 {
                     Success = true,
-                    Message = $"Exported {elements.Count} elements ({filteredCount} after filter, {totalCount} total). Format: {OutputFormat.ToUpper()}.",
+                    Message = $"Exported {elements.Count} elements ({filteredCount} after filter, {totalCount} total). Format: {OutputFormat.ToUpper()}.{filterHint}",
                     Response = new
                     {
                         totalCount,
@@ -439,6 +446,20 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         private string GetParameterRawValue(Element element, Document doc, string paramName)
         {
             var param = element.LookupParameter(paramName);
+
+            // Fallback: case-insensitive search across all parameters
+            if (param == null)
+            {
+                foreach (Parameter p in element.Parameters)
+                {
+                    if (p.Definition != null && p.Definition.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        param = p;
+                        break;
+                    }
+                }
+            }
+
             if (param == null)
             {
                 // Try type parameters
@@ -447,6 +468,19 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                 {
                     var type = doc.GetElement(typeId);
                     param = type?.LookupParameter(paramName);
+
+                    // Fallback: case-insensitive on type
+                    if (param == null && type != null)
+                    {
+                        foreach (Parameter p in type.Parameters)
+                        {
+                            if (p.Definition != null && p.Definition.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                param = p;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
