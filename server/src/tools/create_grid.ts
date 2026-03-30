@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateGridTool(server: McpServer) {
   server.tool(
     "create_grid",
-    "Create a grid system in Revit with smart spacing generation. Supports both X-axis (vertical) and Y-axis (horizontal) grids with customizable naming styles (alphabetic A,B,C or numeric 1,2,3). All units are in millimeters (mm).",
+    "Create a grid system in Revit with smart spacing generation. Supports both X-axis (vertical) and Y-axis (horizontal) grids with customizable naming styles (alphabetic A,B,C or numeric 1,2,3). All units are in millimeters (mm).\n\nGUIDANCE:\n- Simple orthogonal grid: provide spacing arrays for X and Y directions\n- Alphabetic naming: namePrefix=\"\", names will auto-generate as A, B, C...\n- Numeric naming: namePrefix=\"\", startNumber=1\n\nTIPS:\n- Grid extends are in mm from the specified origin\n- Use create_dimensions after creating grids to annotate spacing\n- Grids appear in all plan views automatically",
     {
       xCount: z
         .number()

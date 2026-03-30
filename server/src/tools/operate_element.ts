@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerOperateElementTool(server: McpServer) {
   server.tool(
     "operate_element",
-    "Operate on Revit elements by performing actions such as select, selectionBox, setColor, setTransparency, delete, hide, etc.",
+    "Operate on Revit elements by performing actions such as select, selectionBox, setColor, setTransparency, delete, hide, etc.\n\nGUIDANCE:\n- Select elements: action=\"select\", elementIds=[...] — highlights in Revit UI\n- Hide elements: action=\"hide\", elementIds=[...] — hides in current view\n- Isolate elements: action=\"isolate\", elementIds=[...] — shows only these elements\n- Reset view: action=\"resetIsolation\" to show all elements again\n\nTIPS:\n- Use ai_element_filter or get_current_view_elements to get element IDs first\n- \"isolate\" is great for focusing on specific elements during review\n- \"hide\" only affects the current view, not other views\n- Combine with override_graphics for visual emphasis",
     {
       data: z
         .object({

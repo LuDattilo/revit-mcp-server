@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetMaterialPropertiesTool(server: McpServer) {
   server.tool(
     "get_material_properties",
-    "Get detailed physical, structural, and thermal properties of a specific Revit material. Provide either materialId or materialName.",
+    "Get detailed physical, structural, and thermal properties of a specific Revit material. Provide either materialId or materialName.\n\nGUIDANCE:\n- Detailed info: structural, thermal, and appearance properties\n- Compare materials: call for multiple materialIds\n- Use get_materials first to find the materialId\n\nTIPS:\n- Not all materials have structural/thermal properties defined\n- Appearance properties include color, transparency, texture info\n- Use for material specification documentation",
     {
       materialId: z
         .number()

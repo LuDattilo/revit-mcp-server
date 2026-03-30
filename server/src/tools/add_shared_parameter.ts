@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerAddSharedParameterTool(server: McpServer) {
   server.tool(
     "add_shared_parameter",
-    "Add a shared parameter from the shared parameter file to specified categories. Requires a shared parameter file to be set in Revit.",
+    "Add a shared parameter from the shared parameter file to specified categories. Requires a shared parameter file to be set in Revit.\n\nGUIDANCE:\n- Add from shared parameter file: provide parameterName, groupName in the .txt file\n- Bind to categories: specify which Revit categories get the parameter\n- Instance vs Type: choose binding type based on data needs\n\nTIPS:\n- Requires a shared parameter file (.txt) configured in the project\n- Use get_shared_parameters to see existing shared parameters\n- Use manage_project_parameters for project parameters (no shared file needed)\n- Parameter names must exist in the shared parameter file",
     {
       parameterName: z
         .string()

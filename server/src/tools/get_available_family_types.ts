@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetAvailableFamilyTypesTool(server: McpServer) {
   server.tool(
     "get_available_family_types",
-    "Get available family types in the current Revit project. You can filter by category and family name, and limit the number of returned types.",
+    "Get available family types in the current Revit project. You can filter by category and family name, and limit the number of returned types.\n\nGUIDANCE:\n- Find wall types: categoryFilter=\"Walls\" — returns all available wall families and types\n- Find door types: categoryFilter=\"Doors\" — needed before create_point_based_element\n- Search all families: omit filter to see every loaded family type\n\nTIPS:\n- Always call this before creating elements to get exact family/type names\n- Use load_family to load additional families from .rfa files\n- Family names are case-sensitive — copy exact names from results",
     {
       categoryList: z
         .array(z.string())

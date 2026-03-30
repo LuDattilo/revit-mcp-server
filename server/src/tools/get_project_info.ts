@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetProjectInfoTool(server: McpServer) {
   server.tool(
     "get_project_info",
-    "Get comprehensive project information from the active Revit document, including project metadata, phases, worksets, Revit links, and levels.",
+    "Get comprehensive project information from the active Revit document, including project metadata, phases, worksets, Revit links, and levels.\n\nGUIDANCE:\n- Project overview: returns project name, address, levels, phases, worksets, links\n- Check levels before creating views or placing elements\n- Verify worksets and phases for proper element organization\n\nTIPS:\n- Call this first in a new project to understand structure\n- Level names are needed for create_view, create_level, and element placement\n- Phase information is important for renovation/phasing workflows",
     {
       includePhases: z
         .boolean()

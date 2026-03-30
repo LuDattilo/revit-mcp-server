@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetElementParametersTool(server: McpServer) {
   server.tool(
     "get_element_parameters",
-    "Get all parameters (instance and type) of one or more Revit elements by their IDs. Returns parameter names, values, storage types, and whether they are read-only or shared.",
+    "Get all parameters (instance and type) of one or more Revit elements by their IDs. Returns parameter names, values, storage types, and whether they are read-only or shared.\n\nGUIDANCE:\n- Inspect single element: provide elementId to see all instance + type parameters\n- Discover parameter names: useful before export_elements_data or set_element_parameters\n- Check current values before modifying with set_element_parameters\n\nTIPS:\n- Returns both instance and type parameters with current values\n- Parameter names from this tool can be used in set_element_parameters, export_elements_data, create_schedule\n- Read-only parameters are marked — these cannot be modified",
     {
       elementIds: z
         .array(z.number())

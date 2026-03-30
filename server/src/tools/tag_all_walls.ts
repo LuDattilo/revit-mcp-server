@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerTagAllWallsTool(server: McpServer) {
   server.tool(
     "tag_all_walls",
-    "Create tags for all walls in the current active view. Tags will be placed at the middle point of each wall.",
+    "Create tags for all walls in the current active view. Tags will be placed at the middle point of each wall.\n\nGUIDANCE:\n- Tag all walls in active view: call with no parameters\n- Tags show wall type information by default\n- Run after creating walls to annotate the drawing\n\nTIPS:\n- Only tags walls visible in the current view\n- Tags require a wall tag family loaded in the project\n- Use batch_rename to update tag text formatting",
     {
       useLeader: z
         .boolean()

@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerRenumberElementsTool(server: McpServer) {
   server.tool(
     "renumber_elements",
-    "Sequentially renumber rooms, doors, windows, or parking elements by spatial order or custom sequence. Supports prefix/suffix, custom start number, and dry-run preview.",
+    "Sequentially renumber rooms, doors, windows, or parking elements by spatial order or custom sequence. Supports prefix/suffix, custom start number, and dry-run preview.\n\nGUIDANCE:\n- Number rooms by location: category=\"Rooms\", sortBy=\"spatial\" — numbers left-to-right, top-to-bottom\n- Number doors by room: category=\"Doors\", sortBy=\"spatial\"\n- Custom sequence: provide startNumber and prefix (e.g. prefix=\"D-\", startNumber=101)\n\nTIPS:\n- Spatial ordering goes left-to-right, top-to-bottom in plan view\n- Use batch_rename for text-based renaming instead\n- Preview with dryRun=true before committing changes\n- Works on Rooms, Doors, Windows, Parking elements",
     {
       elementIds: z
         .array(z.number())

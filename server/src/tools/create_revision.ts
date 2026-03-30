@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateRevisionTool(server: McpServer) {
   server.tool(
     "create_revision",
-    "Manage project revisions: list all revisions, create a new revision, or add the latest revision to sheets. Essential for documentation tracking and issue management.",
+    "Manage project revisions: list all revisions, create a new revision, or add the latest revision to sheets. Essential for documentation tracking and issue management.\n\nGUIDANCE:\n- List revisions: action=\"list\" to see existing revisions\n- New revision: action=\"create\", description=\"Updated floor plan\", date=\"2024-01-15\"\n- Add to sheets: action=\"addToSheets\", revisionId and sheetIds\n\nTIPS:\n- Revisions track document changes for construction documentation\n- Each revision gets a unique sequence number\n- Add revisions to sheets before issuing/printing",
     {
       action: z
         .enum(["list", "create", "add_to_sheets"])

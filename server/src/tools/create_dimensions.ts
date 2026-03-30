@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateDimensionsTool(server: McpServer) {
   server.tool(
     "create_dimensions",
-    "Create dimension annotations in the current Revit view. Supports dimensioning between elements (walls, doors, windows) by element IDs, or between two points with automatic reference detection. All coordinates are in millimeters (mm).",
+    "Create dimension annotations in the current Revit view. Supports dimensioning between elements (walls, doors, windows) by element IDs, or between two points with automatic reference detection. All coordinates are in millimeters (mm).\n\nGUIDANCE:\n- Dimension between walls: provide element IDs of walls to dimension between\n- Linear dimension: provide reference points along a line\n- Use after create_grid to dimension grid spacing\n\nTIPS:\n- Dimensions require a view — they appear in the current/specified view\n- Elements must be visible in the view to be dimensioned\n- Use get_current_view_elements to find element IDs in the active view",
     {
       dimensions: z
         .array(

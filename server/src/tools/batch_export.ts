@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerBatchExportTool(server: McpServer) {
   server.tool(
     "batch_export",
-    "Export sheets or views to PDF, DWG, or IFC format. Can export single or multiple sheets/views. Returns the export file paths on success.",
+    "Export sheets or views to PDF, DWG, or IFC format. Can export single or multiple sheets/views. Returns the export file paths on success.\n\nGUIDANCE:\n- Export sheets to PDF: format=\"pdf\", sheetIds or all sheets\n- Export to DWG: format=\"dwg\" for CAD interchange\n- Export to IFC: format=\"ifc\" for open BIM exchange\n\nTIPS:\n- Output path must be writable\n- PDF export requires a PDF printer or Revit 2022+ built-in PDF\n- DWG export settings affect layer mapping\n- Use batch_create_sheets first if sheets don't exist yet",
     {
       format: z
         .enum(["PDF", "DWG", "IFC"])

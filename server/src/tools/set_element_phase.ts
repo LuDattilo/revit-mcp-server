@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSetElementPhaseTool(server: McpServer) {
   server.tool(
     "set_element_phase",
-    "Set the created and/or demolished phase on Revit elements. Use get_phases first to get valid phase IDs.",
+    "Set the created and/or demolished phase on Revit elements. Use get_phases first to get valid phase IDs.\n\nGUIDANCE:\n- Set created phase: elementIds, createdPhase=\"New Construction\"\n- Set demolished phase: elementIds, demolishedPhase=\"Existing\"\n- Renovation workflow: mark existing elements as demolished, new as new construction\n\nTIPS:\n- Use get_phases first to see available phase names\n- Phase controls element visibility in phased views\n- Both createdPhase and demolishedPhase can be set in one call",
     {
       requests: z
         .array(

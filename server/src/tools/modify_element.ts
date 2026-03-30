@@ -11,7 +11,7 @@ const pointSchema = z.object({
 export function registerModifyElementTool(server: McpServer) {
   server.tool(
     "modify_element",
-    "Modify Revit elements by moving, rotating, mirroring, or copying them. Coordinates are in millimeters.",
+    "Modify Revit elements by moving, rotating, mirroring, or copying them. Coordinates are in millimeters.\n\nGUIDANCE:\n- Move element: action=\"move\", elementId, translation={x,y,z} in mm\n- Rotate element: action=\"rotate\", elementId, angle in degrees, axis point\n- Copy element: action=\"copy\", elementId, translation={x,y,z} — creates duplicate\n- Mirror element: action=\"mirror\", elementId, mirrorPlane definition\n\nTIPS:\n- Translation values are relative offsets in mm, not absolute positions\n- Rotation angle is in degrees, counterclockwise\n- Use get_selected_elements to get IDs of elements to modify\n- For bulk operations, use create_array instead",
     {
       data: z.object({
         elementIds: z

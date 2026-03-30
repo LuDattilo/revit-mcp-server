@@ -317,6 +317,86 @@
       "commandName": "cad_link_cleanup",
       "description": "List, audit, and delete CAD imports and links from the model for cleanup",
       "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "check_model_health",
+      "description": "Comprehensive BIM model health audit with scoring and recommendations",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "measure_between_elements",
+      "description": "Measure distance between elements, points, or mixed references",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "sync_csv_parameters",
+      "description": "Import parameter values into elements from structured data with dry-run support",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "batch_create_sheets",
+      "description": "Create multiple sheets with title blocks and optional view placement",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "section_box_from_selection",
+      "description": "Create 3D view with section box fitted to selected elements with configurable offset",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "bulk_modify_parameter_values",
+      "description": "Bulk modify parameter values: set, prefix, suffix, find/replace, or clear on multiple elements",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "duplicate_sheet_with_content",
+      "description": "Duplicate sheets with all content: views, legends, schedules in exact positions",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_views_from_rooms",
+      "description": "Auto-create callout, section, or elevation views from rooms with naming patterns",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "align_viewports",
+      "description": "Align viewports across sheets to match a reference viewport position",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_elements_in_spatial_volume",
+      "description": "Find elements contained within rooms, areas, or custom bounding boxes",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "audit_families",
+      "description": "Comprehensive family audit with health score, unused detection, and recommendations",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "batch_modify_view_range",
+      "description": "Batch modify view range settings on multiple plan views at once",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "transfer_parameters",
+      "description": "Transfer parameter values from a source element to multiple target elements",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "export_elements_data",
+      "description": "Export elements by category with selected parameters, filtering, and CSV/JSON output. Core SheetLink feature.",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "manage_project_parameters",
+      "description": "Manage project parameters (CRUD): list, create, delete, or modify category bindings. Inspired by DiRoots ParaManager.",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_color_legend",
+      "description": "Colorize elements by parameter value with auto/gradient/custom schemes and generate a legend view. Inspired by DiRootsOne OneFilter Visualize.",
+      "assemblyPath": "RevitMCPCommandSet.dll"
     }
   ]
 }

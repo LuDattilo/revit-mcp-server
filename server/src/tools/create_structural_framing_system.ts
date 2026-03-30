@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateStructuralFramingSystemTool(server: McpServer) {
   server.tool(
     "create_structural_framing_system",
-    "Create a structural beam framing system in Revit. Generates beams within a rectangular boundary at fixed spacing intervals. The system uses Revit's BeamSystem API to create properly connected beam layouts. All units are in millimeters (mm).",
+    "Create a structural beam framing system in Revit. Generates beams within a rectangular boundary at fixed spacing intervals. The system uses Revit's BeamSystem API to create properly connected beam layouts. All units are in millimeters (mm).\n\nGUIDANCE:\n- Beam grid between 2 points: provide start/end points, spacing, and beam type\n- Floor framing: create beams spanning between grids or walls\n- Use after create_grid to add structural framing to grid layout\n\nTIPS:\n- Use get_available_family_types with category \"Structural Framing\" for beam types\n- Spacing in mm — beams auto-distribute between start and end\n- Direction controls whether beams run parallel to X or Y axis",
     {
       levelName: z
         .string()

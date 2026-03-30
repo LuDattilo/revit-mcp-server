@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetPhasesTool(server: McpServer) {
   server.tool(
     "get_phases",
-    "Get all phases and phase filters from the current Revit project. Phases define the timeline of construction, and phase filters control element visibility based on phase status.",
+    "Get all phases and phase filters from the current Revit project. Phases define the timeline of construction, and phase filters control element visibility based on phase status.\n\nGUIDANCE:\n- List all phases: returns phase names, IDs, and sequence\n- Phase filters: see which filters are available for views\n- Use before set_element_phase to understand phasing structure\n\nTIPS:\n- Most projects have at least \"Existing\" and \"New Construction\" phases\n- Phase filters control element visibility in views\n- Use set_element_phase to assign elements to phases",
     {
       includePhaseFilters: z
         .boolean()

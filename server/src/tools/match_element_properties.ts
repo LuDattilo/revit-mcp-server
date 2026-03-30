@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerMatchElementPropertiesTool(server: McpServer) {
   server.tool(
     "match_element_properties",
-    "Copy parameter values from a source element to one or more target elements. Like Revit's 'Match Type Properties' but for instance parameters too. Specify which parameters to copy or copy all matching writable parameters.",
+    "Copy parameter values from a source element to one or more target elements. Like Revit's 'Match Type Properties' but for instance parameters too. Specify which parameters to copy or copy all matching writable parameters.\n\nGUIDANCE:\n- Copy properties: sourceId (element to copy from), targetIds (elements to paste to)\n- Match wall type: select source wall, apply its type to target walls\n- Match parameters: copies parameter values from source to targets\n\nTIPS:\n- Similar to Revit's Match Type Properties tool\n- Use transfer_parameters for more granular parameter-level control\n- Source and target should be same category for best results",
     {
       sourceElementId: z
         .number()

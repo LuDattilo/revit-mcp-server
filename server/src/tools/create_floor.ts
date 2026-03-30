@@ -10,7 +10,7 @@ const pointSchema = z.object({
 export function registerCreateFloorTool(server: McpServer) {
   server.tool(
     "create_floor",
-    "Create a floor element from boundary points or from room boundaries. Coordinates in mm. Specify either boundary points or a roomId to derive the boundary from a room.",
+    "Create a floor element from boundary points or from room boundaries. Coordinates in mm. Specify either boundary points or a roomId to derive the boundary from a room.\n\nGUIDANCE:\n- Floor from points: provide boundary as [{x,y,z},...] in mm, closed polygon\n- Floor from room: use roomId to auto-create floor matching room boundary\n- Multiple floors: roomIds array creates floors for multiple rooms at once\n\nTIPS:\n- Use get_available_family_types with category \"Floors\" to find floor types\n- For room-based floors, rooms must be placed first (use create_room)\n- Offset from level can be set via parameter after creation",
     {
       boundaryPoints: z
         .array(pointSchema)

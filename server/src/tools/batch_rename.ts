@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerBatchRenameTool(server: McpServer) {
   server.tool(
     "batch_rename",
-    "Batch rename views, sheets, or elements using find/replace, prefix/suffix, or parameter-based naming rules. Useful for enforcing naming conventions across the project.",
+    "Batch rename views, sheets, or elements using find/replace, prefix/suffix, or parameter-based naming rules. Useful for enforcing naming conventions across the project.\n\nGUIDANCE:\n- Rename views: targetType=\"views\", findText=\"old\", replaceText=\"new\"\n- Add prefix to sheets: targetType=\"sheets\", prefix=\"A-\"\n- Remove suffix: targetType=\"views\", suffix to remove via find/replace\n\nTIPS:\n- Supports find/replace, prefix, suffix operations\n- Preview changes first with dryRun=true before committing\n- Use renumber_elements for sequential numbering instead\n- Works on views, sheets, rooms, and other named elements",
     {
       elementIds: z
         .array(z.number())

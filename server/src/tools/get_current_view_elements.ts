@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetCurrentViewElementsTool(server: McpServer) {
   server.tool(
     "get_current_view_elements",
-    "Get elements from the current active view in Revit. You can filter by model categories (like Walls, Floors) or annotation categories (like Dimensions, Text). Use includeHidden to show/hide invisible elements and limit to control the number of returned elements.",
+    "Get elements from the current active view in Revit. You can filter by model categories (like Walls, Floors) or annotation categories (like Dimensions, Text). Use includeHidden to show/hide invisible elements and limit to control the number of returned elements.\n\nGUIDANCE:\n- See what's in the active view: call with no parameters\n- Filter by category: use categoryFilter to narrow results (e.g. \"Walls\", \"Doors\")\n- Use before operate_element to find elements to select/hide/isolate\n\nTIPS:\n- Returns element IDs, names, categories — use these IDs with other tools\n- Large views may return many elements — use categoryFilter to limit results\n- Combine with get_element_parameters to inspect specific elements",
     {
       modelCategoryList: z
         .array(z.string())

@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerTagAllRoomsTool(server: McpServer) {
   server.tool(
     "tag_all_rooms",
-    "Create tags for all rooms in the current active view. Tags will be placed at the center point of each room, displaying the room name and number.",
+    "Create tags for all rooms in the current active view. Tags will be placed at the center point of each room, displaying the room name and number.\n\nGUIDANCE:\n- Tag all rooms in active view: call with no parameters\n- Tags show room name and number\n- Run after create_room to annotate placed rooms\n\nTIPS:\n- Only tags rooms in the current plan view\n- Rooms must be placed first (use create_room)\n- Tags require a room tag family loaded in the project\n- Reposition tags manually in Revit if overlapping",
     {
       useLeader: z
         .boolean()

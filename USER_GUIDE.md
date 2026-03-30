@@ -1,499 +1,228 @@
-# Guida Utente
+# Revit MCP Server — User Guide
 
-Guida completa all'utilizzo di **mcp-servers-for-revit** — come interagire con Revit tramite AI.
+## Quick Start
 
----
-
-## Indice
-
-- [Panoramica](#panoramica)
-- [Interfaccia in Revit](#interfaccia-in-revit)
-- [Chat Panel Integrato](#chat-panel-integrato)
-- [Uso con Claude Desktop / Claude Code](#uso-con-claude-desktop--claude-code)
-- [Catalogo Comandi](#catalogo-comandi)
-- [Esempi Pratici](#esempi-pratici)
-- [Flussi di Lavoro Avanzati](#flussi-di-lavoro-avanzati)
-- [Convenzioni e Unita' di Misura](#convenzioni-e-unita-di-misura)
-- [Domande Frequenti](#domande-frequenti)
+1. Open **Revit 2023/2024/2025/2026** with a project
+2. Ensure the **RevitMCPCommandSet** plugin is loaded (check Add-ins tab)
+3. Open **Claude Desktop** (or Claude.ai with MCP enabled)
+4. The MCP server auto-connects to Revit via `localhost:8080`
+5. Start asking Claude to interact with your Revit model
 
 ---
 
-## Panoramica
+## Available Tools (78 commands)
 
-mcp-servers-for-revit permette di controllare Autodesk Revit tramite assistenti AI. Funziona in due modalita':
+### Model Information & Data Extraction
 
-| Modalita' | Come funziona | Quando usarla |
-|-----------|---------------|---------------|
-| **Chat Panel** | Pannello chat integrato direttamente in Revit | Operazioni rapide, domande sul modello |
-| **Client MCP esterno** | Claude Desktop, Claude Code, Cline, ecc. | Automazioni complesse, scripting, analisi approfondite |
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `get_project_info` | Project overview: levels, phases, worksets, links | "What levels does this project have?" |
+| `get_current_view_info` | Active view details: type, scale, crop | "What view am I looking at?" |
+| `get_current_view_elements` | List elements visible in active view | "What elements are in this view?" |
+| `get_selected_elements` | Get IDs of elements selected in Revit UI | "What do I have selected?" |
+| `get_available_family_types` | List loaded families and types | "Show me available door types" |
+| `get_element_parameters` | All parameters of specific elements | "Show me the parameters of element 12345" |
+| `analyze_model_statistics` | Element counts by category, type, level | "How complex is this model?" |
+| `export_room_data` | All rooms with area, volume, boundaries | "Export all room data" |
+| `get_material_quantities` | Material takeoffs with areas/volumes | "Calculate material quantities for walls" |
+| `export_elements_data` | Export elements by category with filters | "Export all doors with Mark, Level, Width" |
+| `get_elements_in_spatial_volume` | Find elements inside rooms/areas/boxes | "What furniture is in room 101?" |
 
-### Architettura
+### Element Creation
 
-```
-Tu (prompt) --> Client AI --> Server MCP --> Plugin Revit --> Revit API
-                                                    |
-                                            Risultati <--
-```
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `create_point_based_element` | Place doors, furniture, fixtures | "Place a desk at coordinates 5000, 3000" |
+| `create_line_based_element` | Create walls, beams, pipes | "Create a wall from (0,0) to (5000,0)" |
+| `create_surface_based_element` | Create floors, ceilings | "Create a floor with these boundary points" |
+| `create_floor` | Floors from points or room boundaries | "Create floors for all rooms on Level 1" |
+| `create_room` | Place rooms with names and numbers | "Place rooms in all enclosed spaces" |
+| `create_grid` | Grid systems with spacing | "Create a 6x4 grid at 7200mm spacing" |
+| `create_level` | Levels with auto floor plan generation | "Create levels at 0, 3000, 6000, 9000mm" |
+| `create_structural_framing_system` | Beam systems with spacing | "Create beam framing at 1200mm spacing" |
 
-Tutte le coordinate sono in **millimetri (mm)**. Il plugin converte automaticamente in piedi (unita' interna di Revit).
+### Element Modification
 
----
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `set_element_parameters` | Set parameter values on elements | "Set the Comments to 'Reviewed' on element 12345" |
+| `modify_element` | Move, rotate, copy, mirror elements | "Move element 12345 by 1000mm in X" |
+| `delete_element` | Delete elements by ID | "Delete elements 12345 and 12346" |
+| `change_element_type` | Swap element types in batch | "Change all door type X to type Y" |
+| `operate_element` | Select, hide, isolate, color elements | "Isolate all structural columns in this view" |
+| `override_graphics` | Per-element color, transparency, halftone | "Make element 12345 red and 50% transparent" |
+| `create_array` | Linear or radial arrays | "Create 5 copies of element 12345 at 2000mm spacing" |
+| `copy_elements` | Copy elements between views | "Copy dimensions from view A to view B" |
+| `match_element_properties` | Copy properties source to targets | "Match properties from element A to elements B, C, D" |
 
-## Interfaccia in Revit
+### Bulk Operations
 
-All'avvio di Revit, il plugin aggiunge un pannello nel ribbon con 3 pulsanti:
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `bulk_modify_parameter_values` | Set/prefix/suffix/replace/clear in batch | "Add prefix 'REV-' to all door Marks" |
+| `sync_csv_parameters` | Import parameter values from data | "Update these elements with this data" |
+| `transfer_parameters` | Copy params from source to targets | "Copy Mark and Comments from A to B, C, D" |
+| `batch_rename` | Find/replace on view/sheet/element names | "Rename all views replacing 'Draft' with 'Final'" |
+| `renumber_elements` | Sequential renumbering by spatial order | "Renumber all rooms left-to-right, top-to-bottom" |
+| `purge_unused` | Remove unused families/types/materials | "Show me what can be purged" |
 
-### Revit MCP Switch
+### Views & Documentation
 
-- **Funzione**: Avvia o ferma il servizio di comunicazione (porta TCP 8080)
-- **Quando usarlo**: Clicca una volta per attivare la connessione AI, clicca di nuovo per disattivarla
-- **Stato**: Il pannello chat mostra "MCP Online" (verde) o "MCP Offline" (rosso)
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `create_view` | Floor plans, sections, elevations, 3D | "Create a floor plan for Level 2" |
+| `create_sheet` | Sheets with title blocks | "Create sheet A101 - Floor Plan" |
+| `place_viewport` | Place views on sheets | "Place the Level 1 floor plan on sheet A101" |
+| `create_schedule` | Schedules with fields, filters, sorting | "Create a door schedule with Mark, Level, Width" |
+| `create_dimensions` | Dimension annotations | "Dimension between these walls" |
+| `create_text_note` | Text annotations in views | "Add a note 'Verify on site' at this location" |
+| `create_filled_region` | Hatched/colored areas in views | "Create a filled region highlighting this area" |
+| `create_revision` | Revision tracking on sheets | "Add revision 'Updated floor plan' to sheet A101" |
+| `duplicate_view` | Copy views (independent/dependent) | "Duplicate this view with detailing" |
+| `create_view_filter` | View filters for visibility control | "Create a filter to hide all furniture" |
+| `apply_view_template` | Apply/list/remove view templates | "Apply template 'Architectural Plan' to all floor plans" |
+| `create_views_from_rooms` | Auto-create views from rooms | "Create section views for all rooms on Level 1" |
+| `batch_create_sheets` | Multiple sheets at once | "Create sheets A201-A210 with title block 'A1'" |
+| `duplicate_sheet_with_content` | Duplicate sheets with all content | "Duplicate sheet A101 as A101-Rev2" |
+| `align_viewports` | Align viewports across sheets | "Align all floor plan viewports to match A101" |
+| `batch_modify_view_range` | Batch view range settings | "Set cut plane to 1200mm on all floor plans" |
+| `section_box_from_selection` | 3D section box from elements | "Create section box around selected elements" |
+| `batch_export` | Export to PDF, DWG, IFC | "Export all sheets to PDF" |
+| `export_schedule` | Export schedule to CSV | "Export the door schedule to CSV" |
 
-### MCP Panel
+### Visualization
 
-- **Funzione**: Mostra o nasconde il pannello chat laterale
-- **Posizione**: Si aggancia sul lato destro della finestra Revit
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `color_elements` | Color elements by parameter | "Color rooms by department" |
+| `create_color_legend` | Color + legend view generation | "Colorize rooms by department with a legend" |
+| `tag_all_rooms` | Tag all rooms in current view | "Tag all rooms" |
+| `tag_all_walls` | Tag all walls in current view | "Tag all walls" |
 
-### Settings
+### Parameters & Properties
 
-- **Funzione**: Apre le impostazioni del plugin
-- **Configurazioni**: Modello AI, command set, chiave API
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `manage_project_parameters` | CRUD project parameters | "Create a text parameter 'Review Status' on Walls" |
+| `get_shared_parameters` | List project/shared parameters | "What parameters are available?" |
+| `add_shared_parameter` | Add shared parameter from file | "Add shared parameter 'FireRating' to Doors" |
 
----
+### Model Quality & Auditing
 
-## Chat Panel Integrato
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `check_model_health` | Comprehensive health score (A-F) | "Check the health of this model" |
+| `audit_families` | Family health with unused detection | "Audit all families in this project" |
+| `get_warnings` | All Revit warnings/errors | "Show me all model warnings" |
+| `clash_detection` | Geometric intersection detection | "Check for clashes between walls and pipes" |
+| `cad_link_cleanup` | Audit/remove CAD imports | "Are there any CAD imports to clean up?" |
+| `measure_between_elements` | Distance measurements | "Measure the distance between elements A and B" |
 
-Il pannello chat permette di interagire con Claude direttamente dentro Revit.
+### Organization & Collaboration
 
-### Layout
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `get_worksets` | List worksets | "What worksets are available?" |
+| `set_element_workset` | Move elements to worksets | "Move these elements to the MEP workset" |
+| `get_phases` | List project phases | "What phases exist?" |
+| `set_element_phase` | Assign elements to phases | "Set these elements to 'New Construction'" |
+| `get_materials` | List all materials | "What materials are in this project?" |
+| `get_material_properties` | Detailed material properties | "Show properties of material 'Concrete'" |
+| `load_family` | Load/list families | "Load family from C:/Families/MyDoor.rfa" |
+| `manage_links` | Manage linked Revit models | "List all linked models" |
 
-```
-+-------------------------------------+
-| Claude for Revit    MCP Online | Nuova chat |
-+-------------------------------------+
-|                                     |
-|  [C] Claude                         |
-|  Ciao! Sono Claude, il tuo         |
-|  assistente per Revit.              |
-|                                     |
-|  [L] Tu                             |
-|  Quanti muri ci sono nel modello?   |
-|                                     |
-|  [C] Claude                         |
-|  Ho analizzato il modello...        |
-|                                     |
-+-------------------------------------+
-| [ Rispondi...                    ]  |
-| [Sonnet 4 v] [Planning]        [>] |
-+-------------------------------------+
-```
+### Advanced
 
-### Selettore Modello
-
-In basso a sinistra puoi scegliere il modello Claude:
-
-| Modello | Caratteristiche | Consigliato per |
-|---------|----------------|-----------------|
-| **Haiku 4.5** | Veloce, economico | Domande semplici, operazioni rapide |
-| **Sonnet 4** (default) | Bilanciato | Uso generale, buon rapporto qualita'/velocita' |
-| **Opus 4** | Piu' capace | Automazioni complesse, analisi approfondite |
-
-Il modello si puo' cambiare in qualsiasi momento — si applica dal messaggio successivo.
-
-### Modalita' Planning
-
-Il pulsante **Planning** attiva il ragionamento esteso (extended thinking):
-
-- **Disattivato** (grigio): Claude risponde direttamente
-- **Attivato** (arancione): Claude ragiona step-by-step prima di rispondere
-
-Quando attivo:
-- Claude "pianifica" internamente prima di agire
-- Il ragionamento appare in chat con sfondo viola e etichetta "Planning"
-- L'indicatore mostra "Claude sta pianificando..." durante l'elaborazione
-- Utile per operazioni complesse che richiedono piu' passaggi
-
-### Nuova Chat
-
-Clicca **"Nuova chat"** in alto a destra per azzerare la conversazione e ricominciare.
-
-### Messaggi Speciali
-
-| Colore/Stile | Significato |
-|-------------|-------------|
-| Sfondo bianco, avatar blu | Messaggi tuoi |
-| Sfondo crema, avatar arancione | Risposte di Claude |
-| Sfondo viola, avatar viola | Ragionamento Planning |
-| Sfondo crema, icona fulmine verde | Esecuzione tool Revit |
-| Sfondo verde chiaro | Tool completato con successo |
-| Sfondo rosso chiaro | Tool fallito con errore |
-| Testo grigio | Progresso round (es. "Round 3/15") |
-
-### Feedback durante l'Esecuzione
-
-Durante l'esecuzione di operazioni complesse, il chat panel mostra messaggi di feedback in tempo reale:
-
-- **Testo intermedio**: Quando Claude spiega cosa sta per fare prima di chiamare un tool
-- **Tool completato**: Conferma verde con il nome del tool eseguito
-- **Tool errore**: Messaggio rosso con dettagli dell'errore
-- **Progresso round**: Indicatore del round corrente (fino a 15 round per messaggio)
-
----
-
-## Uso con Claude Desktop / Claude Code
-
-### Claude Desktop
-
-1. Apri Revit e attiva il servizio MCP (clicca **"Revit MCP Switch"**)
-2. Apri Claude Desktop
-3. Verifica l'icona del martello (connessione MCP attiva)
-4. Scrivi la tua richiesta, es:
-   ```
-   Analizza il modello Revit aperto e dimmi quanti elementi ci sono per categoria
-   ```
-
-### Claude Code (CLI)
-
-```bash
-# Esempio: analisi del modello
-claude "Usa il tool analyze_model_statistics sul modello Revit aperto"
-
-# Esempio: creazione elementi
-claude "Crea 3 livelli a 0, 3500 e 7000 mm nel modello Revit"
-```
+| Command | Description | Example Prompt |
+|---------|-------------|----------------|
+| `ai_element_filter` | Advanced multi-parameter filtering | "Find all doors on Level 1 with width > 900mm" |
+| `send_code_to_revit` | Execute custom C# code | "Run this custom Revit API code..." |
 
 ---
 
-## Catalogo Comandi
+## Common Workflows
 
-Il plugin espone **62 tool** organizzati per categoria.
-
-### Creazione Elementi
-
-| Tool | Descrizione |
-|------|-------------|
-| `create_level` | Crea livelli a elevazioni specificate (mm) |
-| `create_grid` | Crea un sistema di griglie con spaziatura automatica |
-| `create_line_based_element` | Crea muri, travi, tubi e altri elementi lineari |
-| `create_point_based_element` | Crea porte, finestre, arredi e altri elementi puntuali |
-| `create_surface_based_element` | Crea pavimenti, controsoffitti, tetti |
-| `create_floor` | Crea un pavimento da profilo |
-| `create_room` | Crea e posiziona stanze |
-| `create_structural_framing_system` | Crea un sistema di travi strutturali |
-| `create_array` | Crea array (copie distribuite) di elementi |
-| `copy_elements` | Copia elementi con offset |
-
-### Modifica Elementi
-
-| Tool | Descrizione |
-|------|-------------|
-| `modify_element` | Modifica geometria di un elemento (sposta, ruota, scala) |
-| `set_element_parameters` | Imposta parametri di istanza o tipo |
-| `change_element_type` | Cambia il tipo di un elemento |
-| `operate_element` | Operazioni multiple: seleziona, colora, nascondi, isola |
-| `color_elements` | Colora elementi in base al valore di un parametro |
-| `delete_element` | Elimina elementi per ID |
-| `match_element_properties` | Copia proprieta' da un elemento sorgente ad altri |
-| `override_graphics` | Sovrascrivi la grafica di elementi nella vista |
-| `set_element_workset` | Sposta elementi in un altro workset |
-| `set_element_phase` | Imposta la fase di un elemento |
-| `batch_rename` | Rinomina in batch viste, sheet, livelli, griglie o stanze |
-| `renumber_elements` | Rinumera stanze, parcheggi o pannelli in sequenza |
-
-### Query e Estrazione Dati
-
-| Tool | Descrizione |
-|------|-------------|
-| `get_project_info` | Info progetto: nome, indirizzo, autore, livelli, fasi |
-| `analyze_model_statistics` | Conteggio elementi per categoria, tipi, famiglie |
-| `get_current_view_info` | Info sulla vista attiva |
-| `get_current_view_elements` | Elementi nella vista corrente |
-| `get_selected_elements` | Elementi attualmente selezionati |
-| `get_element_parameters` | Tutti i parametri di un elemento |
-| `ai_element_filter` | Filtro intelligente: cerca elementi per criteri multipli |
-| `get_available_family_types` | Tipi di famiglia disponibili nel progetto |
-| `get_materials` | Lista materiali con colore e proprieta' |
-| `get_material_properties` | Proprieta' dettagliate di un materiale |
-| `get_material_quantities` | Quantita' materiali e computo |
-| `get_warnings` | Warning e errori del modello |
-| `get_worksets` | Lista workset del progetto |
-| `get_phases` | Fasi del progetto |
-| `get_shared_parameters` | Parametri condivisi nel progetto |
-| `export_room_data` | Esporta dati stanze: area, volume, perimetro |
-| `get_schedule_data` | Legge i dati di un abaco esistente |
-| `export_schedule` | Esporta un abaco in formato testo/CSV |
-
-### Viste e Tavole
-
-| Tool | Descrizione |
-|------|-------------|
-| `create_view` | Crea viste: pianta, sezione, 3D |
-| `create_sheet` | Crea tavole con cartiglio |
-| `place_viewport` | Posiziona una vista su una tavola |
-| `duplicate_view` | Duplica una vista (con o senza dettagli) |
-| `create_view_filter` | Crea filtri di vista con regole |
-| `apply_view_template` | Applica un template di vista |
-| `create_schedule` | Crea abachi per categoria |
-
-### Annotazioni e Documentazione
-
-| Tool | Descrizione |
-|------|-------------|
-| `create_dimensions` | Crea quote nella vista corrente |
-| `create_text_note` | Crea note di testo |
-| `create_filled_region` | Crea regioni riempite |
-| `tag_all_walls` | Tagga tutti i muri nella vista |
-| `tag_all_rooms` | Tagga tutte le stanze nella vista |
-| `create_revision` | Crea una revisione del progetto |
-
-### Gestione Progetto
-
-| Tool | Descrizione |
-|------|-------------|
-| `add_shared_parameter` | Aggiunge un parametro condiviso |
-| `load_family` | Carica una famiglia nel progetto |
-| `manage_links` | Gestisci link Revit (carica, scarica, ricarica, rimuovi) |
-| `purge_unused` | Identifica/rimuovi famiglie, tipi e materiali non usati |
-| `batch_export` | Esportazione batch (DWG, IFC, PDF, NWC) |
-| `clash_detection` | Rileva interferenze tra categorie |
-| `cad_link_cleanup` | Pulisci link CAD importati |
-
-### Utilita'
-
-| Tool | Descrizione |
-|------|-------------|
-| `say_hello` | Mostra un messaggio in Revit (test connessione) |
-| `send_code_to_revit` | Esegui codice C# arbitrario in Revit |
-
----
-
-## Esempi Pratici
-
-### Informazioni sul Progetto
-
+### 1. Model Audit & Cleanup
 ```
-Dimmi le informazioni del progetto aperto
-```
-Claude usa `get_project_info` e restituisce nome, indirizzo, autore, livelli e fasi.
-
-### Analisi del Modello
-
-```
-Analizza il modello e dimmi quanti elementi ci sono per categoria
-```
-Claude usa `analyze_model_statistics` e presenta un riepilogo con conteggi per muri, pavimenti, porte, ecc.
-
-### Creazione Livelli
-
-```
-Crea 4 livelli:
-- Piano Terra a 0 mm
-- Piano Primo a 3500 mm
-- Piano Secondo a 7000 mm
-- Copertura a 10000 mm
-```
-Claude usa `create_level` per creare tutti i livelli con le elevazioni specificate.
-
-### Creazione Griglie
-
-```
-Crea un sistema di griglie 5x4 con spaziatura 6000mm in X e 5000mm in Y
-```
-Claude usa `create_grid` per generare le griglie con etichette automatiche (A, B, C... e 1, 2, 3...).
-
-### Creazione Muri
-
-```
-Crea un muro rettangolare 10x8 metri, spessore 300mm, altezza 3500mm, al livello 0
-```
-Claude usa `create_line_based_element` per creare 4 muri che formano il rettangolo.
-
-### Creazione Stanze
-
-```
-Crea una stanza "Soggiorno" al centro del rettangolo di muri
-```
-Claude usa `create_room` posizionando la stanza alle coordinate centrali.
-
-### Tagging Automatico
-
-```
-Tagga tutte le stanze e tutti i muri nella vista corrente
-```
-Claude usa `tag_all_rooms` e `tag_all_walls` in sequenza.
-
-### Esportazione Dati
-
-```
-Esporta i dati di tutte le stanze con area e volume
-```
-Claude usa `export_room_data` e restituisce una tabella con nome, numero, livello, area, volume e perimetro.
-
-### Pulizia Modello
-
-```
-Controlla i warning del modello e poi identifica gli elementi non usati
-```
-Claude usa `get_warnings` e `purge_unused` (con dryRun: true per anteprima).
-
-### Computo Materiali
-
-```
-Calcola le quantita' di materiali per tutti i muri del progetto
-```
-Claude usa `get_material_quantities` e restituisce volume, area e peso per materiale.
-
-### Ricerca Elementi Intelligente
-
-```
-Trova tutti i muri con altezza maggiore di 3000mm sul livello "Piano Terra"
-```
-Claude usa `ai_element_filter` con criteri multipli per cercare gli elementi.
-
-### Creazione Vista e Tavola
-
-```
-Crea una vista in pianta del Piano Terra in scala 1:100 e posizionala su una nuova tavola A1
-```
-Claude usa `create_view`, `create_sheet` e `place_viewport` in sequenza.
-
-### Clash Detection
-
-```
-Verifica le interferenze tra le strutture e gli impianti meccanici
-```
-Claude usa `clash_detection` specificando le categorie da controllare.
-
----
-
-## Flussi di Lavoro Avanzati
-
-### Automazione Multi-Step
-
-Con la modalita' **Planning** attiva, Claude puo' eseguire sequenze complesse:
-
-```
-Crea una struttura completa:
-1. 3 livelli a 0, 3500 e 7000 mm
-2. Griglie 4x3 con spaziatura 6m
-3. Muri perimetrali su tutti i livelli
-4. Stanze in ogni piano
-5. Tagga tutte le stanze
+1. "Check the health of this model"                    -> check_model_health
+2. "Show me all warnings"                              -> get_warnings
+3. "Audit all families"                                -> audit_families
+4. "What can be purged?"                               -> purge_unused (dryRun)
+5. "Clean up CAD imports"                              -> cad_link_cleanup
+6. "Purge unused items"                                -> purge_unused
 ```
 
-Claude pianifichera' tutti i passaggi e li eseguira' in ordine usando fino a 15 round di tool call per messaggio.
-
-### Esecuzione Codice C# Personalizzato
-
-Per operazioni non coperte dai tool standard:
-
+### 2. Room Data & Views
 ```
-Esegui in Revit un codice C# che conta tutti gli elementi di tipo "Generic Model"
-e restituisce i loro ID
+1. "Export all room data"                              -> export_room_data
+2. "Create section views for all rooms"                -> create_views_from_rooms
+3. "Tag all rooms"                                     -> tag_all_rooms
+4. "Color rooms by department"                         -> create_color_legend
+5. "Create a room schedule"                            -> create_schedule
 ```
 
-Claude usa `send_code_to_revit` per iniettare ed eseguire codice C# direttamente nella sessione Revit.
-
-> **Attenzione**: `send_code_to_revit` esegue codice arbitrario. Usalo con cautela e verifica sempre il codice prima dell'esecuzione.
-
-### Analisi e Report
-
+### 3. Sheet Set Creation
 ```
-Genera un report completo del modello:
-- Statistiche elementi
-- Lista warning
-- Elementi non usati
-- Dati stanze
+1. "Create sheets A101-A105"                           -> batch_create_sheets
+2. "Place floor plan views on sheets"                  -> place_viewport
+3. "Align viewports across all sheets"                 -> align_viewports
+4. "Add revision to all sheets"                        -> create_revision
+5. "Export all sheets to PDF"                          -> batch_export
 ```
 
-Claude chiamera' piu' tool in sequenza e combinera' i risultati in un report strutturato.
-
----
-
-## Convenzioni e Unita' di Misura
-
-### Coordinate
-
-- Tutte le coordinate sono in **millimetri (mm)**
-- Il sistema di coordinate segue quello di Revit (X = est, Y = nord, Z = alto)
-- Il plugin converte automaticamente mm <-> piedi (1 ft = 304.8 mm)
-
-### Categorie Elementi
-
-Le categorie Revit si specificano con il prefisso `OST_`:
-
-| Categoria | Codice |
-|-----------|--------|
-| Muri | `OST_Walls` |
-| Pavimenti | `OST_Floors` |
-| Porte | `OST_Doors` |
-| Finestre | `OST_Windows` |
-| Pilastri strutturali | `OST_StructuralColumns` |
-| Travi | `OST_StructuralFraming` |
-| Stanze | `OST_Rooms` |
-| Controsoffitti | `OST_Ceilings` |
-| Tetti | `OST_Roofs` |
-| Scale | `OST_Stairs` |
-
-### ID Elementi
-
-Gli ID sono numeri interi unici per ogni elemento. Si possono ottenere con:
-- `get_selected_elements` — elementi selezionati
-- `get_current_view_elements` — elementi nella vista
-- `ai_element_filter` — ricerca per criteri
-
-### Operazioni Distruttive
-
-Per operazioni come `delete_element` e `purge_unused`, usa sempre `dryRun: true` prima per un'anteprima:
-
+### 4. Data Export & Modification
 ```
-Prima mostrami cosa verrebbe eliminato con purge (dry run), poi conferma
+1. "Export all doors with Mark, Level, Type"           -> export_elements_data
+2. "Update door marks from this data"                  -> sync_csv_parameters
+3. "Add prefix 'D-' to all door marks"                -> bulk_modify_parameter_values
+4. "Renumber doors by spatial order"                   -> renumber_elements
+```
+
+### 5. Parameter Management
+```
+1. "List all project parameters"                       -> manage_project_parameters (list)
+2. "Create parameter 'Review Status' on Walls"         -> manage_project_parameters (create)
+3. "Set 'Review Status' to 'Pending' on all walls"    -> bulk_modify_parameter_values
+4. "Export wall data with Review Status"               -> export_elements_data
+```
+
+### 6. Coordination & Clash Detection
+```
+1. "Check for clashes between ducts and beams"         -> clash_detection
+2. "Show me the clashing elements"                     -> operate_element (isolate)
+3. "Create section box around clash area"              -> section_box_from_selection
+4. "Measure distance between elements"                 -> measure_between_elements
 ```
 
 ---
 
-## Domande Frequenti
+## Tips for Best Results
 
-### Posso usare il plugin senza Claude Desktop?
+- **Be specific**: "Create a wall from (0,0,0) to (5000,0,0) on Level 1" works better than "Add a wall"
+- **Check first**: Use `get_available_family_types` before creating elements to know exact names
+- **Dry run**: Use `dryRun=true` on bulk operations before committing changes
+- **Parameter names**: May be localized (e.g. "Commenti" in Italian Revit instead of "Comments")
+- **Coordinates**: All values in millimeters unless specified otherwise
+- **Element IDs**: Use `get_selected_elements`, `ai_element_filter`, or `get_current_view_elements` to find IDs
 
-Si'. Il pannello chat integrato in Revit funziona autonomamente — basta configurare la chiave API Anthropic. Non serve Claude Desktop.
+---
 
-### Posso usare Claude Desktop senza il chat panel?
+## Troubleshooting
 
-Si'. Il chat panel e il server MCP sono indipendenti. Claude Desktop si connette tramite il server MCP (Node.js), mentre il chat panel usa direttamente l'API Anthropic.
+| Issue | Solution |
+|-------|----------|
+| "Connection refused" | Ensure Revit is open with the MCP plugin loaded |
+| "Element not found" | Verify element ID exists with `get_current_view_elements` |
+| "Parameter not found" | Check exact name with `get_element_parameters` |
+| "Family type not found" | Use `get_available_family_types` for exact names |
+| "Tool not available" | Restart Claude Desktop to refresh MCP tool list |
+| "Timeout" | Large operations may take time, try with fewer elements |
 
-### Le operazioni sono reversibili?
+---
 
-Revit ha il suo sistema di undo (`Ctrl+Z`). Le operazioni eseguite dai tool vengono registrate nella cronologia undo di Revit, quindi puoi annullarle normalmente.
+## Requirements
 
-### Quanti tool call puo' fare Claude per messaggio?
-
-Il chat panel permette fino a **15 round** di tool call per messaggio. Ogni round puo' contenere piu' chiamate parallele. Questo consente automazioni multi-step complesse in un singolo messaggio.
-
-### Funziona con modelli di grandi dimensioni?
-
-Si', ma i tempi di risposta dipendono dalla complessita'. Per modelli molto grandi (>100.000 elementi), le query come `analyze_model_statistics` potrebbero richiedere qualche secondo in piu'.
-
-### Posso usare il plugin in worksharing?
-
-Si'. Il plugin opera nel contesto dell'utente corrente e rispetta i workset. Usa `get_worksets` e `set_element_workset` per gestire i workset.
-
-### Il plugin modifica il modello automaticamente?
-
-No. Claude esegue operazioni **solo quando glielo chiedi**. Il plugin non fa nulla in background senza una tua richiesta esplicita.
-
-### Come scelgo tra Haiku, Sonnet e Opus?
-
-- **Haiku 4.5**: Per domande veloci ("quanti muri ci sono?", "info progetto")
-- **Sonnet 4**: Per la maggior parte delle operazioni (creazione elementi, analisi, tagging)
-- **Opus 4**: Per automazioni complesse multi-step, analisi approfondite, planning
-
-### Quando attivare il Planning mode?
-
-Attivalo quando la richiesta richiede ragionamento articolato:
-- Creazione di strutture complesse (edificio intero)
-- Analisi che richiedono piu' passaggi
-- Decisioni su quali tool usare e in che ordine
-- Debug di problemi nel modello
-
-Per operazioni semplici (query, singola creazione) lascialo disattivato per risposte piu' veloci.
+- **Revit**: 2023, 2024, 2025, or 2026
+- **Plugin**: RevitMCPCommandSet loaded in Revit
+- **Server**: Node.js MCP server running (auto-started by Claude Desktop)
+- **Connection**: localhost:8080 (Revit plugin listens, MCP server connects)

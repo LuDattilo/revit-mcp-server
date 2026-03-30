@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetMaterialQuantitiesTool(server: McpServer) {
   server.tool(
     "get_material_quantities",
-    "Calculate material quantities and takeoffs from the current Revit project. Returns detailed information about each material including name, class, area, volume, and element counts. Useful for cost estimation, material ordering, and sustainability analysis.",
+    "Calculate material quantities and takeoffs from the current Revit project. Returns detailed information about each material including name, class, area, volume, and element counts. Useful for cost estimation, material ordering, and sustainability analysis.\n\nGUIDANCE:\n- Material takeoff: returns areas and volumes per material across selected categories\n- Cost estimation: combine quantities with material costs\n- Compare alternatives: run for different design options\n\nTIPS:\n- Filter by category for focused takeoffs (e.g. just walls or floors)\n- Values are in project display units (m², m³ or ft², ft³)\n- Use get_materials and get_material_properties for material details",
     {
       categoryFilters: z
         .array(z.string())

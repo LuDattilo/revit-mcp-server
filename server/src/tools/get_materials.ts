@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetMaterialsTool(server: McpServer) {
   server.tool(
     "get_materials",
-    "List all materials in the current Revit project with their basic properties including color, transparency, and asset availability. Can filter by material class or name.",
+    "List all materials in the current Revit project with their basic properties including color, transparency, and asset availability. Can filter by material class or name.\n\nGUIDANCE:\n- List all materials: returns names, colors, transparency, category\n- Find material by name for use in element creation or modification\n- Material audit: check which materials are used vs unused\n\nTIPS:\n- Use get_material_properties with a specific materialId for detailed info\n- Material IDs can be used with set_element_parameters\n- Combine with get_material_quantities for cost estimation",
     {
       materialClass: z
         .string()

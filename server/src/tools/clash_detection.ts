@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerClashDetectionTool(server: McpServer) {
   server.tool(
     "clash_detection",
-    "Detect geometric intersections (clashes) between two sets of elements. Specify by category names (e.g., 'Ducts' vs 'StructuralFraming') or specific element IDs. Returns pairs of clashing elements.",
+    "Detect geometric intersections (clashes) between two sets of elements. Specify by category names (e.g., 'Ducts' vs 'StructuralFraming') or specific element IDs. Returns pairs of clashing elements.\n\nGUIDANCE:\n- Check wall-pipe clashes: category1=\"Walls\", category2=\"Pipes\"\n- MEP coordination: category1=\"Ducts\", category2=\"Structural Framing\"\n- Full model check: provide two categories to check for intersections\n\nTIPS:\n- Returns pairs of clashing element IDs with intersection details\n- Use operate_element to highlight/isolate clashing elements\n- Focus on critical clashes (structural vs MEP) first\n- Combine with section_box_from_selection to zoom into clash locations",
     {
       categoryA: z
         .string()
