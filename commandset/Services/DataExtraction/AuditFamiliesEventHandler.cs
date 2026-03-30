@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -48,8 +49,9 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
                 if (!string.IsNullOrEmpty(CategoryFilter))
                 {
+                    var targetCatId = CategoryResolver.ResolveToId(doc, CategoryFilter);
                     families = families.Where(f => f.FamilyCategory != null &&
-                        f.FamilyCategory.Name.Equals(CategoryFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+                        f.FamilyCategory.Id.Equals(targetCatId)).ToList();
                 }
 
                 // Count instances per family

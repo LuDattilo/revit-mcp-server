@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     var bbFilter = new BoundingBoxIntersectsFilter(outline);
                     var collector = new FilteredElementCollector(doc).WherePasses(bbFilter).WhereElementIsNotElementType();
 
-                    var elements = FilterByCategories(collector, CategoryFilter);
+                    var elements = FilterByCategories(doc, collector, CategoryFilter);
 
                     totalElements += elements.Count;
                     volumeResults.Add(new
@@ -99,7 +100,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                             .WherePasses(bbFilter)
                             .WhereElementIsNotElementType();
 
-                        var elements = FilterByCategories(collector, CategoryFilter);
+                        var elements = FilterByCategories(doc, collector, CategoryFilter);
 
                         // Exclude the spatial element itself
 #if REVIT2024_OR_GREATER
@@ -156,13 +157,19 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             }
         }
 
-        private List<Element> FilterByCategories(FilteredElementCollector collector, List<string> categories)
+        private List<Element> FilterByCategories(Document doc, FilteredElementCollector collector, List<string> categories)
         {
             var elements = collector.ToList();
             if (categories != null && categories.Count > 0)
             {
-                elements = elements.Where(e => e.Category != null &&
-                    categories.Any(c => e.Category.Name.Equals(c, StringComparison.OrdinalIgnoreCase)))
+                // Resolve category names to ElementIds upfront (language-independent)
+                var resolvedIds = categories
+                    .Select(c => CategoryResolver.ResolveToId(doc, c))
+                    .Where(id => id != null)
+                    .ToHashSet();
+
+                elements = elements
+                    .Where(e => e.Category != null && resolvedIds.Contains(e.Category.Id))
                     .ToList();
             }
             return elements;

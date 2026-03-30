@@ -150,25 +150,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             {
                 foreach (var categoryName in Categories)
                 {
-                    var bic = ResolveCategoryName(categoryName);
-                    if (bic.HasValue)
-                    {
-                        var collected = new FilteredElementCollector(doc)
-                            .OfCategory(bic.Value)
-                            .WhereElementIsNotElementType()
-                            .ToList();
-                        result.AddRange(collected);
-                    }
-                    else
-                    {
-                        // Fallback: match by category name string
-                        var collected = new FilteredElementCollector(doc)
-                            .WhereElementIsNotElementType()
-                            .Where(e => e.Category != null &&
-                                e.Category.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                        result.AddRange(collected);
-                    }
+                    result.AddRange(CategoryResolver.CollectByCategory(doc, categoryName));
                 }
 
                 // Remove duplicates in case multiple categories matched the same element
@@ -179,63 +161,6 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             }
 
             return result;
-        }
-
-        // ----------------------------------------------------------------
-        // Category name -> BuiltInCategory resolution
-        // ----------------------------------------------------------------
-
-        private BuiltInCategory? ResolveCategoryName(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
-
-            // Direct match with OST_ prefix
-            string bicName = name.StartsWith("OST_") ? name : "OST_" + name;
-            if (Enum.TryParse<BuiltInCategory>(bicName, true, out var bic))
-                return bic;
-
-            // Common friendly-name mappings
-            var map = new Dictionary<string, BuiltInCategory>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "Walls", BuiltInCategory.OST_Walls },
-                { "Floors", BuiltInCategory.OST_Floors },
-                { "Roofs", BuiltInCategory.OST_Roofs },
-                { "Doors", BuiltInCategory.OST_Doors },
-                { "Windows", BuiltInCategory.OST_Windows },
-                { "Rooms", BuiltInCategory.OST_Rooms },
-                { "Columns", BuiltInCategory.OST_Columns },
-                { "StructuralColumns", BuiltInCategory.OST_StructuralColumns },
-                { "Beams", BuiltInCategory.OST_StructuralFraming },
-                { "StructuralFraming", BuiltInCategory.OST_StructuralFraming },
-                { "Stairs", BuiltInCategory.OST_Stairs },
-                { "Railings", BuiltInCategory.OST_StairsRailing },
-                { "Ceilings", BuiltInCategory.OST_Ceilings },
-                { "Furniture", BuiltInCategory.OST_Furniture },
-                { "FurnitureSystems", BuiltInCategory.OST_FurnitureSystems },
-                { "Casework", BuiltInCategory.OST_Casework },
-                { "Plumbing", BuiltInCategory.OST_PlumbingFixtures },
-                { "PlumbingFixtures", BuiltInCategory.OST_PlumbingFixtures },
-                { "MechanicalEquipment", BuiltInCategory.OST_MechanicalEquipment },
-                { "ElectricalFixtures", BuiltInCategory.OST_ElectricalFixtures },
-                { "ElectricalEquipment", BuiltInCategory.OST_ElectricalEquipment },
-                { "LightingFixtures", BuiltInCategory.OST_LightingFixtures },
-                { "GenericModels", BuiltInCategory.OST_GenericModel },
-                { "GenericModel", BuiltInCategory.OST_GenericModel },
-                { "Areas", BuiltInCategory.OST_Areas },
-                { "Spaces", BuiltInCategory.OST_MEPSpaces },
-                { "Curtain Panels", BuiltInCategory.OST_CurtainWallPanels },
-                { "CurtainWallPanels", BuiltInCategory.OST_CurtainWallPanels },
-                { "Mullions", BuiltInCategory.OST_CurtainWallMullions },
-                { "Grids", BuiltInCategory.OST_Grids },
-                { "Levels", BuiltInCategory.OST_Levels },
-                { "Views", BuiltInCategory.OST_Views },
-                { "Sheets", BuiltInCategory.OST_Sheets },
-            };
-
-            if (map.TryGetValue(name, out var mapped))
-                return mapped;
-
-            return null;
         }
 
         // ----------------------------------------------------------------

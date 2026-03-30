@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     var collector = new FilteredElementCollector(doc).WhereElementIsNotElementType();
                     foreach (var elem in collector)
                     {
-                        if (elem.Category != null && elem.Category.Name.Equals(CategoryName, StringComparison.OrdinalIgnoreCase))
+                        if (CategoryResolver.CategoryMatches(doc, elem, CategoryName))
                             elements.Add(elem);
                     }
                 }

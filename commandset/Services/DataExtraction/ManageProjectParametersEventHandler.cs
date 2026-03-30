@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -547,14 +548,9 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             foreach (var catName in categoryNames)
             {
                 Category found = null;
-                foreach (Category cat in doc.Settings.Categories)
-                {
-                    if (cat.Name.Equals(catName, StringComparison.OrdinalIgnoreCase) && cat.AllowsBoundParameters)
-                    {
-                        found = cat;
-                        break;
-                    }
-                }
+                var cat = CategoryResolver.ResolveToCategory(doc, catName);
+                if (cat != null && cat.AllowsBoundParameters)
+                    found = cat;
 
                 if (found != null)
                     categorySet.Insert(found);

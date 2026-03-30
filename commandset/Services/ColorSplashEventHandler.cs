@@ -57,16 +57,8 @@ namespace RevitMCPCommandSet.Services
                     return;
                 }
 
-                // Find category
-                Category category = null;
-                foreach (Category cat in doc.Settings.Categories)
-                {
-                    if (cat.Name.Equals(_categoryName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        category = cat;
-                        break;
-                    }
-                }
+                // Find category (language-independent: resolves by BuiltInCategory enum, English name, or localized display name)
+                Category category = CategoryResolver.ResolveToCategory(doc, _categoryName);
 
                 if (category == null)
                 {
