@@ -63,6 +63,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference    = 'SilentlyContinue'
 
+# When run via `irm ... | iex` the script executes in the caller's scope and a
+# pre-existing $Tag variable can override the param() default.  Guard against it.
+if ([string]::IsNullOrWhiteSpace($Tag)) { $Tag = 'latest' }
+
 # Force TLS 1.2 — required for GitHub on older Windows 10 builds
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
