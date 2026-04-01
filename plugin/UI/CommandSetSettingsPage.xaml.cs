@@ -172,8 +172,10 @@ namespace revit_mcp_plugin.UI
                                 }
                             }
                         }
-                        // If there are invalid commands, update the registry file
-                        if (validCommands.Count != registry.Commands.Count)
+                        // Only clean up the registry if we successfully found command sets —
+                        // if availableCommandSets is empty it means the scan failed (wrong Revit
+                        // version, missing DLLs, etc.) and we must NOT wipe the registry.
+                        if (availableCommandSets.Count > 0 && validCommands.Count != registry.Commands.Count)
                         {
                             registry.Commands = validCommands;
                             string updatedJson = JsonConvert.SerializeObject(registry, Formatting.Indented);
@@ -371,8 +373,7 @@ namespace revit_mcp_plugin.UI
                 var dialog = new Microsoft.Win32.OpenFileDialog
                 {
                     Title = "Select a command.json file to import",
-                    Filter = "Command Set Definition (command.json)|command.json",
-                    FileName = "command.json"
+                    Filter = "Command Set Definition (command.json)|command.json"
                 };
 
                 if (dialog.ShowDialog() == true)
