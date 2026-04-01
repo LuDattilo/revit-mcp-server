@@ -13,9 +13,15 @@ namespace RevitMCPCommandSet.Services
         public long LinkId { get; set; } = 0;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string action, long linkId = 0)
+        {
+            Action = action;
+            LinkId = linkId;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

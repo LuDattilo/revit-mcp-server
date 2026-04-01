@@ -14,9 +14,16 @@ namespace RevitMCPCommandSet.Services
         public string CategoryFilter { get; set; } = "";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string severityFilter = "All", int maxWarnings = 500, string categoryFilter = "")
+        {
+            SeverityFilter = severityFilter;
+            MaxWarnings = maxWarnings;
+            CategoryFilter = categoryFilter;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

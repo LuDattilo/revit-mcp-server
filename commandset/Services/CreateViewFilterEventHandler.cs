@@ -23,9 +23,24 @@ namespace RevitMCPCommandSet.Services
         public bool IsVisible { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string action, string filterName, List<string> categoryNames, string parameterName, string filterRule, string filterValue, long viewId, int colorR, int colorG, int colorB, bool isVisible)
+        {
+            Action = action ?? "list";
+            FilterName = filterName ?? "";
+            CategoryNames = categoryNames ?? new List<string>();
+            ParameterName = parameterName ?? "";
+            FilterRule = filterRule ?? "";
+            FilterValue = filterValue ?? "";
+            ViewId = viewId;
+            ColorR = colorR;
+            ColorG = colorG;
+            ColorB = colorB;
+            IsVisible = isVisible;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -84,24 +99,32 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Create View Filter"))
             {
                 transaction.Start();
-
-                if (!string.IsNullOrEmpty(ParameterName) && !string.IsNullOrEmpty(FilterRule))
+                try
                 {
-                    // Find the parameter to filter by
-                    var param = FindParameterInCategories(doc, categoryIds, ParameterName);
-                    if (param == null)
-                        throw new Exception($"Parameter '{ParameterName}' not found in specified categories");
+                    if (!string.IsNullOrEmpty(ParameterName) && !string.IsNullOrEmpty(FilterRule))
+                    {
+                        // Find the parameter to filter by
+                        var param = FindParameterInCategories(doc, categoryIds, ParameterName);
+                        if (param == null)
+                            throw new Exception($"Parameter '{ParameterName}' not found in specified categories");
 
-                    var rule = CreateFilterRule(param, FilterRule, FilterValue);
-                    var elementFilter = new ElementParameterFilter(rule);
-                    filter = ParameterFilterElement.Create(doc, FilterName, categoryIds, elementFilter);
+                        var rule = CreateFilterRule(param, FilterRule, FilterValue);
+                        var elementFilter = new ElementParameterFilter(rule);
+                        filter = ParameterFilterElement.Create(doc, FilterName, categoryIds, elementFilter);
+                    }
+                    else
+                    {
+                        filter = ParameterFilterElement.Create(doc, FilterName, categoryIds);
+                    }
+
+                    transaction.Commit();
                 }
-                else
+                catch
                 {
-                    filter = ParameterFilterElement.Create(doc, FilterName, categoryIds);
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
                 }
-
-                transaction.Commit();
             }
 
             Result = new AIResult<object>
@@ -147,21 +170,29 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Apply View Filter"))
             {
                 transaction.Start();
-
-                view.AddFilter(filter.Id);
-                view.SetFilterVisibility(filter.Id, IsVisible);
-
-                // Apply color override if specified
-                if (ColorR >= 0 && ColorG >= 0 && ColorB >= 0)
+                try
                 {
-                    var overrideSettings = new OverrideGraphicSettings();
-                    var color = new Color((byte)ColorR, (byte)ColorG, (byte)ColorB);
-                    overrideSettings.SetProjectionLineColor(color);
-                    overrideSettings.SetSurfaceForegroundPatternColor(color);
-                    view.SetFilterOverrides(filter.Id, overrideSettings);
-                }
+                    view.AddFilter(filter.Id);
+                    view.SetFilterVisibility(filter.Id, IsVisible);
 
-                transaction.Commit();
+                    // Apply color override if specified
+                    if (ColorR >= 0 && ColorG >= 0 && ColorB >= 0)
+                    {
+                        var overrideSettings = new OverrideGraphicSettings();
+                        var color = new Color((byte)ColorR, (byte)ColorG, (byte)ColorB);
+                        overrideSettings.SetProjectionLineColor(color);
+                        overrideSettings.SetSurfaceForegroundPatternColor(color);
+                        view.SetFilterOverrides(filter.Id, overrideSettings);
+                    }
+
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = new AIResult<object>

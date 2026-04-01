@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -5,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSectionBoxFromSelectionTool(server: McpServer) {
   server.tool(
     "section_box_from_selection",
-    "Create a 3D view with Section Box fitted around selected elements or specified element IDs. Configurable offset buffer around elements. Can create a new 3D view or apply to current view. Optionally isolates elements. Inspired by DiRoots SectionBoxer.\n\nGUIDANCE:\n- Box around selected elements: provide elementIds to create a 3D section box view\n- Zoom to area: select elements in the area of interest, then create section box\n- Clash investigation: use after clash_detection to zoom into clash locations\n\nTIPS:\n- Creates a new 3D view with the section box fitted to selected elements\n- Use offsetMm to add margin around the elements (default: 500mm)\n- Combine with get_selected_elements to use Revit UI selection\n- Great for presentation views and coordination meetings",
+    "Create a 3D view with Section Box fitted around selected elements or specified element IDs. Configurable offset buffer around elements. Can create a new 3D view or apply to current view. Optionally isolates elements.\n\nGUIDANCE:\n- Box around selected elements: provide elementIds to create a 3D section box view\n- Zoom to area: select elements in the area of interest, then create section box\n- Clash investigation: use after clash_detection to zoom into clash locations\n\nTIPS:\n- Creates a new 3D view with the section box fitted to selected elements\n- Use offsetMm to add margin around the elements (default: 500mm)\n- Combine with get_selected_elements to use Revit UI selection\n- Great for presentation views and coordination meetings",
     {
       elementIds: z
         .array(z.number())
@@ -47,7 +48,7 @@ export function registerSectionBoxFromSelectionTool(server: McpServer) {
         return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
       } catch (error) {
         return {
-          content: [{ type: "text", text: `Section box from selection failed: ${error instanceof Error ? error.message : String(error)}` }],
+          content: [{ type: "text", text: `Section box from selection failed: ${errorMessage(error)}` }],
         };
       }
     }

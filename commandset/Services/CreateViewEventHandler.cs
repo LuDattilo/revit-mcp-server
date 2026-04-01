@@ -13,9 +13,14 @@ namespace RevitMCPCommandSet.Services
         public ViewCreationInfo ViewInfo { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(ViewCreationInfo viewInfo)
+        {
+            ViewInfo = viewInfo;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -29,38 +34,47 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, $"Create {viewType} View"))
                 {
                     transaction.Start();
-                    object result;
-
-                    switch (viewType)
+                    try
                     {
-                        case "section":
-                            result = CreateSectionView(doc);
-                            break;
-                        case "3d":
-                        case "threed":
-                            result = Create3DView(doc);
-                            break;
-                        case "elevation":
-                            result = CreateElevationView(doc);
-                            break;
-                        case "floorplan":
-                            result = CreateFloorPlanView(doc);
-                            break;
-                        case "ceilingplan":
-                            result = CreateCeilingPlanView(doc);
-                            break;
-                        default:
-                            throw new ArgumentException($"Unsupported view type: {ViewInfo.ViewType}");
+                        object result;
+
+                        switch (viewType)
+                        {
+                            case "section":
+                                result = CreateSectionView(doc);
+                                break;
+                            case "3d":
+                            case "threed":
+                                result = Create3DView(doc);
+                                break;
+                            case "elevation":
+                                result = CreateElevationView(doc);
+                                break;
+                            case "floorplan":
+                                result = CreateFloorPlanView(doc);
+                                break;
+                            case "ceilingplan":
+                                result = CreateCeilingPlanView(doc);
+                                break;
+                            default:
+                                throw new ArgumentException($"Unsupported view type: {ViewInfo.ViewType}");
+                        }
+
+                        transaction.Commit();
+
+                        Result = new AIResult<object>
+                        {
+                            Success = true,
+                            Message = $"Successfully created {viewType} view '{ViewInfo.Name}'",
+                            Response = result
+                        };
                     }
-
-                    transaction.Commit();
-
-                    Result = new AIResult<object>
+                    catch
                     {
-                        Success = true,
-                        Message = $"Successfully created {viewType} view '{ViewInfo.Name}'",
-                        Response = result
-                    };
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)

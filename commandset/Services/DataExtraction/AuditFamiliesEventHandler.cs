@@ -20,7 +20,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 60000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 60000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         private class FamilyDetail
         {

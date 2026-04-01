@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -5,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetElementsInSpatialVolumeTool(server: McpServer) {
   server.tool(
     "get_elements_in_spatial_volume",
-    "Find all elements contained within spatial volumes: rooms, areas, or a custom bounding box. Returns elements grouped by volume with category, family, and type info. Use categoryFilter to narrow results. Inspired by DiRoots OneFilter Contains tab.\n\nGUIDANCE:\n- Elements in a room: volumeType=\"room\", volumeIds=[roomId]\n- Elements in area: volumeType=\"area\", volumeIds=[areaId]\n- Custom bounding box: volumeType=\"custom\", provide min/max XYZ in mm\n- Filter by category: categoryFilter=[\"Furniture\",\"Doors\"] to limit results\n\nTIPS:\n- Great for room-based quantity takeoffs\n- Use export_room_data to get room IDs first\n- CategoryFilter narrows results to specific element types\n- Combine with export_elements_data for detailed parameter extraction",
+    "Find all elements contained within spatial volumes: rooms, areas, or a custom bounding box. Returns elements grouped by volume with category, family, and type info. Use categoryFilter to narrow results.\n\nGUIDANCE:\n- Elements in a room: volumeType=\"room\", volumeIds=[roomId]\n- Elements in area: volumeType=\"area\", volumeIds=[areaId]\n- Custom bounding box: volumeType=\"custom\", provide min/max XYZ in mm\n- Filter by category: categoryFilter=[\"Furniture\",\"Doors\"] to limit results\n\nTIPS:\n- Great for room-based quantity takeoffs\n- Use export_room_data to get room IDs first\n- CategoryFilter narrows results to specific element types\n- Combine with export_elements_data for detailed parameter extraction",
     {
       volumeIds: z.array(z.number()).optional().describe("IDs of rooms/areas to search within. If omitted, searches all rooms/areas."),
       volumeType: z.enum(["room", "area", "custom"]).optional().describe("Type of volume: room, area, or custom bounding box. Default: room."),
@@ -34,7 +35,7 @@ export function registerGetElementsInSpatialVolumeTool(server: McpServer) {
         });
         return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
       } catch (error) {
-        return { content: [{ type: "text", text: `Get elements in spatial volume failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Get elements in spatial volume failed: ${errorMessage(error)}` }], isError: true };
       }
     }
   );

@@ -9,6 +9,9 @@ namespace RevitMCPCommandSet.Services
         // Execution result
         public List<FamilyTypeInfo> ResultFamilyTypes { get; private set; }
 
+        // Error message if execution fails
+        public string ErrorMessage { get; private set; }
+
         // State synchronization object
         public bool TaskCompleted { get; private set; }
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
@@ -18,10 +21,18 @@ namespace RevitMCPCommandSet.Services
         public string FamilyNameFilter { get; set; }
         public int? Limit { get; set; }
 
+        public void SetParameters(List<string> categoryList, string familyNameFilter, int? limit)
+        {
+            CategoryList = categoryList;
+            FamilyNameFilter = familyNameFilter;
+            Limit = limit;
+            TaskCompleted = false;
+            _resetEvent.Reset();
+        }
+
         // Execution time, slightly shorter than the call timeout
         public bool WaitForCompletion(int timeoutMilliseconds = 12500)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -124,7 +135,8 @@ namespace RevitMCPCommandSet.Services
             }
             catch (Exception ex)
             {
-                TaskDialog.Show("Error", "Failed to get family types: " + ex.Message);
+                ResultFamilyTypes = new List<FamilyTypeInfo>();
+                ErrorMessage = "Failed to get family types: " + ex.Message;
             }
             finally
             {

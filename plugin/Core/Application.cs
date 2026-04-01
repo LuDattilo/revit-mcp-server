@@ -20,7 +20,10 @@ namespace revit_mcp_plugin.Core
                     "MCP Server",
                     new MCPDockablePaneProvider());
             }
-            catch { /* Panel may already be registered */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"[RevitMCP] Panel registration skipped: {ex.Message}");
+            }
 
             RibbonPanel mcpPanel = application.CreateRibbonPanel("Revit MCP Plugin");
 
@@ -57,7 +60,10 @@ namespace revit_mcp_plugin.Core
                     SocketService.Instance.Stop();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"[RevitMCP] Error during shutdown: {ex.Message}");
+            }
 
             return Result.Succeeded;
         }

@@ -27,6 +27,8 @@ namespace RevitMCPCommandSet.Commands.Access
             // Raise external event and wait for completion
             if (RaiseAndWaitForCompletion(10000)) // 10 second timeout
             {
+                if (_handler.ErrorMessage != null)
+                    throw new Exception(_handler.ErrorMessage);
                 return _handler.ResultInfo;
             }
             else

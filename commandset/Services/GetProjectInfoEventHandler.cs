@@ -15,9 +15,17 @@ namespace RevitMCPCommandSet.Services
         public bool IncludeLevels { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(bool includePhases = true, bool includeWorksets = true, bool includeLinks = true, bool includeLevels = true)
+        {
+            IncludePhases = includePhases;
+            IncludeWorksets = includeWorksets;
+            IncludeLinks = includeLinks;
+            IncludeLevels = includeLevels;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

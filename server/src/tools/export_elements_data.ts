@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -7,7 +8,7 @@ export function registerExportElementsDataTool(server: McpServer) {
     "export_elements_data",
     `Export elements by category with selected parameters. Returns columns + rows in JSON or CSV.
 
-GUIDANCE: Core data-extraction workflow (inspired by DiRoots SheetLink):
+GUIDANCE: Core data-extraction workflow:
 - Export all doors with Mark, Level, Width, Height:
     categories=["Doors"], parameterNames=["Mark","Level","Width","Height"]
 - Get all walls including type info:
@@ -109,9 +110,10 @@ QUICK PROMPTS:
           content: [
             {
               type: "text" as const,
-              text: `Export elements data failed: ${error instanceof Error ? error.message : String(error)}`,
+              text: `Export elements data failed: ${errorMessage(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

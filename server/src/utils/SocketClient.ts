@@ -1,4 +1,5 @@
 import * as net from "net";
+import { randomUUID } from "crypto";
 
 export class RevitClientConnection {
   host: string;
@@ -6,6 +7,7 @@ export class RevitClientConnection {
   socket: net.Socket;
   isConnected: boolean = false;
   responseCallbacks: Map<string, (response: string) => void> = new Map();
+  private timeoutHandles: Map<string, ReturnType<typeof setTimeout>> = new Map();
   buffer: string = "";
 
   constructor(host: string, port: number) {
@@ -21,16 +23,13 @@ export class RevitClientConnection {
     });
 
     this.socket.on("data", (data) => {
-      // Append received data to the buffer
-      const dataString = data.toString();
-      this.buffer += dataString;
-
-      // Try to parse a complete JSON response
+      this.buffer += data.toString();
       this.processBuffer();
     });
 
     this.socket.on("close", () => {
       this.isConnected = false;
+      this.cleanupAllPending(new Error("Socket closed"));
     });
 
     this.socket.on("error", (error) => {
@@ -40,14 +39,15 @@ export class RevitClientConnection {
   }
 
   private processBuffer(): void {
-    try {
-      // Try to parse JSON
-      const response = JSON.parse(this.buffer);
-      // If parsing succeeds, handle the response and clear the buffer
-      this.handleResponse(this.buffer);
-      this.buffer = "";
-    } catch (e) {
-      // If parsing fails, data may be incomplete — wait for more
+    // Process all complete newline-delimited messages.
+    let newlineIndex: number;
+    while ((newlineIndex = this.buffer.indexOf("\n")) >= 0) {
+      const line = this.buffer.substring(0, newlineIndex).trim();
+      this.buffer = this.buffer.substring(newlineIndex + 1);
+
+      if (line.length === 0) continue;
+
+      this.handleResponse(line);
     }
   }
 
@@ -66,22 +66,45 @@ export class RevitClientConnection {
   }
 
   public disconnect(): void {
-    this.socket.end();
+    this.socket.destroy();
     this.isConnected = false;
+    this.cleanupAllPending(new Error("Disconnected from Revit"));
+  }
+
+  private cleanupAllPending(error: Error): void {
+    for (const timeoutHandle of this.timeoutHandles.values()) {
+      clearTimeout(timeoutHandle);
+    }
+    this.timeoutHandles.clear();
+
+    const pendingCallbacks = Array.from(this.responseCallbacks.values());
+    this.responseCallbacks.clear();
+    for (const callback of pendingCallbacks) {
+      try {
+        callback(JSON.stringify({ error: { message: error.message } }));
+      } catch {
+        // Ignore errors from already-settled promises.
+      }
+    }
   }
 
   private generateRequestId(): string {
-    return Date.now().toString() + Math.random().toString().substring(2, 8);
+    return randomUUID();
   }
 
   private handleResponse(responseData: string): void {
     try {
       const response = JSON.parse(responseData);
-      // Get the request ID from the response
       const requestId = response.id || "default";
 
       const callback = this.responseCallbacks.get(requestId);
       if (callback) {
+        // Clear the timeout for this request.
+        const timeoutHandle = this.timeoutHandles.get(requestId);
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+          this.timeoutHandles.delete(requestId);
+        }
         callback(responseData);
         this.responseCallbacks.delete(requestId);
       }
@@ -97,10 +120,8 @@ export class RevitClientConnection {
           this.connect();
         }
 
-        // Generate request ID
         const requestId = this.generateRequestId();
 
-        // Create JSON-RPC compliant request object
         const commandObj = {
           jsonrpc: "2.0",
           method: command,
@@ -128,17 +149,20 @@ export class RevitClientConnection {
           }
         });
 
-        // Send command
-        const commandString = JSON.stringify(commandObj);
+        // Send command with newline delimiter.
+        const commandString = JSON.stringify(commandObj) + "\n";
         this.socket.write(commandString);
 
-        // Set timeout (2 minutes)
-        setTimeout(() => {
+        // Set timeout (5 minutes) with cleanup.
+        const timeoutHandle = setTimeout(() => {
           if (this.responseCallbacks.has(requestId)) {
             this.responseCallbacks.delete(requestId);
-            reject(new Error(`Command timed out after 2 minutes: ${command}`));
+            this.timeoutHandles.delete(requestId);
+            reject(new Error(`Command timed out after 5 minutes: ${command}. For large models, use category filters (e.g., filterCategory: "OST_Walls") to narrow the scope.`));
+            this.socket.destroy();
           }
-        }, 120000);
+        }, 300000);
+        this.timeoutHandles.set(requestId, timeoutHandle);
       } catch (error) {
         reject(error);
       }

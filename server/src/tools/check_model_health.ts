@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -20,9 +21,10 @@ export function registerCheckModelHealthTool(server: McpServer) {
           content: [
             {
               type: "text",
-              text: `Check model health failed: ${error instanceof Error ? error.message : String(error)}`,
+              text: `Check model health failed: ${errorMessage(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

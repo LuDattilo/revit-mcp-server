@@ -16,22 +16,28 @@ namespace revit_mcp_plugin.Core
 {
     public class SocketService
     {
-        private static SocketService _instance;
+        private static volatile SocketService _instance;
+        private static readonly object _lock = new object();
         private TcpListener _listener;
         private Thread _listenerThread;
-        private bool _isRunning;
+        private volatile bool _isRunning;
         private int _port = 8080;
         private UIApplication _uiApp;
         private ICommandRegistry _commandRegistry;
         private ILogger _logger;
-        private CommandExecutor _commandExecutor;
 
         public static SocketService Instance
         {
             get
             {
-                if(_instance == null)
-                    _instance = new SocketService();
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                            _instance = new SocketService();
+                    }
+                }
                 return _instance;
             }
         }
@@ -65,9 +71,6 @@ namespace revit_mcp_plugin.Core
 
 
 
-            // Create CommandExecutor
-            _commandExecutor = new CommandExecutor(_commandRegistry, _logger);
-
             // Load configuration and register commands.
             ConfigurationManager configManager = new ConfigurationManager(_logger);
             configManager.LoadConfiguration();
@@ -95,7 +98,7 @@ namespace revit_mcp_plugin.Core
             try
             {
                 _isRunning = true;
-                _listener = new TcpListener(IPAddress.Any, _port);
+                _listener = new TcpListener(IPAddress.Loopback, _port);
                 _listener.Start();
 
                 _listenerThread = new Thread(ListenForClients)
@@ -104,9 +107,12 @@ namespace revit_mcp_plugin.Core
                 };
                 _listenerThread.Start();              
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _isRunning = false;
+                _listener?.Stop();
+                _listener = null;
+                _logger?.Error($"Failed to start socket service on port {_port}: {ex.Message}");
             }
         }
 
@@ -126,9 +132,9 @@ namespace revit_mcp_plugin.Core
                     _listenerThread.Join(1000);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // log error
+                _logger?.Error($"Error stopping socket service: {ex.Message}");
             }
         }
 
@@ -161,14 +167,14 @@ namespace revit_mcp_plugin.Core
         {
             TcpClient tcpClient = (TcpClient)clientObj;
             NetworkStream stream = tcpClient.GetStream();
+            StringBuilder messageBuffer = new StringBuilder();
 
             try
             {
-                byte[] buffer = new byte[8192];
+                byte[] buffer = new byte[65536];
 
                 while (_isRunning && tcpClient.Connected)
                 {
-                    // Read client messages.
                     int bytesRead = 0;
 
                     try
@@ -177,29 +183,41 @@ namespace revit_mcp_plugin.Core
                     }
                     catch (IOException)
                     {
-                        // Client disconnected.
                         break;
                     }
 
                     if (bytesRead == 0)
-                    {
-                        // Client disconnected.
                         break;
+
+                    messageBuffer.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+
+                    // Process all complete newline-delimited messages in the buffer.
+                    string bufferContent = messageBuffer.ToString();
+                    int newlineIndex;
+                    while ((newlineIndex = bufferContent.IndexOf('\n')) >= 0)
+                    {
+                        string message = bufferContent.Substring(0, newlineIndex).Trim();
+                        bufferContent = bufferContent.Substring(newlineIndex + 1);
+
+                        if (string.IsNullOrEmpty(message))
+                            continue;
+
+                        System.Diagnostics.Trace.WriteLine($"Received message: {message}");
+                        string response = ProcessJsonRPCRequest(message);
+
+                        // Send response with newline delimiter.
+                        byte[] responseData = Encoding.UTF8.GetBytes(response + "\n");
+                        stream.Write(responseData, 0, responseData.Length);
                     }
 
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    System.Diagnostics.Trace.WriteLine($"Received message: {message}");
-
-                    string response = ProcessJsonRPCRequest(message);
-
-                    // Send response.
-                    byte[] responseData = Encoding.UTF8.GetBytes(response);
-                    stream.Write(responseData, 0, responseData.Length);
+                    messageBuffer.Clear();
+                    if (bufferContent.Length > 0)
+                        messageBuffer.Append(bufferContent);
                 }
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-                // log
+                _logger?.Error($"Error in client communication: {ex.Message}");
             }
             finally
             {

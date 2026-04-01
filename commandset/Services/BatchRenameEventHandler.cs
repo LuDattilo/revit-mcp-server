@@ -18,9 +18,20 @@ namespace RevitMCPCommandSet.Services
         public bool DryRun { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> elementIds, string targetCategory, string findText, string replaceText, string prefix, string suffix, bool dryRun)
+        {
+            ElementIds = elementIds ?? new List<long>();
+            TargetCategory = targetCategory ?? "";
+            FindText = findText ?? "";
+            ReplaceText = replaceText ?? "";
+            Prefix = prefix ?? "";
+            Suffix = suffix ?? "";
+            DryRun = dryRun;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

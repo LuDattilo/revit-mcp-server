@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.UI;
+using Autodesk.Revit.UI;
 using Newtonsoft.Json.Linq;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPCommandSet.Services;
@@ -30,7 +30,7 @@ namespace RevitMCPCommandSet.Commands
             {
                 List<LineElement> data = new List<LineElement>();
                 // Parse parameters
-                data = parameters["data"].ToObject<List<LineElement>>();
+                data = parameters?["data"]?.ToObject<List<LineElement>>();
                 if (data == null)
                     throw new ArgumentNullException(nameof(data), "AI input data is null");
 

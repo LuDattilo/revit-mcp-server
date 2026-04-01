@@ -13,9 +13,15 @@ namespace RevitMCPCommandSet.Services
         public string NameFilter { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string materialClass, string nameFilter)
+        {
+            MaterialClass = materialClass;
+            NameFilter = nameFilter;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

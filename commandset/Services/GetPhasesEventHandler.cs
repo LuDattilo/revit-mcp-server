@@ -12,9 +12,14 @@ namespace RevitMCPCommandSet.Services
         public bool IncludePhaseFilters { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(bool includePhaseFilters = true)
+        {
+            IncludePhaseFilters = includePhaseFilters;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

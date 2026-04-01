@@ -16,9 +16,17 @@ namespace RevitMCPCommandSet.Services
         public bool IncludeHeaders { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(long scheduleId, string exportPath, string delimiter, bool includeHeaders)
+        {
+            ScheduleId = scheduleId;
+            ExportPath = exportPath;
+            Delimiter = delimiter;
+            IncludeHeaders = includeHeaders;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

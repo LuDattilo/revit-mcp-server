@@ -87,15 +87,16 @@ namespace revit_mcp_plugin.UI
 
                                     if (!string.IsNullOrEmpty(command.AssemblyPath))
                                     {
-                                        // If a relative path is specified, look in version subfolders
-                                        versionDllPath = Path.Combine(versionDirectory, command.AssemblyPath);
+                                        // AssemblyPath is relative to Commands/ dir with {VERSION} placeholder
+                                        // e.g. "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+                                        // Resolve by replacing {VERSION} and combining with Commands dir
+                                        string resolvedPath = command.AssemblyPath.Replace("{VERSION}", version);
+                                        versionDllPath = Path.Combine(commandsDirectory, resolvedPath);
                                         if (File.Exists(versionDllPath))
                                         {
-                                            // Record the base path template
                                             if (dllBasePath == null)
                                             {
-                                                // Extract relative path for creating template
-                                                dllBasePath = Path.Combine(commandSetData.Name, "{VERSION}", command.AssemblyPath);
+                                                dllBasePath = command.AssemblyPath;
                                             }
                                             supportedCommandVersions.Add(version);
                                         }
@@ -106,10 +107,9 @@ namespace revit_mcp_plugin.UI
                                         var dllFiles = Directory.GetFiles(versionDirectory, "*.dll");
                                         if (dllFiles.Length > 0)
                                         {
-                                            versionDllPath = dllFiles[0]; // Use the first DLL found
+                                            versionDllPath = dllFiles[0];
                                             if (dllBasePath == null)
                                             {
-                                                // Extract DLL file name
                                                 string dllFileName = Path.GetFileName(versionDllPath);
                                                 dllBasePath = Path.Combine(commandSetData.Name, "{VERSION}", dllFileName);
                                             }
@@ -172,8 +172,10 @@ namespace revit_mcp_plugin.UI
                                 }
                             }
                         }
-                        // If there are invalid commands, update the registry file
-                        if (validCommands.Count != registry.Commands.Count)
+                        // Only clean up the registry if we successfully found command sets —
+                        // if availableCommandSets is empty it means the scan failed (wrong Revit
+                        // version, missing DLLs, etc.) and we must NOT wipe the registry.
+                        if (availableCommandSets.Count > 0 && validCommands.Count != registry.Commands.Count)
                         {
                             registry.Commands = validCommands;
                             string updatedJson = JsonConvert.SerializeObject(registry, Formatting.Indented);
@@ -361,6 +363,64 @@ namespace revit_mcp_plugin.UI
             {
                 MessageBox.Show($"Error saving settings: {ex.Message}", "Error",
                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ImportCommandSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Select a command.json file to import",
+                    Filter = "Command Set Definition (command.json)|command.json"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    string selectedFile = dialog.FileName;
+                    string sourceFolder = Path.GetDirectoryName(selectedFile);
+                    string commandSetFolderName = Path.GetFileName(sourceFolder);
+                    string commandsDirectory = PathManager.GetCommandsDirectoryPath();
+                    string destinationFolder = Path.Combine(commandsDirectory, commandSetFolderName);
+
+                    if (Directory.Exists(destinationFolder))
+                    {
+                        var result = MessageBox.Show(
+                            $"A command set '{commandSetFolderName}' already exists. Overwrite?",
+                            "Command Set Exists", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        if (result != MessageBoxResult.Yes)
+                            return;
+                    }
+
+                    CopyDirectory(sourceFolder, destinationFolder);
+                    LoadCommandSets();
+
+                    MessageBox.Show($"Command set '{commandSetFolderName}' imported successfully!",
+                                  "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error importing command set: {ex.Message}", "Error",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private static void CopyDirectory(string sourceDir, string destinationDir)
+        {
+            Directory.CreateDirectory(destinationDir);
+
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+                File.Copy(file, destFile, true);
+            }
+
+            foreach (string dir in Directory.GetDirectories(sourceDir))
+            {
+                string destSubDir = Path.Combine(destinationDir, Path.GetFileName(dir));
+                CopyDirectory(dir, destSubDir);
             }
         }
 

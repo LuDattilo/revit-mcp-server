@@ -15,9 +15,17 @@ namespace RevitMCPCommandSet.Services
         public string Action { get; set; } = "apply";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> viewIds, long templateId, string templateName, string action)
+        {
+            ViewIds = viewIds ?? new List<long>();
+            TemplateId = templateId;
+            TemplateName = templateName ?? "";
+            Action = action ?? "apply";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -94,30 +102,38 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Apply View Template"))
             {
                 transaction.Start();
-
-                foreach (var viewId in ViewIds)
+                try
                 {
-                    var view = doc.GetElement(ToElementId(viewId)) as View;
-                    if (view == null || view.IsTemplate) continue;
-
-                    try
+                    foreach (var viewId in ViewIds)
                     {
-                        view.ViewTemplateId = templateId;
-                        successCount++;
-                        results.Add(new
+                        var view = doc.GetElement(ToElementId(viewId)) as View;
+                        if (view == null || view.IsTemplate) continue;
+
+                        try
                         {
-                            viewId,
-                            viewName = view.Name,
-                            success = true
-                        });
+                            view.ViewTemplateId = templateId;
+                            successCount++;
+                            results.Add(new
+                            {
+                                viewId,
+                                viewName = view.Name,
+                                success = true
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            results.Add(new { viewId, viewName = view.Name, success = false, message = ex.Message });
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        results.Add(new { viewId, viewName = view.Name, success = false, message = ex.Message });
-                    }
-                }
 
-                transaction.Commit();
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             var template = doc.GetElement(templateId);
@@ -136,17 +152,25 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Remove View Template"))
             {
                 transaction.Start();
-
-                foreach (var viewId in ViewIds)
+                try
                 {
-                    var view = doc.GetElement(ToElementId(viewId)) as View;
-                    if (view == null || view.IsTemplate) continue;
+                    foreach (var viewId in ViewIds)
+                    {
+                        var view = doc.GetElement(ToElementId(viewId)) as View;
+                        if (view == null || view.IsTemplate) continue;
 
-                    view.ViewTemplateId = ElementId.InvalidElementId;
-                    successCount++;
+                        view.ViewTemplateId = ElementId.InvalidElementId;
+                        successCount++;
+                    }
+
+                    transaction.Commit();
                 }
-
-                transaction.Commit();
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = new AIResult<object>

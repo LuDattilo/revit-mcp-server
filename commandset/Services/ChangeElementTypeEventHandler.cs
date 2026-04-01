@@ -15,9 +15,17 @@ namespace RevitMCPCommandSet.Services
         public string TargetFamilyName { get; set; } = "";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> elementIds, long targetTypeId, string targetTypeName, string targetFamilyName)
+        {
+            ElementIds = elementIds ?? new List<long>();
+            TargetTypeId = targetTypeId;
+            TargetTypeName = targetTypeName ?? "";
+            TargetFamilyName = targetFamilyName ?? "";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -41,36 +49,44 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Change Element Type"))
                 {
                     transaction.Start();
-
-                    foreach (var id in ElementIds)
+                    try
                     {
-                        var elemId = ToElementId(id);
-                        var element = doc.GetElement(elemId);
-                        if (element == null) continue;
+                        foreach (var id in ElementIds)
+                        {
+                            var elemId = ToElementId(id);
+                            var element = doc.GetElement(elemId);
+                            if (element == null) continue;
 
-                        try
-                        {
-                            element.ChangeTypeId(targetTypeElemId);
-                            successCount++;
-                            results.Add(new
+                            try
                             {
-                                elementId = id,
-                                success = true,
-                                message = "Type changed successfully"
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            results.Add(new
+                                element.ChangeTypeId(targetTypeElemId);
+                                successCount++;
+                                results.Add(new
+                                {
+                                    elementId = id,
+                                    success = true,
+                                    message = "Type changed successfully"
+                                });
+                            }
+                            catch (Exception ex)
                             {
-                                elementId = id,
-                                success = false,
-                                message = ex.Message
-                            });
+                                results.Add(new
+                                {
+                                    elementId = id,
+                                    success = false,
+                                    message = ex.Message
+                                });
+                            }
                         }
+
+                        transaction.Commit();
                     }
-
-                    transaction.Commit();
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 var targetType = doc.GetElement(targetTypeElemId);

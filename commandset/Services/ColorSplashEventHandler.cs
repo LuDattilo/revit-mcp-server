@@ -151,6 +151,8 @@ namespace RevitMCPCommandSet.Services
                 using (Transaction transaction = new Transaction(doc, "Color Splash"))
                 {
                     transaction.Start();
+                    try
+                    {
 
                     // Get solid fill pattern
                     ElementId solidFillPatternId = GetSolidFillPatternId();
@@ -202,6 +204,13 @@ namespace RevitMCPCommandSet.Services
                         coloredGroups = parameterValueGroups.Count,
                         results = coloringResults
                     };
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)
@@ -225,8 +234,7 @@ namespace RevitMCPCommandSet.Services
         /// <returns>Whether operation completed within timeout</returns>
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
-        return _resetEvent.WaitOne(timeoutMilliseconds);
+            return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
         /// <summary>

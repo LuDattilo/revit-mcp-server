@@ -2,11 +2,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerTools } from "./tools/register.js";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json");
 
 // Create server instance
 const server = new McpServer({
   name: "mcp-server-for-revit",
-  version: "1.1.0",
+  version,
 });
 
 // Start server

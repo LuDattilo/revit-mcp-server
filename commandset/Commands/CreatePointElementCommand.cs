@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.UI;
+using Autodesk.Revit.UI;
 using Newtonsoft.Json.Linq;
 using RevitMCPSDK.API.Base;
 using RevitMCPCommandSet.Models.Common;
@@ -30,7 +30,7 @@ namespace RevitMCPCommandSet.Commands
             {
                 List<PointElement> data = new List<PointElement>();
                 // Parse parameters
-                data = parameters["data"].ToObject<List<PointElement>>();
+                data = parameters?["data"]?.ToObject<List<PointElement>>();
                 if (data == null)
                     throw new ArgumentNullException(nameof(data), "AI input data is null");
 

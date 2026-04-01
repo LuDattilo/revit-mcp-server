@@ -26,7 +26,7 @@ namespace RevitMCPCommandSet.Services.ViewManagement
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 60000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 60000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public void Execute(UIApplication app)
         {
@@ -95,6 +95,8 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                             using (var t = new Transaction(doc, $"Create View for Room {room.Number}"))
                             {
                                 t.Start();
+                                try
+                                {
 
                                 View createdView = null;
                                 string viewTypeName = ViewType.ToLower();
@@ -143,6 +145,13 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                                 else if (viewTypeName != "elevation") // elevation handled inside
                                 {
                                     t.RollBack();
+                                }
+                                }
+                                catch
+                                {
+                                    if (t.GetStatus() == TransactionStatus.Started)
+                                        t.RollBack();
+                                    throw;
                                 }
                             }
                         }

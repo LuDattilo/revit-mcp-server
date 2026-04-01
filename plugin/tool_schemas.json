@@ -2070,7 +2070,7 @@
   },
   {
     "name": "get_current_view_info",
-    "description": "获取 Revit 当前活动视图的详细信息，包括视图类型、名称、比例等属性。",
+    "description": "Get detailed information about the current active Revit view, including view type, name, scale, and other properties.",
     "input_schema": {
       "type": "object",
       "properties": {}

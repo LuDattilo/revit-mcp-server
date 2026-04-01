@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -5,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerBatchCreateSheetsTool(server: McpServer) {
   server.tool(
     "batch_create_sheets",
-    "Create multiple sheets at once with title blocks and optional view placement. Each sheet can have its own number, name, title block, and views to place. Inspired by DiRoots SheetGen.\n\nGUIDANCE:\n- Create multiple sheets: provide array of {sheetNumber, sheetName, titleBlockName}\n- Auto-sequence: use a numbering pattern like A101, A102, A103\n- With views: optionally specify viewIds to auto-place on each sheet\n\nTIPS:\n- Sheet numbers must be unique — check existing sheets first\n- Use get_available_family_types with \"Title Blocks\" to find title block names\n- Use place_viewport after creation to position views on sheets\n- Use align_viewports to align view positions across multiple sheets",
+    "Create multiple sheets at once with title blocks and optional view placement. Each sheet can have its own number, name, title block, and views to place.\n\nGUIDANCE:\n- Create multiple sheets: provide array of {sheetNumber, sheetName, titleBlockName}\n- Auto-sequence: use a numbering pattern like A101, A102, A103\n- With views: optionally specify viewIds to auto-place on each sheet\n\nTIPS:\n- Sheet numbers must be unique — check existing sheets first\n- Use get_available_family_types with \"Title Blocks\" to find title block names\n- Use place_viewport after creation to position views on sheets\n- Use align_viewports to align view positions across multiple sheets",
     {
       sheets: z
         .array(
@@ -41,9 +42,10 @@ export function registerBatchCreateSheetsTool(server: McpServer) {
           content: [
             {
               type: "text",
-              text: `Batch create sheets failed: ${error instanceof Error ? error.message : String(error)}`,
+              text: `Batch create sheets failed: ${errorMessage(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

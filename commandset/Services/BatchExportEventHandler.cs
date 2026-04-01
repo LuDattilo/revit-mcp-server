@@ -16,9 +16,18 @@ namespace RevitMCPCommandSet.Services
         public string PaperSize { get; set; } = "A4";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string format, List<long> sheetIds, List<long> viewIds, string exportPath, string paperSize)
+        {
+            Format = format ?? "PDF";
+            SheetIds = sheetIds ?? new List<long>();
+            ViewIds = viewIds ?? new List<long>();
+            ExportPath = exportPath ?? "";
+            PaperSize = paperSize ?? "A4";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -110,8 +119,17 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Export IFC"))
             {
                 transaction.Start();
-                doc.Export(exportPath, doc.Title + ".ifc", options);
-                transaction.Commit();
+                try
+                {
+                    doc.Export(exportPath, doc.Title + ".ifc", options);
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = BuildExportResult("IFC", "*.ifc", exportPath);

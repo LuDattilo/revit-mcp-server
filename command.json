@@ -390,12 +390,87 @@
     },
     {
       "commandName": "manage_project_parameters",
-      "description": "Manage project parameters (CRUD): list, create, delete, or modify category bindings. Inspired by DiRoots ParaManager.",
+      "description": "Manage project parameters (CRUD): list, create, delete, or modify category bindings.",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
       "commandName": "create_color_legend",
-      "description": "Colorize elements by parameter value with auto/gradient/custom schemes and generate a legend view. Inspired by DiRootsOne OneFilter Visualize.",
+      "description": "Colorize elements by parameter value with auto/gradient/custom schemes and generate a legend view.",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "add_prefix_suffix",
+      "description": "Add prefix and/or suffix to existing parameter values without overwriting",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "filter_by_parameter_value",
+      "description": "Deterministic element filter by parameter value with conditions (equals, contains, begins_with, etc.)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "save_selection",
+      "description": "Save a named selection of elements using Revit SelectionFilterElement",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "load_selection",
+      "description": "Load a saved selection by name, or list all saved selections",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "delete_selection",
+      "description": "Delete a saved selection from the Revit document",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "clear_parameter_values",
+      "description": "Clear parameter values across multiple elements (string to empty, numeric to 0, ElementId to invalid)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "rename_families",
+      "description": "Batch rename Revit families with prefix, suffix, or find-and-replace operations",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "export_families",
+      "description": "Export family .rfa files from the current Revit model to a folder on disk",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "check_family_health",
+      "description": "Analyze the health and statistics of families in the model: instance count, type count, size, editability",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "rename_views",
+      "description": "Batch rename Revit views with prefix, suffix, or find-and-replace. Filter by view type or name pattern",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "duplicate_sheet_with_views",
+      "description": "Duplicate a sheet with its views, legends, and schedules. Views can be duplicated or shared",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_elevations_from_rooms",
+      "description": "Create interior elevation or section views from rooms",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "import_table",
+      "description": "Import a CSV/TSV file as a table into a Revit Legend or Drafting view with text notes in a grid",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_placeholder_sheets",
+      "description": "Create, list, convert, or delete placeholder sheets",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "manage_unplaced_views",
+      "description": "Identify and optionally delete views not placed on any sheet. Defaults to safe list/preview mode.",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]

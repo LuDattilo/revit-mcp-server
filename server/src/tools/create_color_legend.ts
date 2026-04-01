@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -5,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateColorLegendTool(server: McpServer) {
   server.tool(
     "create_color_legend",
-    `Colorize elements by parameter value in the active (or specified) view and optionally create a legend view documenting the color scheme. Inspired by DiRootsOne OneFilter Visualize.
+    `Colorize elements by parameter value in the active (or specified) view and optionally create a legend view documenting the color scheme.
 
 GUIDANCE:
 - Color rooms by department: parameterName="Department", categories=["Rooms"], colorScheme="auto"
@@ -53,7 +54,7 @@ TIPS:
         });
         return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
       } catch (error) {
-        return { content: [{ type: "text", text: `Create color legend failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Create color legend failed: ${errorMessage(error)}` }], isError: true };
       }
     }
   );

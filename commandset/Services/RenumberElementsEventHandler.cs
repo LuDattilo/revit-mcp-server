@@ -21,9 +21,22 @@ namespace RevitMCPCommandSet.Services
         public bool DryRun { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> elementIds, string targetCategory, string parameterName, int startNumber, string prefix, string suffix, int increment, string sortBy, bool dryRun)
+        {
+            ElementIds = elementIds ?? new List<long>();
+            TargetCategory = targetCategory ?? "";
+            ParameterName = parameterName ?? "";
+            StartNumber = startNumber;
+            Prefix = prefix ?? "";
+            Suffix = suffix ?? "";
+            Increment = increment;
+            SortBy = sortBy ?? "location";
+            DryRun = dryRun;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

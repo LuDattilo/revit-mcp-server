@@ -81,9 +81,16 @@ REGOLE:
 
             _conversationHistory.Add(new JObject { ["role"] = "user", ["content"] = userMessage });
 
+            // Trim history in pairs to avoid orphaning tool_use/tool_result blocks.
             while (_conversationHistory.Count > 30)
+            {
+                // Always remove at least 2 messages (user+assistant pair).
                 _conversationHistory.RemoveAt(0);
+                if (_conversationHistory.Count > 0)
+                    _conversationHistory.RemoveAt(0);
+            }
 
+            _cts?.Dispose();
             _cts = new CancellationTokenSource();
 
             try
@@ -239,6 +246,7 @@ REGOLE:
                         ((int)httpResponse.StatusCode == 429 || (int)httpResponse.StatusCode == 529) &&
                         attempt < maxRetries - 1)
                     {
+                        httpResponse.Close();
                         int delayMs = (int)Math.Pow(2, attempt + 1) * 1000; // 2s, 4s
                         MCPDockablePanel.Instance?.OnRetrying(delayMs / 1000);
                         await Task.Delay(delayMs, _cts?.Token ?? CancellationToken.None);
@@ -292,29 +300,29 @@ REGOLE:
 
                     var stream = client.GetStream();
 
-                    byte[] requestData = Encoding.UTF8.GetBytes(request);
+                    // Send request with newline delimiter.
+                    byte[] requestData = Encoding.UTF8.GetBytes(request + "\n");
                     await stream.WriteAsync(requestData, 0, requestData.Length);
 
-                    // Read response with streaming buffer (no 65KB limit)
-                    byte[] buffer = new byte[8192];
+                    // Read response until we get a complete newline-delimited message.
+                    byte[] buffer = new byte[65536];
                     var responseBuilder = new StringBuilder();
                     int bytesRead;
 
                     client.ReceiveTimeout = 120000;
 
-                    // Read first chunk (blocks until data arrives)
-                    bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    responseBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-
-                    // Continue reading if more data is available
-                    while (stream.DataAvailable)
+                    while (true)
                     {
                         bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                         if (bytesRead == 0) break;
                         responseBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+
+                        string current = responseBuilder.ToString();
+                        if (current.Contains("\n"))
+                            break;
                     }
 
-                    string responseStr = responseBuilder.ToString();
+                    string responseStr = responseBuilder.ToString().Trim();
                     var responseJson = JObject.Parse(responseStr);
 
                     if (responseJson["result"] != null)

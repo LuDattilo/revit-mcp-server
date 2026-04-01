@@ -13,9 +13,14 @@ namespace RevitMCPCommandSet.Services
         public List<SetParameterRequest> Requests { get; set; }
         public AIResult<List<SetParameterResult>> Result { get; private set; }
 
+        public void SetParameters(List<SetParameterRequest> requests)
+        {
+            Requests = requests;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -29,75 +34,83 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Set Element Parameters"))
                 {
                     transaction.Start();
-
-                    foreach (var request in Requests)
+                    try
                     {
-                        var result = new SetParameterResult
+                        foreach (var request in Requests)
                         {
-                            ElementId = request.ElementId,
-                            ParameterName = request.ParameterName
-                        };
+                            var result = new SetParameterResult
+                            {
+                                ElementId = request.ElementId,
+                                ParameterName = request.ParameterName
+                            };
 
-                        try
-                        {
+                            try
+                            {
 #if REVIT2024_OR_GREATER
-                            var elementId = new ElementId(request.ElementId);
+                                var elementId = new ElementId(request.ElementId);
 #else
-                            var elementId = new ElementId((int)request.ElementId);
+                                var elementId = new ElementId((int)request.ElementId);
 #endif
-                            var element = doc.GetElement(elementId);
-                            if (element == null)
-                            {
-                                result.Success = false;
-                                result.Message = $"Element {request.ElementId} not found";
-                                results.Add(result);
-                                continue;
-                            }
-
-                            // Try instance parameter first
-                            Parameter param = element.LookupParameter(request.ParameterName);
-
-                            // Try type parameter if instance not found
-                            if (param == null)
-                            {
-                                var typeId = element.GetTypeId();
-                                if (typeId != ElementId.InvalidElementId)
+                                var element = doc.GetElement(elementId);
+                                if (element == null)
                                 {
-                                    var typeElement = doc.GetElement(typeId);
-                                    param = typeElement?.LookupParameter(request.ParameterName);
+                                    result.Success = false;
+                                    result.Message = $"Element {request.ElementId} not found";
+                                    results.Add(result);
+                                    continue;
                                 }
-                            }
 
-                            if (param == null)
+                                // Try instance parameter first
+                                Parameter param = element.LookupParameter(request.ParameterName);
+
+                                // Try type parameter if instance not found
+                                if (param == null)
+                                {
+                                    var typeId = element.GetTypeId();
+                                    if (typeId != ElementId.InvalidElementId)
+                                    {
+                                        var typeElement = doc.GetElement(typeId);
+                                        param = typeElement?.LookupParameter(request.ParameterName);
+                                    }
+                                }
+
+                                if (param == null)
+                                {
+                                    result.Success = false;
+                                    result.Message = $"Parameter '{request.ParameterName}' not found";
+                                    results.Add(result);
+                                    continue;
+                                }
+
+                                if (param.IsReadOnly)
+                                {
+                                    result.Success = false;
+                                    result.Message = $"Parameter '{request.ParameterName}' is read-only";
+                                    results.Add(result);
+                                    continue;
+                                }
+
+                                bool setResult = SetParameterValue(param, request.Value);
+                                result.Success = setResult;
+                                result.Message = setResult ? "Parameter set successfully" : "Failed to set parameter value";
+                            }
+                            catch (Exception ex)
                             {
                                 result.Success = false;
-                                result.Message = $"Parameter '{request.ParameterName}' not found";
-                                results.Add(result);
-                                continue;
+                                result.Message = ex.Message;
                             }
 
-                            if (param.IsReadOnly)
-                            {
-                                result.Success = false;
-                                result.Message = $"Parameter '{request.ParameterName}' is read-only";
-                                results.Add(result);
-                                continue;
-                            }
-
-                            bool setResult = SetParameterValue(param, request.Value);
-                            result.Success = setResult;
-                            result.Message = setResult ? "Parameter set successfully" : "Failed to set parameter value";
-                        }
-                        catch (Exception ex)
-                        {
-                            result.Success = false;
-                            result.Message = ex.Message;
+                            results.Add(result);
                         }
 
-                        results.Add(result);
+                        transaction.Commit();
                     }
-
-                    transaction.Commit();
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 int successCount = results.Count(r => r.Success);

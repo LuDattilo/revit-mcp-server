@@ -17,9 +17,19 @@ namespace RevitMCPCommandSet.Services
         public List<long> SheetIds { get; set; } = new List<long>();
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string action, string revisionDate, string revisionDescription, string issuedBy, string issuedTo, List<long> sheetIds)
+        {
+            Action = action ?? "list";
+            RevisionDate = revisionDate ?? "";
+            RevisionDescription = revisionDescription ?? "";
+            IssuedBy = issuedBy ?? "";
+            IssuedTo = issuedTo ?? "";
+            SheetIds = sheetIds ?? new List<long>();
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -88,18 +98,26 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Create Revision"))
             {
                 transaction.Start();
+                try
+                {
+                    revision = Revision.Create(doc);
+                    if (!string.IsNullOrEmpty(RevisionDate))
+                        revision.RevisionDate = RevisionDate;
+                    if (!string.IsNullOrEmpty(RevisionDescription))
+                        revision.Description = RevisionDescription;
+                    if (!string.IsNullOrEmpty(IssuedBy))
+                        revision.IssuedBy = IssuedBy;
+                    if (!string.IsNullOrEmpty(IssuedTo))
+                        revision.IssuedTo = IssuedTo;
 
-                revision = Revision.Create(doc);
-                if (!string.IsNullOrEmpty(RevisionDate))
-                    revision.RevisionDate = RevisionDate;
-                if (!string.IsNullOrEmpty(RevisionDescription))
-                    revision.Description = RevisionDescription;
-                if (!string.IsNullOrEmpty(IssuedBy))
-                    revision.IssuedBy = IssuedBy;
-                if (!string.IsNullOrEmpty(IssuedTo))
-                    revision.IssuedTo = IssuedTo;
-
-                transaction.Commit();
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = new AIResult<object>
@@ -136,22 +154,30 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Add Revision to Sheets"))
             {
                 transaction.Start();
-
-                foreach (var sheetId in SheetIds)
+                try
                 {
-                    var sheet = doc.GetElement(ToElementId(sheetId)) as ViewSheet;
-                    if (sheet == null) continue;
-
-                    var currentRevisions = sheet.GetAdditionalRevisionIds().ToList();
-                    if (!currentRevisions.Contains(latestRevisionId))
+                    foreach (var sheetId in SheetIds)
                     {
-                        currentRevisions.Add(latestRevisionId);
-                        sheet.SetAdditionalRevisionIds(currentRevisions);
-                        successCount++;
-                    }
-                }
+                        var sheet = doc.GetElement(ToElementId(sheetId)) as ViewSheet;
+                        if (sheet == null) continue;
 
-                transaction.Commit();
+                        var currentRevisions = sheet.GetAdditionalRevisionIds().ToList();
+                        if (!currentRevisions.Contains(latestRevisionId))
+                        {
+                            currentRevisions.Add(latestRevisionId);
+                            sheet.SetAdditionalRevisionIds(currentRevisions);
+                            successCount++;
+                        }
+                    }
+
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = new AIResult<object>

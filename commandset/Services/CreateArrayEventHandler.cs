@@ -20,9 +20,22 @@ namespace RevitMCPCommandSet.Services
         public double TotalAngle { get; set; } = 360;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> elementIds, string arrayType, int count, double spacingX, double spacingY, double spacingZ, double centerX, double centerY, double totalAngle)
+        {
+            ElementIds = elementIds ?? new List<long>();
+            ArrayType = arrayType ?? "linear";
+            Count = count;
+            SpacingX = spacingX;
+            SpacingY = spacingY;
+            SpacingZ = spacingZ;
+            CenterX = centerX;
+            CenterY = centerY;
+            TotalAngle = totalAngle;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -42,42 +55,50 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Create Array"))
                 {
                     transaction.Start();
-
-                    var ids = ElementIds.Select(id => ToElementId(id)).ToList();
-
-                    if (ArrayType.ToLower() == "linear")
+                    try
                     {
-                        var offset = new XYZ(SpacingX / 304.8, SpacingY / 304.8, SpacingZ / 304.8);
-                        for (int i = 0; i < Count; i++)
-                        {
-                            var translation = offset * (i + 1);
-                            var copiedIds = ElementTransformUtils.CopyElements(doc, ids, translation);
-                            allCopiedIds.AddRange(copiedIds);
-                        }
-                    }
-                    else if (ArrayType.ToLower() == "radial")
-                    {
-                        var center = new XYZ(CenterX / 304.8, CenterY / 304.8, 0);
-                        var axis = Line.CreateBound(center, center + XYZ.BasisZ);
-                        double angleStep = (TotalAngle / (Count + 1)) * Math.PI / 180.0;
+                        var ids = ElementIds.Select(id => ToElementId(id)).ToList();
 
-                        for (int i = 0; i < Count; i++)
+                        if (ArrayType.ToLower() == "linear")
                         {
-                            double angle = angleStep * (i + 1);
-                            var copiedIds = ElementTransformUtils.CopyElements(doc, ids, XYZ.Zero);
-                            foreach (var copiedId in copiedIds)
+                            var offset = new XYZ(SpacingX / 304.8, SpacingY / 304.8, SpacingZ / 304.8);
+                            for (int i = 0; i < Count; i++)
                             {
-                                ElementTransformUtils.RotateElement(doc, copiedId, axis, angle);
+                                var translation = offset * (i + 1);
+                                var copiedIds = ElementTransformUtils.CopyElements(doc, ids, translation);
+                                allCopiedIds.AddRange(copiedIds);
                             }
-                            allCopiedIds.AddRange(copiedIds);
                         }
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"Unknown array type: {ArrayType}");
-                    }
+                        else if (ArrayType.ToLower() == "radial")
+                        {
+                            var center = new XYZ(CenterX / 304.8, CenterY / 304.8, 0);
+                            var axis = Line.CreateBound(center, center + XYZ.BasisZ);
+                            double angleStep = (TotalAngle / (Count + 1)) * Math.PI / 180.0;
 
-                    transaction.Commit();
+                            for (int i = 0; i < Count; i++)
+                            {
+                                double angle = angleStep * (i + 1);
+                                var copiedIds = ElementTransformUtils.CopyElements(doc, ids, XYZ.Zero);
+                                foreach (var copiedId in copiedIds)
+                                {
+                                    ElementTransformUtils.RotateElement(doc, copiedId, axis, angle);
+                                }
+                                allCopiedIds.AddRange(copiedIds);
+                            }
+                        }
+                        else
+                        {
+                            throw new ArgumentException($"Unknown array type: {ArrayType}");
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 var copiedElements = new List<object>();

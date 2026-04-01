@@ -17,9 +17,18 @@ namespace RevitMCPCommandSet.Services
         public bool IsStructural { get; set; } = false;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<Dictionary<string, double>> boundaryPoints, long roomId, string floorTypeName, double levelElevation, bool isStructural)
+        {
+            BoundaryPoints = boundaryPoints ?? new List<Dictionary<string, double>>();
+            RoomId = roomId;
+            FloorTypeName = floorTypeName ?? "";
+            LevelElevation = levelElevation;
+            IsStructural = isStructural;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -48,9 +57,18 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Create Floor"))
                 {
                     transaction.Start();
-                    var curveLoops = new List<CurveLoop> { boundary };
-                    floor = Floor.Create(doc, curveLoops, floorType.Id, level.Id);
-                    transaction.Commit();
+                    try
+                    {
+                        var curveLoops = new List<CurveLoop> { boundary };
+                        floor = Floor.Create(doc, curveLoops, floorType.Id, level.Id);
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

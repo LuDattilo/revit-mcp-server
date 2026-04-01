@@ -47,6 +47,9 @@ namespace RevitMCPCommandSet.Services
         // Execution result
         public ViewElementsResult ResultInfo { get; private set; }
 
+        // Error message if execution fails
+        public string ErrorMessage { get; private set; }
+
         // State synchronization object
         public bool TaskCompleted { get; private set; }
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
@@ -65,7 +68,6 @@ namespace RevitMCPCommandSet.Services
         // Implement IWaitableExternalEventHandler interface
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -162,7 +164,7 @@ namespace RevitMCPCommandSet.Services
             }
             catch (Exception ex)
             {
-                TaskDialog.Show("error", ex.Message);
+                ErrorMessage = $"Failed to get current view elements: {ex.Message}";
             }
             finally
             {

@@ -24,7 +24,7 @@ namespace RevitMCPCommandSet.Services.ViewManagement
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 60000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 60000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public class ColorMapping
         {
@@ -111,6 +111,8 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                     using (var t = new Transaction(doc, "Apply Color Overrides"))
                     {
                         t.Start();
+                        try
+                        {
 
                         foreach (var kvp in groups)
                         {
@@ -138,6 +140,13 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                         }
 
                         t.Commit();
+                        }
+                        catch
+                        {
+                            if (t.GetStatus() == TransactionStatus.Started)
+                                t.RollBack();
+                            throw;
+                        }
                     }
 
                     // Build color mapping result list

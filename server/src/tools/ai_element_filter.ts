@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -93,10 +94,11 @@ export function registerAIElementFilterTool(server: McpServer) {
           content: [
             {
               type: "text",
-              text: `Get element information failed: ${error instanceof Error ? error.message : String(error)
+              text: `Get element information failed: ${errorMessage(error)
                 }`,
             },
           ],
+          isError: true,
         };
       }
     }

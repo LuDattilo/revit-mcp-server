@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -5,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerManageProjectParametersTool(server: McpServer) {
   server.tool(
     "manage_project_parameters",
-    `Manage project parameters (CRUD): list, create, delete, or modify category bindings. Inspired by DiRoots ParaManager.
+    `Manage project parameters (CRUD): list, create, delete, or modify category bindings.
 
 GUIDANCE for common workflows:
 - List all parameters first to see what exists: action="list"
@@ -86,9 +87,10 @@ TIPS:
           content: [
             {
               type: "text",
-              text: `Manage project parameters failed: ${error instanceof Error ? error.message : String(error)}`,
+              text: `Manage project parameters failed: ${errorMessage(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

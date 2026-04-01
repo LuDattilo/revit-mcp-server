@@ -22,7 +22,7 @@ namespace RevitMCPCommandSet.Services.ViewManagement
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 15000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 15000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public void Execute(UIApplication app)
         {
@@ -36,6 +36,8 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                 using (var transaction = new Transaction(doc, "Batch Modify View Range"))
                 {
                     transaction.Start();
+                    try
+                    {
 
                     foreach (var viewId in ViewIds)
                     {
@@ -98,6 +100,13 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                     }
 
                     transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

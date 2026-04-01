@@ -23,7 +23,7 @@ namespace RevitMCPCommandSet.Services.ViewManagement
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 15000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 15000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public void Execute(UIApplication app)
         {
@@ -91,6 +91,8 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                 using (var transaction = new Transaction(doc, "Section Box From Selection"))
                 {
                     transaction.Start();
+                    try
+                    {
 
                     View3D targetView = null;
 
@@ -152,6 +154,14 @@ namespace RevitMCPCommandSet.Services.ViewManagement
                             }
                         }
                     };
+
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)

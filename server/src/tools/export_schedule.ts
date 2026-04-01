@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
@@ -45,10 +46,11 @@ export function registerExportScheduleTool(server: McpServer) {
             {
               type: "text",
               text: `Export schedule failed: ${
-                error instanceof Error ? error.message : String(error)
+                errorMessage(error)
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

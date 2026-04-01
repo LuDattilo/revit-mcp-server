@@ -13,9 +13,14 @@ namespace RevitMCPCommandSet.Services.AnnotationComponents
         public List<TextNoteData> TextNotes { get; set; }
         public AIResult<List<object>> Result { get; private set; }
 
+        public void SetParameters(List<TextNoteData> textNotes)
+        {
+            TextNotes = textNotes;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -36,6 +41,8 @@ namespace RevitMCPCommandSet.Services.AnnotationComponents
                 using (var transaction = new Transaction(doc, "Create Text Notes"))
                 {
                     transaction.Start();
+                    try
+                    {
 
                     foreach (var data in TextNotes)
                     {
@@ -99,6 +106,13 @@ namespace RevitMCPCommandSet.Services.AnnotationComponents
                     }
 
                     transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<List<object>>

@@ -89,7 +89,8 @@
         </Grid>
         <!-- Bottom Buttons -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="Open CommandSet Folder" Width="150" Height="30" Margin="0,0,10,0" Click="OpenFolderButton_Click"/>
+            <Button Content="Import CommandSet..." Width="150" Height="30" Margin="0,0,10,0" Click="ImportCommandSetButton_Click"/>
+            <Button Content="Open Folder" Width="100" Height="30" Margin="0,0,10,0" Click="OpenFolderButton_Click"/>
             <Button Content="Refresh" Width="80" Height="30" Margin="0,0,10,0" Click="RefreshButton_Click"/>
             <Button Content="Select All" Width="80" Height="30" Margin="0,0,10,0" Click="SelectAllButton_Click"/>
             <Button Content="Deselect All" Width="80" Height="30" Margin="0,0,10,0" Click="UnselectAllButton_Click"/>

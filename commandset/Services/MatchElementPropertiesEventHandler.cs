@@ -15,9 +15,17 @@ namespace RevitMCPCommandSet.Services
         public bool IncludeTypeParameters { get; set; } = false;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(long sourceElementId, List<long> targetElementIds, List<string> parameterNames, bool includeTypeParameters)
+        {
+            SourceElementId = sourceElementId;
+            TargetElementIds = targetElementIds ?? new List<long>();
+            ParameterNames = parameterNames ?? new List<string>();
+            IncludeTypeParameters = includeTypeParameters;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -49,46 +57,54 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Match Element Properties"))
                 {
                     transaction.Start();
-
-                    foreach (var targetId in TargetElementIds)
+                    try
                     {
-                        var targetElement = doc.GetElement(ToElementId(targetId));
-                        if (targetElement == null) continue;
-
-                        int copiedCount = 0;
-                        var paramResults = new List<string>();
-
-                        foreach (var kvp in sourceValues)
+                        foreach (var targetId in TargetElementIds)
                         {
-                            var targetParam = targetElement.LookupParameter(kvp.Key);
-                            if (targetParam == null && IncludeTypeParameters)
+                            var targetElement = doc.GetElement(ToElementId(targetId));
+                            if (targetElement == null) continue;
+
+                            int copiedCount = 0;
+                            var paramResults = new List<string>();
+
+                            foreach (var kvp in sourceValues)
                             {
-                                var typeId = targetElement.GetTypeId();
-                                if (typeId != ElementId.InvalidElementId)
-                                    targetParam = doc.GetElement(typeId)?.LookupParameter(kvp.Key);
+                                var targetParam = targetElement.LookupParameter(kvp.Key);
+                                if (targetParam == null && IncludeTypeParameters)
+                                {
+                                    var typeId = targetElement.GetTypeId();
+                                    if (typeId != ElementId.InvalidElementId)
+                                        targetParam = doc.GetElement(typeId)?.LookupParameter(kvp.Key);
+                                }
+
+                                if (targetParam == null || targetParam.IsReadOnly) continue;
+
+                                try
+                                {
+                                    CopyParameterValue(targetParam, kvp.Value);
+                                    copiedCount++;
+                                    paramResults.Add(kvp.Key);
+                                }
+                                catch { /* skip uncopiable params */ }
                             }
 
-                            if (targetParam == null || targetParam.IsReadOnly) continue;
-
-                            try
+                            totalCopied += copiedCount;
+                            results.Add(new
                             {
-                                CopyParameterValue(targetParam, kvp.Value);
-                                copiedCount++;
-                                paramResults.Add(kvp.Key);
-                            }
-                            catch { /* skip uncopiable params */ }
+                                elementId = targetId,
+                                parametersCopied = copiedCount,
+                                parameters = paramResults
+                            });
                         }
 
-                        totalCopied += copiedCount;
-                        results.Add(new
-                        {
-                            elementId = targetId,
-                            parametersCopied = copiedCount,
-                            parameters = paramResults
-                        });
+                        transaction.Commit();
                     }
-
-                    transaction.Commit();
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>
