@@ -87,15 +87,16 @@ namespace revit_mcp_plugin.UI
 
                                     if (!string.IsNullOrEmpty(command.AssemblyPath))
                                     {
-                                        // If a relative path is specified, look in version subfolders
-                                        versionDllPath = Path.Combine(versionDirectory, command.AssemblyPath);
+                                        // AssemblyPath is relative to Commands/ dir with {VERSION} placeholder
+                                        // e.g. "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+                                        // Resolve by replacing {VERSION} and combining with Commands dir
+                                        string resolvedPath = command.AssemblyPath.Replace("{VERSION}", version);
+                                        versionDllPath = Path.Combine(commandsDirectory, resolvedPath);
                                         if (File.Exists(versionDllPath))
                                         {
-                                            // Record the base path template
                                             if (dllBasePath == null)
                                             {
-                                                // Extract relative path for creating template
-                                                dllBasePath = Path.Combine(commandSetData.Name, "{VERSION}", command.AssemblyPath);
+                                                dllBasePath = command.AssemblyPath;
                                             }
                                             supportedCommandVersions.Add(version);
                                         }
@@ -106,10 +107,9 @@ namespace revit_mcp_plugin.UI
                                         var dllFiles = Directory.GetFiles(versionDirectory, "*.dll");
                                         if (dllFiles.Length > 0)
                                         {
-                                            versionDllPath = dllFiles[0]; // Use the first DLL found
+                                            versionDllPath = dllFiles[0];
                                             if (dllBasePath == null)
                                             {
-                                                // Extract DLL file name
                                                 string dllFileName = Path.GetFileName(versionDllPath);
                                                 dllBasePath = Path.Combine(commandSetData.Name, "{VERSION}", dllFileName);
                                             }
