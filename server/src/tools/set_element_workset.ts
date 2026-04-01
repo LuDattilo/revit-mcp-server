@@ -44,6 +44,7 @@ export function registerSetElementWorksetTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

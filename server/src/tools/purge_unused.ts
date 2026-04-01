@@ -47,6 +47,7 @@ export function registerPurgeUnusedTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

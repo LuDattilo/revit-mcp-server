@@ -40,6 +40,7 @@ export function registerGetSelectedElementsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

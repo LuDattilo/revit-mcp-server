@@ -12,9 +12,14 @@ namespace RevitMCPCommandSet.Services
         public string CategoryFilter { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string categoryFilter)
+        {
+            CategoryFilter = categoryFilter;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

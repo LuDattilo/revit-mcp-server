@@ -76,6 +76,7 @@ export function registerColorElementsTool(server: McpServer) {
                 }`,
               },
             ],
+          isError: true,
           };
         }
       }

@@ -44,6 +44,7 @@ export function registerGetMaterialPropertiesTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

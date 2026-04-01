@@ -106,6 +106,7 @@ export function registerCreateScheduleTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

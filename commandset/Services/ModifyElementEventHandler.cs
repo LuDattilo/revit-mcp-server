@@ -12,9 +12,14 @@ namespace RevitMCPCommandSet.Services
         public ModifyElementSetting Settings { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(ModifyElementSetting settings)
+        {
+            Settings = settings;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -43,26 +48,34 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, $"Modify Elements - {action}"))
                 {
                     transaction.Start();
-
-                    switch (action)
+                    try
                     {
-                        case "move":
-                            ExecuteMove(doc, elementIds);
-                            break;
-                        case "rotate":
-                            ExecuteRotate(doc, elementIds);
-                            break;
-                        case "mirror":
-                            ExecuteMirror(doc, elementIds);
-                            break;
-                        case "copy":
-                            ExecuteCopy(doc, elementIds);
-                            break;
-                        default:
-                            throw new ArgumentException($"Unknown action: {Settings.Action}");
-                    }
+                        switch (action)
+                        {
+                            case "move":
+                                ExecuteMove(doc, elementIds);
+                                break;
+                            case "rotate":
+                                ExecuteRotate(doc, elementIds);
+                                break;
+                            case "mirror":
+                                ExecuteMirror(doc, elementIds);
+                                break;
+                            case "copy":
+                                ExecuteCopy(doc, elementIds);
+                                break;
+                            default:
+                                throw new ArgumentException($"Unknown action: {Settings.Action}");
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

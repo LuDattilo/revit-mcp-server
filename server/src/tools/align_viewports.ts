@@ -20,9 +20,9 @@ export function registerAlignViewportsTool(server: McpServer) {
             alignMode: args.alignMode ?? "placement",
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
-        return { content: [{ type: "text", text: `Align viewports failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Align viewports failed: ${error instanceof Error ? error.message : String(error)}` }], isError: true };
       }
     }
   );

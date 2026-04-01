@@ -77,6 +77,7 @@ export function registerCreateArrayTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

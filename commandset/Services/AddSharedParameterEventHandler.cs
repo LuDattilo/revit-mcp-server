@@ -16,9 +16,18 @@ namespace RevitMCPCommandSet.Services
         public string ParameterGroup { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string parameterName, string groupName, List<string> categories, bool isInstance, string parameterGroup)
+        {
+            ParameterName = parameterName;
+            GroupName = groupName;
+            Categories = categories;
+            IsInstance = isInstance;
+            ParameterGroup = parameterGroup;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -98,37 +107,45 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Add Shared Parameter"))
                 {
                     transaction.Start();
-
-                    // Resolve the parameter group (BuiltInParameterGroup -> GroupTypeId)
-                    ForgeTypeId groupTypeId = ResolveGroupTypeId(ParameterGroup);
-                    bool inserted = doc.ParameterBindings.Insert(externalDef, binding, groupTypeId);
-
-                    // If already bound, re-insert to update the binding
-                    if (!inserted)
-                        inserted = doc.ParameterBindings.ReInsert(externalDef, binding, groupTypeId);
-
-                    transaction.Commit();
-
-                    var warningMessage = unresolvedCategories.Count > 0
-                        ? $" Warning: could not resolve categories: {string.Join(", ", unresolvedCategories)}."
-                        : "";
-
-                    Result = new AIResult<object>
+                    try
                     {
-                        Success = inserted,
-                        Message = inserted
-                            ? $"Shared parameter '{ParameterName}' added successfully.{warningMessage}"
-                            : $"Failed to bind shared parameter '{ParameterName}' to the document.{warningMessage}",
-                        Response = new
+                        // Resolve the parameter group (BuiltInParameterGroup -> GroupTypeId)
+                        ForgeTypeId groupTypeId = ResolveGroupTypeId(ParameterGroup);
+                        bool inserted = doc.ParameterBindings.Insert(externalDef, binding, groupTypeId);
+
+                        // If already bound, re-insert to update the binding
+                        if (!inserted)
+                            inserted = doc.ParameterBindings.ReInsert(externalDef, binding, groupTypeId);
+
+                        transaction.Commit();
+
+                        var warningMessage = unresolvedCategories.Count > 0
+                            ? $" Warning: could not resolve categories: {string.Join(", ", unresolvedCategories)}."
+                            : "";
+
+                        Result = new AIResult<object>
                         {
-                            parameterName = ParameterName,
-                            groupName = GroupName,
-                            guid = externalDef.GUID.ToString(),
-                            isInstance = IsInstance,
-                            boundCategories = Categories.Except(unresolvedCategories).ToList(),
-                            unresolvedCategories = unresolvedCategories
-                        }
-                    };
+                            Success = inserted,
+                            Message = inserted
+                                ? $"Shared parameter '{ParameterName}' added successfully.{warningMessage}"
+                                : $"Failed to bind shared parameter '{ParameterName}' to the document.{warningMessage}",
+                            Response = new
+                            {
+                                parameterName = ParameterName,
+                                groupName = GroupName,
+                                guid = externalDef.GUID.ToString(),
+                                isInstance = IsInstance,
+                                boundCategories = Categories.Except(unresolvedCategories).ToList(),
+                                unresolvedCategories = unresolvedCategories
+                            }
+                        };
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)

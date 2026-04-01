@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -82,6 +82,12 @@ jobs:
               Write-Host "Warning: AddIn output not found: $addinDir"
             }
           }
+
+          $zips = Get-ChildItem "$outputDir/*.zip"
+          if ($zips.Count -ne 4) {
+              Write-Error "Expected 4 ZIP files, found $($zips.Count). Build may have failed."
+              exit 1
+          }
         shell: pwsh
 
       - name: Create Release
@@ -104,6 +110,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Upgrade npm
         run: npm install -g npm@latest
@@ -117,3 +124,5 @@ jobs:
       - name: Publish to npm
         working-directory: server
         run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

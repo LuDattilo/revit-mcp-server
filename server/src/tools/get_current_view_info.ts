@@ -30,6 +30,7 @@ export function registerGetCurrentViewInfoTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

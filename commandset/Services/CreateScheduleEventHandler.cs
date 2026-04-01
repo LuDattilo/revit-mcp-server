@@ -13,9 +13,14 @@ namespace RevitMCPCommandSet.Services
         public ScheduleCreationInfo ScheduleInfo { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(ScheduleCreationInfo scheduleInfo)
+        {
+            ScheduleInfo = scheduleInfo;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -29,54 +34,62 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Create Schedule"))
                 {
                     transaction.Start();
-
-                    var categoryId = ResolveCategoryId();
-                    ViewSchedule schedule;
-
-                    switch (scheduleType)
+                    try
                     {
-                        case "KeySchedule":
-                            schedule = ViewSchedule.CreateKeySchedule(doc, categoryId);
-                            break;
-                        case "MaterialTakeoff":
-                            schedule = ViewSchedule.CreateMaterialTakeoff(doc, categoryId);
-                            break;
-                        default:
-                            schedule = ViewSchedule.CreateSchedule(doc, categoryId);
-                            break;
-                    }
+                        var categoryId = ResolveCategoryId();
+                        ViewSchedule schedule;
 
-                    if (!string.IsNullOrEmpty(ScheduleInfo.Name))
-                        schedule.Name = ScheduleInfo.Name;
-
-                    // Add fields
-                    var addedFields = AddFields(schedule);
-
-                    // Add filters
-                    AddFilters(schedule, addedFields);
-
-                    // Add sort/group fields
-                    AddSortFields(schedule, addedFields);
-
-                    // Set display properties
-                    SetDisplayProperties(schedule);
-
-                    transaction.Commit();
-
-                    Result = new AIResult<object>
-                    {
-                        Success = true,
-                        Message = $"Successfully created {scheduleType} schedule '{schedule.Name}'",
-                        Response = new
+                        switch (scheduleType)
                         {
-#if REVIT2024_OR_GREATER
-                            scheduleId = schedule.Id.Value,
-#else
-                            scheduleId = schedule.Id.IntegerValue,
-#endif
-                            name = schedule.Name
+                            case "KeySchedule":
+                                schedule = ViewSchedule.CreateKeySchedule(doc, categoryId);
+                                break;
+                            case "MaterialTakeoff":
+                                schedule = ViewSchedule.CreateMaterialTakeoff(doc, categoryId);
+                                break;
+                            default:
+                                schedule = ViewSchedule.CreateSchedule(doc, categoryId);
+                                break;
                         }
-                    };
+
+                        if (!string.IsNullOrEmpty(ScheduleInfo.Name))
+                            schedule.Name = ScheduleInfo.Name;
+
+                        // Add fields
+                        var addedFields = AddFields(schedule);
+
+                        // Add filters
+                        AddFilters(schedule, addedFields);
+
+                        // Add sort/group fields
+                        AddSortFields(schedule, addedFields);
+
+                        // Set display properties
+                        SetDisplayProperties(schedule);
+
+                        transaction.Commit();
+
+                        Result = new AIResult<object>
+                        {
+                            Success = true,
+                            Message = $"Successfully created {scheduleType} schedule '{schedule.Name}'",
+                            Response = new
+                            {
+#if REVIT2024_OR_GREATER
+                                scheduleId = schedule.Id.Value,
+#else
+                                scheduleId = schedule.Id.IntegerValue,
+#endif
+                                name = schedule.Name
+                            }
+                        };
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)

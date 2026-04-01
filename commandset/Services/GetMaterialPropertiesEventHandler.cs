@@ -13,9 +13,15 @@ namespace RevitMCPCommandSet.Services
         public string MaterialName { get; set; }
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(long? materialId, string materialName)
+        {
+            MaterialId = materialId;
+            MaterialName = materialName;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

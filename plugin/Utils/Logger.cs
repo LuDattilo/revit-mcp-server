@@ -7,6 +7,7 @@ namespace revit_mcp_plugin.Utils
     public class Logger : ILogger
     {
         private readonly string _logFilePath;
+        private readonly object _fileLock = new object();
         private LogLevel _currentLogLevel = LogLevel.Info;
 
         public Logger()
@@ -26,10 +27,13 @@ namespace revit_mcp_plugin.Utils
             // Output to debug window.
             System.Diagnostics.Debug.WriteLine(logEntry);
 
-            // Write to the logfile.
+            // Write to the logfile (thread-safe).
             try
             {
-                File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
+                lock (_fileLock)
+                {
+                    File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
+                }
             }
             catch
             {

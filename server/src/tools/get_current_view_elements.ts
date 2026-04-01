@@ -62,6 +62,7 @@ export function registerGetCurrentViewElementsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

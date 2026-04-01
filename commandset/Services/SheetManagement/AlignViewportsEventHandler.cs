@@ -20,7 +20,7 @@ namespace RevitMCPCommandSet.Services.SheetManagement
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 15000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 15000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public void Execute(UIApplication app)
         {
@@ -46,6 +46,8 @@ namespace RevitMCPCommandSet.Services.SheetManagement
                 using (var transaction = new Transaction(doc, "Align Viewports"))
                 {
                     transaction.Start();
+                    try
+                    {
 
                     foreach (var targetId in TargetViewportIds)
                     {
@@ -102,6 +104,13 @@ namespace RevitMCPCommandSet.Services.SheetManagement
                     }
 
                     transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

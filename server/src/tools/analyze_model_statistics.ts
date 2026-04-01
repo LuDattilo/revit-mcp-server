@@ -39,6 +39,7 @@ export function registerAnalyzeModelStatisticsTool(server: McpServer) {
               text: `Analyze model statistics failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

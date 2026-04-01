@@ -68,6 +68,7 @@ export function registerCreateTextNoteTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

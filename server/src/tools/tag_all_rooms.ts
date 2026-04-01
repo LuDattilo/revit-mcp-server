@@ -46,6 +46,7 @@ export function registerTagAllRoomsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -44,6 +44,7 @@ export function registerGetMaterialsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -36,9 +36,9 @@ export function registerCadLinkCleanupTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("cad_link_cleanup", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
-        return { content: [{ type: "text", text: `CAD cleanup failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `CAD cleanup failed: ${error instanceof Error ? error.message : String(error)}` }], isError: true };
       }
     }
   );

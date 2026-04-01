@@ -74,6 +74,7 @@ export function registerCreateLineBasedElementTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

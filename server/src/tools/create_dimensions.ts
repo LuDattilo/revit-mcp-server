@@ -93,6 +93,7 @@ export function registerCreateDimensionsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -47,6 +47,7 @@ export function registerGetScheduleDataTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

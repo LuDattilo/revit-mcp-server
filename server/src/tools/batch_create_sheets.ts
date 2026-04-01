@@ -44,6 +44,7 @@ export function registerBatchCreateSheetsTool(server: McpServer) {
               text: `Batch create sheets failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

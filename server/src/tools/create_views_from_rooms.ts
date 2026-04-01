@@ -30,9 +30,9 @@ export function registerCreateViewsFromRoomsTool(server: McpServer) {
             namingPattern: args.namingPattern ?? "{RoomNumber} - {RoomName}",
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
-        return { content: [{ type: "text", text: `Create views from rooms failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Create views from rooms failed: ${error instanceof Error ? error.message : String(error)}` }], isError: true };
       }
     }
   );

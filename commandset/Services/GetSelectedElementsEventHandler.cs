@@ -21,10 +21,17 @@ namespace RevitMCPCommandSet.Services
         // Limit the number of returned elements
         public int? Limit { get; set; }
 
+        // Set query parameters
+        public void SetParameters(int? limit = null)
+        {
+            Limit = limit;
+            TaskCompleted = false;
+            _resetEvent.Reset();
+        }
+
         // Implement IWaitableExternalEventHandler interface
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -58,9 +65,8 @@ namespace RevitMCPCommandSet.Services
                     Category = element.Category?.Name
                 }).ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                TaskDialog.Show("Error", "Failed to get selected elements: " + ex.Message);
                 ResultElements = new List<Models.Common.ElementInfo>();
             }
             finally

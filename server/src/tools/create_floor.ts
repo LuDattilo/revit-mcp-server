@@ -69,6 +69,7 @@ export function registerCreateFloorTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

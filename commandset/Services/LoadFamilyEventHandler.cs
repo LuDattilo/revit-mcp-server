@@ -16,9 +16,18 @@ namespace RevitMCPCommandSet.Services
         public string NewTypeName { get; set; } = "";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string action, string familyPath, string categoryFilter, long sourceTypeId, string newTypeName)
+        {
+            Action = action ?? "list";
+            FamilyPath = familyPath ?? "";
+            CategoryFilter = categoryFilter ?? "";
+            SourceTypeId = sourceTypeId;
+            NewTypeName = newTypeName ?? "";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -69,17 +78,26 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Load Family"))
             {
                 transaction.Start();
-                bool loaded = doc.LoadFamily(FamilyPath, out family);
-                transaction.Commit();
-
-                if (!loaded || family == null)
+                try
                 {
-                    Result = new AIResult<object>
+                    bool loaded = doc.LoadFamily(FamilyPath, out family);
+                    transaction.Commit();
+
+                    if (!loaded || family == null)
                     {
-                        Success = false,
-                        Message = "Family could not be loaded (may already exist in the project)"
-                    };
-                    return;
+                        Result = new AIResult<object>
+                        {
+                            Success = false,
+                            Message = "Family could not be loaded (may already exist in the project)"
+                        };
+                        return;
+                    }
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
                 }
             }
 
@@ -172,8 +190,17 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Duplicate Family Type"))
             {
                 transaction.Start();
-                newType = sourceType.Duplicate(NewTypeName) as ElementType;
-                transaction.Commit();
+                try
+                {
+                    newType = sourceType.Duplicate(NewTypeName) as ElementType;
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = new AIResult<object>

@@ -55,6 +55,7 @@ export function registerGetAvailableFamilyTypesTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

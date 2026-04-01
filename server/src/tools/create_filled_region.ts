@@ -30,9 +30,9 @@ export function registerCreateFilledRegionTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("create_filled_region", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
-        return { content: [{ type: "text", text: `Create filled region failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Create filled region failed: ${error instanceof Error ? error.message : String(error)}` }], isError: true };
       }
     }
   );

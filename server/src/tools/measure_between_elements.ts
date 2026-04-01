@@ -39,6 +39,7 @@ export function registerMeasureBetweenElementsTool(server: McpServer) {
               text: `Measure failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -49,6 +49,7 @@ export function registerExportScheduleTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

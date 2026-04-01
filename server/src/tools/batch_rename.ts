@@ -76,6 +76,7 @@ export function registerBatchRenameTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

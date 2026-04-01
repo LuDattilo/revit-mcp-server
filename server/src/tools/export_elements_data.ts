@@ -112,6 +112,7 @@ QUICK PROMPTS:
               text: `Export elements data failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

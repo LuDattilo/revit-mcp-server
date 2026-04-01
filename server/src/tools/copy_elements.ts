@@ -62,6 +62,7 @@ export function registerCopyElementsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

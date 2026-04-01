@@ -107,6 +107,7 @@ export function registerCreateStructuralFramingSystemTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

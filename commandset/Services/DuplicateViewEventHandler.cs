@@ -15,9 +15,17 @@ namespace RevitMCPCommandSet.Services
         public string NewNamePrefix { get; set; } = "";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> viewIds, string duplicateOption, string newNameSuffix, string newNamePrefix)
+        {
+            ViewIds = viewIds ?? new List<long>();
+            DuplicateOption = duplicateOption ?? "duplicate";
+            NewNameSuffix = newNameSuffix ?? "";
+            NewNamePrefix = newNamePrefix ?? "";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -33,59 +41,67 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Duplicate Views"))
                 {
                     transaction.Start();
-
-                    foreach (var viewId in ViewIds)
+                    try
                     {
-                        var view = doc.GetElement(ToElementId(viewId)) as View;
-                        if (view == null || view.IsTemplate) continue;
-
-                        try
+                        foreach (var viewId in ViewIds)
                         {
-                            var newViewId = view.Duplicate(option);
-                            var newView = doc.GetElement(newViewId) as View;
+                            var view = doc.GetElement(ToElementId(viewId)) as View;
+                            if (view == null || view.IsTemplate) continue;
 
-                            if (newView != null && (!string.IsNullOrEmpty(NewNamePrefix) || !string.IsNullOrEmpty(NewNameSuffix)))
+                            try
                             {
-                                string baseName = view.Name;
-                                string prefix = !string.IsNullOrEmpty(NewNamePrefix) ? NewNamePrefix + "_" : "";
-                                string suffix = !string.IsNullOrEmpty(NewNameSuffix) ? "_" + NewNameSuffix : "";
-                                newView.Name = $"{prefix}{baseName}{suffix}";
+                                var newViewId = view.Duplicate(option);
+                                var newView = doc.GetElement(newViewId) as View;
+
+                                if (newView != null && (!string.IsNullOrEmpty(NewNamePrefix) || !string.IsNullOrEmpty(NewNameSuffix)))
+                                {
+                                    string baseName = view.Name;
+                                    string prefix = !string.IsNullOrEmpty(NewNamePrefix) ? NewNamePrefix + "_" : "";
+                                    string suffix = !string.IsNullOrEmpty(NewNameSuffix) ? "_" + NewNameSuffix : "";
+                                    newView.Name = $"{prefix}{baseName}{suffix}";
+                                }
+
+                                successCount++;
+                                results.Add(new
+                                {
+#if REVIT2024_OR_GREATER
+                                    originalViewId = view.Id.Value,
+                                    newViewId = newViewId.Value,
+#else
+                                    originalViewId = view.Id.IntegerValue,
+                                    newViewId = newViewId.IntegerValue,
+#endif
+                                    originalName = view.Name,
+                                    newName = newView?.Name ?? "",
+                                    success = true
+                                });
                             }
+                            catch (Exception ex)
+                            {
+                                results.Add(new
+                                {
+#if REVIT2024_OR_GREATER
+                                    originalViewId = view.Id.Value,
+#else
+                                    originalViewId = view.Id.IntegerValue,
+#endif
+                                    newViewId = (long)0,
+                                    originalName = view.Name,
+                                    newName = "",
+                                    success = false,
+                                    message = ex.Message
+                                });
+                            }
+                        }
 
-                            successCount++;
-                            results.Add(new
-                            {
-#if REVIT2024_OR_GREATER
-                                originalViewId = view.Id.Value,
-                                newViewId = newViewId.Value,
-#else
-                                originalViewId = view.Id.IntegerValue,
-                                newViewId = newViewId.IntegerValue,
-#endif
-                                originalName = view.Name,
-                                newName = newView?.Name ?? "",
-                                success = true
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            results.Add(new
-                            {
-#if REVIT2024_OR_GREATER
-                                originalViewId = view.Id.Value,
-#else
-                                originalViewId = view.Id.IntegerValue,
-#endif
-                                newViewId = (long)0,
-                                originalName = view.Name,
-                                newName = "",
-                                success = false,
-                                message = ex.Message
-                            });
-                        }
+                        transaction.Commit();
                     }
-
-                    transaction.Commit();
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

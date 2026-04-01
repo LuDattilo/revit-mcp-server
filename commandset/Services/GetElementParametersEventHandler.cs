@@ -13,9 +13,15 @@ namespace RevitMCPCommandSet.Services
         public bool IncludeTypeParameters { get; set; } = true;
         public AIResult<List<ElementParametersResult>> Result { get; private set; }
 
+        public void SetParameters(long[] elementIds, bool includeTypeParameters = true)
+        {
+            ElementIds = elementIds;
+            IncludeTypeParameters = includeTypeParameters;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

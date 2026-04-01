@@ -77,6 +77,7 @@ export function registerCreateSurfaceBasedElementTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

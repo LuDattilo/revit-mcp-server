@@ -84,6 +84,7 @@ export function registerCreateLevelTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

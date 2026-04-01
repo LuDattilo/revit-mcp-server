@@ -42,6 +42,7 @@ export function registerTagAllWallsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

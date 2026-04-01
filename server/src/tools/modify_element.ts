@@ -77,6 +77,7 @@ export function registerModifyElementTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

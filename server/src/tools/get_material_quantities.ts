@@ -46,6 +46,7 @@ export function registerGetMaterialQuantitiesTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

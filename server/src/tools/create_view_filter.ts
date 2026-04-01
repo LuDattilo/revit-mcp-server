@@ -95,6 +95,7 @@ export function registerCreateViewFilterTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

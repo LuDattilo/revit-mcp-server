@@ -54,6 +54,8 @@ namespace RevitMCPCommandSet.Services
                 using (Transaction tran = new Transaction(doc, "Tag Walls"))
                 {
                     tran.Start();
+                    try
+                    {
 
                     // Find the wall tag type
                     FamilySymbol wallTagType = FindWallTagType(doc);
@@ -178,11 +180,17 @@ try
                         tags = createdTags,
                         errors = errors.Count > 0 ? errors : null
                     };
+                    }
+                    catch
+                    {
+                        if (tran.GetStatus() == TransactionStatus.Started)
+                            tran.RollBack();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                TaskDialog.Show("Error", $"Error tagging walls: {ex.Message}");
                 TaggingResults = new
                 {
                     success = false,
@@ -202,7 +210,6 @@ try
         /// <returns>Whether the operation completed before timeout</returns>
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -223,7 +230,7 @@ try
             // If specific tag type ID was specified, try to use it
             if (!string.IsNullOrEmpty(_tagTypeId))
             {
-                if (int.TryParse(_tagTypeId, out int id))
+                if (long.TryParse(_tagTypeId, out long id))
                 {
                     ElementId elementId = new ElementId(id);
                     Element element = doc.GetElement(elementId);

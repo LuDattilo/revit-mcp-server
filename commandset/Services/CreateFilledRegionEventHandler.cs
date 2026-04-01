@@ -14,9 +14,16 @@ namespace RevitMCPCommandSet.Services
         public string FilledRegionTypeName { get; set; } = "";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<Dictionary<string, double>> boundaryPoints, long viewId, string filledRegionTypeName)
+        {
+            BoundaryPoints = boundaryPoints ?? new List<Dictionary<string, double>>();
+            ViewId = viewId;
+            FilledRegionTypeName = filledRegionTypeName ?? "";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -64,8 +71,17 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Create Filled Region"))
                 {
                     transaction.Start();
-                    filledRegion = FilledRegion.Create(doc, regionType.Id, view.Id, new List<CurveLoop> { curveLoop });
-                    transaction.Commit();
+                    try
+                    {
+                        filledRegion = FilledRegion.Create(doc, regionType.Id, view.Id, new List<CurveLoop> { curveLoop });
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

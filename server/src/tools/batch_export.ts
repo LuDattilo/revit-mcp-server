@@ -59,6 +59,7 @@ export function registerBatchExportTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -89,6 +89,7 @@ TIPS:
               text: `Manage project parameters failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -47,6 +47,7 @@ export function registerExportRoomDataTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

@@ -42,6 +42,7 @@ export function registerGetWorksetsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

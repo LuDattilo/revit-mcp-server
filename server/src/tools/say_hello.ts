@@ -37,6 +37,7 @@ export function registerSayHelloTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

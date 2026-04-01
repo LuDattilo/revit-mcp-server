@@ -25,7 +25,7 @@ namespace RevitMCPCommandSet.Services.SheetManagement
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 30000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 30000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public void Execute(UIApplication app)
         {
@@ -70,6 +70,8 @@ namespace RevitMCPCommandSet.Services.SheetManagement
                         using (var t = new Transaction(doc, $"Create Sheet Copy {i + 1}"))
                         {
                             t.Start();
+                            try
+                            {
 
                             // Create new sheet with same title block type
                             ElementId titleBlockTypeId = sourceTitleBlock?.GetTypeId() ?? ElementId.InvalidElementId;
@@ -186,6 +188,13 @@ namespace RevitMCPCommandSet.Services.SheetManagement
                                 sheetName = newSheet.Name,
                                 viewports = placedViewports
                             });
+                            }
+                            catch
+                            {
+                                if (t.GetStatus() == TransactionStatus.Started)
+                                    t.RollBack();
+                                throw;
+                            }
                         }
                     }
 

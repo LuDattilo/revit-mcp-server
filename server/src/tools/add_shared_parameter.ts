@@ -66,6 +66,7 @@ export function registerAddSharedParameterTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

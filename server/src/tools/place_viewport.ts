@@ -40,6 +40,7 @@ export function registerPlaceViewportTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

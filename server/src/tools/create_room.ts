@@ -80,6 +80,7 @@ export function registerCreateRoomTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

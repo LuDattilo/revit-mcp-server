@@ -15,9 +15,17 @@ namespace RevitMCPCommandSet.Services
         public List<long> ElementIds { get; set; } = new List<long>();
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string action, bool deleteImports, bool deleteLinks, List<long> elementIds)
+        {
+            Action = action ?? "list";
+            DeleteImports = deleteImports;
+            DeleteLinks = deleteLinks;
+            ElementIds = elementIds ?? new List<long>();
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -150,9 +158,18 @@ namespace RevitMCPCommandSet.Services
             using (var transaction = new Transaction(doc, "Delete CAD Elements"))
             {
                 transaction.Start();
-                var deleted = doc.Delete(idsToDelete);
-                deletedCount = deleted.Count;
-                transaction.Commit();
+                try
+                {
+                    var deleted = doc.Delete(idsToDelete);
+                    deletedCount = deleted.Count;
+                    transaction.Commit();
+                }
+                catch
+                {
+                    if (transaction.GetStatus() == TransactionStatus.Started)
+                        transaction.RollBack();
+                    throw;
+                }
             }
 
             Result = new AIResult<object>

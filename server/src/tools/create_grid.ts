@@ -112,6 +112,7 @@ export function registerCreateGridTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

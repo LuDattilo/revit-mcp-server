@@ -46,6 +46,7 @@ export function registerManageLinksTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

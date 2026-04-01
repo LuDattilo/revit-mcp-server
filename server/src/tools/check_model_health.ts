@@ -23,6 +23,7 @@ export function registerCheckModelHealthTool(server: McpServer) {
               text: `Check model health failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

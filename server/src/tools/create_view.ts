@@ -64,6 +64,7 @@ export function registerCreateViewTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

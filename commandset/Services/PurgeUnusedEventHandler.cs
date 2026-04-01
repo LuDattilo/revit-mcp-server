@@ -13,9 +13,15 @@ namespace RevitMCPCommandSet.Services
         public int MaxElements { get; set; } = 500;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(bool dryRun, int maxElements)
+        {
+            DryRun = dryRun;
+            MaxElements = maxElements > 0 ? maxElements : 500;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -83,16 +89,25 @@ namespace RevitMCPCommandSet.Services
                     using (var transaction = new Transaction(doc, "Purge Unused Elements"))
                     {
                         transaction.Start();
-                        foreach (var id in idsToDelete)
+                        try
                         {
-                            try
+                            foreach (var id in idsToDelete)
                             {
-                                doc.Delete(id);
-                                deletedCount++;
+                                try
+                                {
+                                    doc.Delete(id);
+                                    deletedCount++;
+                                }
+                                catch { /* skip elements that can't be deleted */ }
                             }
-                            catch { /* skip elements that can't be deleted */ }
+                            transaction.Commit();
                         }
-                        transaction.Commit();
+                        catch
+                        {
+                            if (transaction.GetStatus() == TransactionStatus.Started)
+                                transaction.RollBack();
+                            throw;
+                        }
                     }
                 }
 

@@ -12,9 +12,14 @@ namespace RevitMCPCommandSet.Services
         public List<SetWorksetRequest> Requests { get; set; }
         public AIResult<List<SetWorksetResult>> Result { get; private set; }
 
+        public void SetParameters(List<SetWorksetRequest> requests)
+        {
+            Requests = requests;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -40,7 +45,8 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Set Element Workset"))
                 {
                     transaction.Start();
-
+                    try
+                    {
                     foreach (var request in Requests)
                     {
                         var result = new SetWorksetResult
@@ -117,7 +123,14 @@ namespace RevitMCPCommandSet.Services
                         results.Add(result);
                     }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 int successCount = results.Count(r => r.Success);

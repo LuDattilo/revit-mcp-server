@@ -44,6 +44,7 @@ export function registerSyncCsvParametersTool(server: McpServer) {
               text: `Sync CSV parameters failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
         };
       }
     }

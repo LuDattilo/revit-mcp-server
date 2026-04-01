@@ -23,12 +23,12 @@
     <PropertyGroup Condition="$(Configuration.Contains('R25'))">
         <RevitVersion>2025</RevitVersion>
         <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-        <DefineConstants>$(DefineConstants);REVIT2022_OR_GREATER;REVIT2023_OR_GREATER;REVIT2024_OR_GREATER</DefineConstants>
+        <DefineConstants>$(DefineConstants);REVIT2022_OR_GREATER;REVIT2023_OR_GREATER;REVIT2024_OR_GREATER;REVIT2025_OR_GREATER</DefineConstants>
     </PropertyGroup>
     <PropertyGroup Condition="$(Configuration.Contains('R26'))">
         <RevitVersion>2026</RevitVersion>
         <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-        <DefineConstants>$(DefineConstants);REVIT2022_OR_GREATER;REVIT2023_OR_GREATER;REVIT2024_OR_GREATER</DefineConstants>
+        <DefineConstants>$(DefineConstants);REVIT2022_OR_GREATER;REVIT2023_OR_GREATER;REVIT2024_OR_GREATER;REVIT2025_OR_GREATER;REVIT2026_OR_GREATER</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup>

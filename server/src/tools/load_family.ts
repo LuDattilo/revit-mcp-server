@@ -63,6 +63,7 @@ export function registerLoadFamilyTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

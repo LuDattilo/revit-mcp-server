@@ -274,7 +274,6 @@ namespace RevitMCPCommandSet.Services
                     Success = false,
                     Message = $"Error creating surface element: {ex.Message}",
                 };
-                TaskDialog.Show("Error", $"Error creating surface element: {ex.Message}");
             }
             finally
             {

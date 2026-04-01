@@ -32,9 +32,9 @@ export function registerBulkModifyParameterValuesTool(server: McpServer) {
             dryRun: args.dryRun ?? false,
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
-        return { content: [{ type: "text", text: `Bulk modify parameter values failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Bulk modify parameter values failed: ${error instanceof Error ? error.message : String(error)}` }], isError: true };
       }
     }
   );

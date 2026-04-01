@@ -32,9 +32,9 @@ export function registerGetElementsInSpatialVolumeTool(server: McpServer) {
             customMaxZ: args.customMaxZ ?? 0,
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
-        return { content: [{ type: "text", text: `Get elements in spatial volume failed: ${error instanceof Error ? error.message : String(error)}` }] };
+        return { content: [{ type: "text", text: `Get elements in spatial volume failed: ${error instanceof Error ? error.message : String(error)}` }], isError: true };
       }
     }
   );

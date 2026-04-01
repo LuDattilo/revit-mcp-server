@@ -13,9 +13,15 @@ namespace RevitMCPCommandSet.Services
         public int MaxRows { get; set; } = 500;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(long scheduleId, int maxRows = 500)
+        {
+            ScheduleId = scheduleId;
+            MaxRows = maxRows;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 

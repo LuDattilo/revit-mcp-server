@@ -40,6 +40,7 @@ export function registerGetSharedParametersTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

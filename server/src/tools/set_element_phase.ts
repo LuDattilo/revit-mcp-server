@@ -53,6 +53,7 @@ export function registerSetElementPhaseTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

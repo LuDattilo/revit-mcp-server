@@ -55,6 +55,7 @@ export function registerGetProjectInfoTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

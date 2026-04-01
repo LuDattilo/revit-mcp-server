@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 
 namespace RevitMCPCommandSet.Services
@@ -11,16 +12,26 @@ namespace RevitMCPCommandSet.Services
 
         // Number of successfully deleted elements
         public int DeletedCount { get; private set; }
+
+        // Error or warning message if execution fails or has warnings
+        public string ErrorMessage { get; private set; }
+
         // State synchronization object
         public bool TaskCompleted { get; private set; }
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
         // Element ID array to delete
         public string[] ElementIds { get; set; }
         // Implement IWaitableExternalEventHandler interface
+        public void SetDeleteParameters(string[] elementIds)
+        {
+            ElementIds = elementIds;
+            TaskCompleted = false;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
-        return _resetEvent.WaitOne(timeoutMilliseconds);
+            return _resetEvent.WaitOne(timeoutMilliseconds);
         }
         public void Execute(UIApplication app)
         {
@@ -38,9 +49,9 @@ namespace RevitMCPCommandSet.Services
                 List<string> invalidIds = new List<string>();
                 foreach (var idStr in ElementIds)
                 {
-                    if (int.TryParse(idStr, out int elementIdValue))
+                    if (long.TryParse(idStr, out long elementIdValue))
                     {
-                        var elementId = new ElementId(elementIdValue);
+                        var elementId = RevitMCPCommandSet.Utils.ElementIdExtensions.FromLong(elementIdValue);
                         // Check if element exists
                         if (doc.GetElement(elementId) != null)
                         {
@@ -54,7 +65,7 @@ namespace RevitMCPCommandSet.Services
                 }
                 if (invalidIds.Count > 0)
                 {
-                    TaskDialog.Show("Warning", $"The following IDs are invalid or elements do not exist: {string.Join(", ", invalidIds)}");
+                    ErrorMessage = $"The following IDs are invalid or elements do not exist: {string.Join(", ", invalidIds)}";
                 }
                 // If there are elements that can be deleted, execute deletion
                 if (elementIdsToDelete.Count > 0)
@@ -62,24 +73,32 @@ namespace RevitMCPCommandSet.Services
                     using (var transaction = new Transaction(doc, "Delete Elements"))
                     {
                         transaction.Start();
+                        try
+                        {
+                            // Batch delete elements
+                            ICollection<ElementId> deletedIds = doc.Delete(elementIdsToDelete);
+                            DeletedCount = deletedIds.Count;
 
-                        // Batch delete elements
-                        ICollection<ElementId> deletedIds = doc.Delete(elementIdsToDelete);
-                        DeletedCount = deletedIds.Count;
-
-                        transaction.Commit();
+                            transaction.Commit();
+                        }
+                        catch
+                        {
+                            if (transaction.GetStatus() == TransactionStatus.Started)
+                                transaction.RollBack();
+                            throw;
+                        }
                     }
                     IsSuccess = true;
                 }
                 else
                 {
-                    TaskDialog.Show("Error", "No valid elements to delete");
+                    ErrorMessage = "No valid elements to delete";
                     IsSuccess = false;
                 }
             }
             catch (Exception ex)
             {
-                TaskDialog.Show("Error", "Failed to delete element: " + ex.Message);
+                ErrorMessage = "Failed to delete element: " + ex.Message;
                 IsSuccess = false;
             }
             finally

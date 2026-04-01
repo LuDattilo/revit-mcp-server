@@ -52,6 +52,7 @@ export function registerGetWarningsTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

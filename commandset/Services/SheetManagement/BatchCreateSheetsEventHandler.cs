@@ -25,7 +25,6 @@ namespace RevitMCPCommandSet.Services.SheetManagement
 
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -49,6 +48,8 @@ namespace RevitMCPCommandSet.Services.SheetManagement
                 using (var transaction = new Transaction(doc, "Batch Create Sheets"))
                 {
                     transaction.Start();
+                    try
+                    {
 
                     foreach (var sheetDef in _sheets)
                     {
@@ -111,6 +112,13 @@ namespace RevitMCPCommandSet.Services.SheetManagement
                     }
 
                     transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

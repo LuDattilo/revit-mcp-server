@@ -1,13 +1,12 @@
 import Database from 'better-sqlite3';
 import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { homedir } from 'os';
+import { mkdirSync } from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Database path (stored in project root)
-const DB_PATH = join(__dirname, '..', '..', 'revit-data.db');
+// Database path (stored in user home directory)
+const DB_DIR = join(homedir(), '.mcp-revit');
+mkdirSync(DB_DIR, { recursive: true });
+const DB_PATH = join(DB_DIR, 'revit-data.db');
 
 // Initialize database connection
 export const db = new Database(DB_PATH);
@@ -63,6 +62,11 @@ export function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_rooms_room_number ON rooms(room_number);
   `);
 }
+
+// Graceful shutdown
+process.on('exit', () => db.close());
+process.on('SIGTERM', () => { db.close(); process.exit(0); });
+process.on('SIGINT', () => { db.close(); process.exit(0); });
 
 // Initialize on module load
 initializeDatabase();

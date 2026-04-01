@@ -23,9 +23,25 @@ namespace RevitMCPCommandSet.Services
         public string Action { get; set; } = "set";
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> elementIds, long viewId, int projectionLineColorR, int projectionLineColorG, int projectionLineColorB, int surfaceForegroundColorR, int surfaceForegroundColorG, int surfaceForegroundColorB, int transparency, bool? isHalftone, int projectionLineWeight, string action)
+        {
+            ElementIds = elementIds ?? new List<long>();
+            ViewId = viewId;
+            ProjectionLineColorR = projectionLineColorR;
+            ProjectionLineColorG = projectionLineColorG;
+            ProjectionLineColorB = projectionLineColorB;
+            SurfaceForegroundColorR = surfaceForegroundColorR;
+            SurfaceForegroundColorG = surfaceForegroundColorG;
+            SurfaceForegroundColorB = surfaceForegroundColorB;
+            Transparency = transparency;
+            IsHalftone = isHalftone;
+            ProjectionLineWeight = projectionLineWeight;
+            Action = action ?? "set";
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -49,53 +65,61 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Override Graphics"))
                 {
                     transaction.Start();
-
-                    foreach (var id in ElementIds)
+                    try
                     {
-                        var elemId = ToElementId(id);
-                        if (doc.GetElement(elemId) == null) continue;
-
-                        if (Action == "reset")
+                        foreach (var id in ElementIds)
                         {
-                            view.SetElementOverrides(elemId, new OverrideGraphicSettings());
+                            var elemId = ToElementId(id);
+                            if (doc.GetElement(elemId) == null) continue;
+
+                            if (Action == "reset")
+                            {
+                                view.SetElementOverrides(elemId, new OverrideGraphicSettings());
+                                successCount++;
+                                continue;
+                            }
+
+                            var ogs = new OverrideGraphicSettings();
+
+                            if (ProjectionLineColorR >= 0)
+                                ogs.SetProjectionLineColor(new Color(
+                                    (byte)ProjectionLineColorR, (byte)ProjectionLineColorG, (byte)ProjectionLineColorB));
+
+                            if (SurfaceForegroundColorR >= 0)
+                            {
+                                ogs.SetSurfaceForegroundPatternColor(new Color(
+                                    (byte)SurfaceForegroundColorR, (byte)SurfaceForegroundColorG, (byte)SurfaceForegroundColorB));
+
+                                // Apply solid fill pattern
+                                var solidFill = new FilteredElementCollector(doc)
+                                    .OfClass(typeof(FillPatternElement))
+                                    .Cast<FillPatternElement>()
+                                    .FirstOrDefault(fp => fp.GetFillPattern().IsSolidFill);
+                                if (solidFill != null)
+                                    ogs.SetSurfaceForegroundPatternId(solidFill.Id);
+                            }
+
+                            if (Transparency >= 0)
+                                ogs.SetSurfaceTransparency(Math.Min(Transparency, 100));
+
+                            if (IsHalftone.HasValue)
+                                ogs.SetHalftone(IsHalftone.Value);
+
+                            if (ProjectionLineWeight >= 0)
+                                ogs.SetProjectionLineWeight(ProjectionLineWeight);
+
+                            view.SetElementOverrides(elemId, ogs);
                             successCount++;
-                            continue;
                         }
 
-                        var ogs = new OverrideGraphicSettings();
-
-                        if (ProjectionLineColorR >= 0)
-                            ogs.SetProjectionLineColor(new Color(
-                                (byte)ProjectionLineColorR, (byte)ProjectionLineColorG, (byte)ProjectionLineColorB));
-
-                        if (SurfaceForegroundColorR >= 0)
-                        {
-                            ogs.SetSurfaceForegroundPatternColor(new Color(
-                                (byte)SurfaceForegroundColorR, (byte)SurfaceForegroundColorG, (byte)SurfaceForegroundColorB));
-
-                            // Apply solid fill pattern
-                            var solidFill = new FilteredElementCollector(doc)
-                                .OfClass(typeof(FillPatternElement))
-                                .Cast<FillPatternElement>()
-                                .FirstOrDefault(fp => fp.GetFillPattern().IsSolidFill);
-                            if (solidFill != null)
-                                ogs.SetSurfaceForegroundPatternId(solidFill.Id);
-                        }
-
-                        if (Transparency >= 0)
-                            ogs.SetSurfaceTransparency(Math.Min(Transparency, 100));
-
-                        if (IsHalftone.HasValue)
-                            ogs.SetHalftone(IsHalftone.Value);
-
-                        if (ProjectionLineWeight >= 0)
-                            ogs.SetProjectionLineWeight(ProjectionLineWeight);
-
-                        view.SetElementOverrides(elemId, ogs);
-                        successCount++;
+                        transaction.Commit();
                     }
-
-                    transaction.Commit();
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

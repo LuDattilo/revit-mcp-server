@@ -27,7 +27,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         public void SetParameters() { TaskCompleted = false; _resetEvent.Reset(); }
-        public bool WaitForCompletion(int timeoutMilliseconds = 30000) { _resetEvent.Reset(); return _resetEvent.WaitOne(timeoutMilliseconds); }
+        public bool WaitForCompletion(int timeoutMilliseconds = 30000) { return _resetEvent.WaitOne(timeoutMilliseconds); }
 
         public void Execute(UIApplication app)
         {
@@ -75,6 +75,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                 using (var transaction = DryRun ? null : new Transaction(doc, "Bulk Modify Parameter Values"))
                 {
                     if (!DryRun) transaction.Start();
+                    try
+                    {
 
                     foreach (var elem in elements)
                     {
@@ -151,6 +153,13 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     }
 
                     if (!DryRun) transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (!DryRun && transaction?.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 Result = new AIResult<object>

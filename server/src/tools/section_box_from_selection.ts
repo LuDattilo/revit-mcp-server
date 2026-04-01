@@ -44,7 +44,7 @@ export function registerSectionBoxFromSelectionTool(server: McpServer) {
             isolateElements: args.isolateElements ?? false,
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }], isError: true };
       } catch (error) {
         return {
           content: [{ type: "text", text: `Section box from selection failed: ${error instanceof Error ? error.message : String(error)}` }],

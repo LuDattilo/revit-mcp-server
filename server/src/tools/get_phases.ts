@@ -42,6 +42,7 @@ export function registerGetPhasesTool(server: McpServer) {
               }`,
             },
           ],
+          isError: true,
         };
       }
     }

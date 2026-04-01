@@ -17,9 +17,19 @@ namespace RevitMCPCommandSet.Services
         public double OffsetZ { get; set; } = 0;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(List<long> elementIds, long sourceViewId, long targetViewId, double offsetX, double offsetY, double offsetZ)
+        {
+            ElementIds = elementIds ?? new List<long>();
+            SourceViewId = sourceViewId;
+            TargetViewId = targetViewId;
+            OffsetX = offsetX;
+            OffsetY = offsetY;
+            OffsetZ = offsetZ;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -52,9 +62,18 @@ namespace RevitMCPCommandSet.Services
                 using (var transaction = new Transaction(doc, "Copy Elements Between Views"))
                 {
                     transaction.Start();
-                    copiedIds = ElementTransformUtils.CopyElements(
-                        sourceView, ids, targetView, transform, new CopyPasteOptions());
-                    transaction.Commit();
+                    try
+                    {
+                        copiedIds = ElementTransformUtils.CopyElements(
+                            sourceView, ids, targetView, transform, new CopyPasteOptions());
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        if (transaction.GetStatus() == TransactionStatus.Started)
+                            transaction.RollBack();
+                        throw;
+                    }
                 }
 
                 var copiedElements = new List<object>();

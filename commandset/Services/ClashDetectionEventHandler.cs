@@ -17,9 +17,19 @@ namespace RevitMCPCommandSet.Services
         public int MaxResults { get; set; } = 100;
         public AIResult<object> Result { get; private set; }
 
+        public void SetParameters(string categoryA, string categoryB, List<long> elementIdsA, List<long> elementIdsB, double tolerance, int maxResults)
+        {
+            CategoryA = categoryA ?? "";
+            CategoryB = categoryB ?? "";
+            ElementIdsA = elementIdsA ?? new List<long>();
+            ElementIdsB = elementIdsB ?? new List<long>();
+            Tolerance = tolerance;
+            MaxResults = maxResults > 0 ? maxResults : 100;
+            _resetEvent.Reset();
+        }
+
         public bool WaitForCompletion(int timeoutMilliseconds = 30000)
         {
-            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
