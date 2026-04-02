@@ -477,6 +477,11 @@
       "commandName": "export_to_excel",
       "description": "Export elements by category to Excel (.xlsx) with color-coded columns",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "import_from_excel",
+      "description": "Import parameter values from Excel (.xlsx) back into Revit elements",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
