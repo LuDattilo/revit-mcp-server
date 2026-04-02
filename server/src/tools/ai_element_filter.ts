@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerAIElementFilterTool(server: McpServer) {
   server.tool(
@@ -69,6 +70,11 @@ export function registerAIElementFilterTool(server: McpServer) {
           .describe("The maximum number of elements to find in a single tool invocation. Default is 50. Values exceeding 50 are not recommended for performance reasons."),
       })
         .describe("Configuration parameters for the Revit element filter tool. These settings determine which elements will be selected from the Revit project based on various filtering criteria. Multiple filters can be combined to achieve precise element selection. All spatial coordinates should be provided in millimeters."),
+      compact: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
       const params = args;
@@ -81,25 +87,9 @@ export function registerAIElementFilterTool(server: McpServer) {
           );
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return toolResponse(response, args);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Get element information failed: ${errorMessage(error)
-                }`,
-            },
-          ],
-          isError: true,
-        };
+        return toolError(`Get element information failed: ${errorMessage(error)}`);
       }
     }
   );

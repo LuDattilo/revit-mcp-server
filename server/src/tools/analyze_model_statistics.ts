@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerAnalyzeModelStatisticsTool(server: McpServer) {
   server.tool(
@@ -13,6 +14,11 @@ export function registerAnalyzeModelStatisticsTool(server: McpServer) {
         .optional()
         .default(true)
         .describe("Whether to include detailed breakdown by family and type within each category. Defaults to true."),
+      compact: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
       const params = {
@@ -24,24 +30,9 @@ export function registerAnalyzeModelStatisticsTool(server: McpServer) {
           return await revitClient.sendCommand("analyze_model_statistics", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return toolResponse(response, args);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Analyze model statistics failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return toolError(`Analyze model statistics failed: ${errorMessage(error)}`);
       }
     }
   );

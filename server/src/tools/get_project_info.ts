@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetProjectInfoTool(server: McpServer) {
   server.tool(
@@ -24,6 +25,11 @@ export function registerGetProjectInfoTool(server: McpServer) {
         .boolean()
         .optional()
         .describe("Include level information (default: true)"),
+      compact: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
       const params = {
@@ -38,26 +44,9 @@ export function registerGetProjectInfoTool(server: McpServer) {
           return await revitClient.sendCommand("get_project_info", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return toolResponse(response, args);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Get project info failed: ${
-                errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+        return toolError(`Get project info failed: ${errorMessage(error)}`);
       }
     }
   );

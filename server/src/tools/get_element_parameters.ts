@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetElementParametersTool(server: McpServer) {
   server.tool(
@@ -17,6 +18,11 @@ export function registerGetElementParametersTool(server: McpServer) {
         .describe(
           "Include type parameters in addition to instance parameters (default: true)"
         ),
+      compact: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
       const params = {
@@ -32,26 +38,9 @@ export function registerGetElementParametersTool(server: McpServer) {
           );
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return toolResponse(response, args);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Get element parameters failed: ${
-                errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+        return toolError(`Get element parameters failed: ${errorMessage(error)}`);
       }
     }
   );
