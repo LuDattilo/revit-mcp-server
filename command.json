@@ -507,6 +507,16 @@
       "commandName": "workflow_model_audit",
       "description": "Complete model health audit: score, warnings, families, CAD, purge candidates",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "workflow_clash_review",
+      "description": "Detect clashes between two categories, isolate elements, and create section box",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "workflow_data_roundtrip",
+      "description": "Export elements to Excel for roundtrip edit-and-reimport workflow",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
