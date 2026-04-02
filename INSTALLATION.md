@@ -20,31 +20,34 @@ Guida completa per installare e configurare **mcp-servers-for-revit** su Autodes
 
 ## Prerequisiti
 
-### Software Richiesto
+### Software Richiesto (Installazione da Release)
 
 | Componente | Versione | Note |
 |------------|----------|------|
 | **Autodesk Revit** | 2023, 2024, 2025 o 2026 | Installato e con licenza attiva |
-| **Node.js** | 18 o superiore | Per il server MCP |
-| **npm** | Incluso con Node.js | Per installare dipendenze |
+| **Claude Desktop** | Qualsiasi | Scaricabile da [claude.ai/download](https://claude.ai/download) |
+
+> **Node.js non richiesto.** Il runtime Node.js è incluso nel pacchetto di installazione (portabile, non viene installato nel sistema).
 
 ### Requisiti di Sistema
 
 - **OS**: Windows 10/11 (64-bit)
 - **RAM**: Minimo 8 GB (consigliati 16 GB con Revit aperto)
-- **Disco**: ~100 MB per plugin + server
+- **Disco**: ~150 MB per plugin + server + runtime Node.js bundled
 - **Rete**: Porta TCP **8080** libera su localhost
 
 ### Requisiti Aggiuntivi per Build da Sorgente
 
 | Componente | Versione | Per quale versione Revit |
 |------------|----------|--------------------------|
+| **Node.js** | 18 o superiore | Per compilare il server TypeScript |
+| **npm** | Incluso con Node.js | Per installare dipendenze |
 | **.NET Framework 4.8 SDK** | 4.8+ | Revit 2023-2024 |
 | **.NET 8.0 SDK** | 8.0+ | Revit 2025-2026 |
 | **Visual Studio 2022** | 17.x (opzionale) | Build e debug |
 | **MSBuild** | Incluso con VS o .NET SDK | Build da CLI |
 
-### Verifica Prerequisiti
+### Verifica Prerequisiti (solo per Build da Sorgente)
 
 Apri un terminale e verifica:
 
@@ -99,9 +102,15 @@ Addins/<versione>/
     └── Commands/
         └── RevitMCPCommandSet/
             ├── command.json
-            └── <versione>/              <-- Es: 2026/
-                ├── RevitMCPCommandSet.dll
-                └── ...
+            ├── <versione>/              <-- Es: 2026/
+            │   ├── RevitMCPCommandSet.dll
+            │   └── ...
+            └── server/                  <-- Server MCP (incluso nel ZIP)
+                ├── build/               <-- Codice server JS
+                ├── node_modules/        <-- Dipendenze pre-installate
+                ├── runtime/
+                │   └── node.exe         <-- Node.js portabile (non richiede installazione)
+                └── package.json
 ```
 
 ### Passo 3: Avvia Revit

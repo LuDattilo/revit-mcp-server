@@ -82,6 +82,19 @@
         <Copy SourceFiles="@(CommandJsonFile)" DestinationFolder="$(RevitAddinsDir)" Condition="$(Configuration.Contains('Debug'))" />
         <!-- Also copy as commandRegistry.json to Commands/ in Revit Addins -->
         <Copy SourceFiles="$(ProjectDir)..\command.json" DestinationFiles="$(RevitAddinsCommandsDir)commandRegistry.json" Condition="$(Configuration.Contains('Debug'))" />
+
+        <!-- Debug only: copy server/build to Revit Addins so Claude Desktop can reach it
+             (only the compiled JS; node_modules stay in the repo and node from PATH is used) -->
+        <ItemGroup Condition="$(Configuration.Contains('Debug'))">
+            <ServerBuildFiles Include="$(ProjectDir)..\server\build\**\*.*" />
+            <ServerPackageJson Include="$(ProjectDir)..\server\package.json" />
+        </ItemGroup>
+        <Copy SourceFiles="@(ServerBuildFiles)"
+              DestinationFolder="$(RevitAddinsDir)server\build\%(RecursiveDir)"
+              Condition="$(Configuration.Contains('Debug'))" />
+        <Copy SourceFiles="@(ServerPackageJson)"
+              DestinationFolder="$(RevitAddinsDir)server\"
+              Condition="$(Configuration.Contains('Debug'))" />
     </Target>
 
 </Project>

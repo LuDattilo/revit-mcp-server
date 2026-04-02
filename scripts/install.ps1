@@ -107,16 +107,26 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
         }
         return $found
     }
+    function Get-NodePath {
+        $sysNode = Get-Command node -ErrorAction SilentlyContinue
+        if ($sysNode) { return $sysNode.Source }
+        foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+            $p = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\runtime\node.exe"
+            if (Test-Path $p) { return $p }
+        }
+        return $null
+    }
     function Get-NodeStatus {
         $result = [PSCustomObject]@{
             Available = $false; Version = $null; Major = 0
-            Path = $null; MeetsMinimum = $false
+            Path = $null; MeetsMinimum = $false; IsBundled = $false
         }
-        $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
-        if ($nodeCmd) {
+        $nodePath = Get-NodePath
+        if ($nodePath) {
             $result.Available = $true
-            $result.Path      = $nodeCmd.Source
-            $result.Version   = (& node --version 2>$null).TrimStart('v')
+            $result.Path      = $nodePath
+            $result.IsBundled = -not [bool](Get-Command node -ErrorAction SilentlyContinue)
+            $result.Version   = (& "$nodePath" --version 2>$null).TrimStart('v')
             $result.Major     = [int](($result.Version -split '\.')[0])
             $result.MeetsMinimum = $result.Major -ge $MIN_NODE
         }
@@ -131,10 +141,11 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     }
     function New-RevitMcpEntry {
         param([string]$ServerPath)
-        return [PSCustomObject]@{
-            command = 'cmd'
-            args    = @('/c', 'node', $ServerPath)
+        $nodePath = Get-NodePath
+        if ($nodePath) {
+            return [PSCustomObject]@{ command = $nodePath; args = @($ServerPath) }
         }
+        return [PSCustomObject]@{ command = 'cmd'; args = @('/c', 'node', $ServerPath) }
     }
     function Get-ClaudeDesktopDir {
         $candidates = @(
@@ -338,19 +349,24 @@ if (-not $SkipNodeCheck) {
 
     if ($nodeStatus.Available) {
         if ($nodeStatus.MeetsMinimum) {
-            Write-Ok "Node.js $($nodeStatus.Version)"
+            if ($nodeStatus.IsBundled) {
+                Write-Ok "Node.js $($nodeStatus.Version) (bundled portable runtime — no system install needed)"
+            } else {
+                Write-Ok "Node.js $($nodeStatus.Version)"
+            }
             $nodeOk = $true
         } else {
             Write-Warn "Node.js $($nodeStatus.Version) found but v$MIN_NODE+ is required"
         }
     } else {
-        Write-Warn "Node.js not found"
+        Write-Warn "Node.js not found (system or bundled)"
     }
 
     if (-not $nodeOk) {
         Write-Host ""
         Write-Host "  Node.js $MIN_NODE+ is needed to run the MCP server." -ForegroundColor Yellow
         Write-Host "  The Revit plugin will be installed regardless."       -ForegroundColor Yellow
+        Write-Host "  Note: if you install from the official Release ZIP, Node.js is bundled automatically." -ForegroundColor DarkGray
         Write-Host ""
         Write-Host "  [1] Install Node.js LTS now (downloads installer)"  -ForegroundColor White
         Write-Host "  [2] Skip  --  I will install Node.js later"            -ForegroundColor White
@@ -444,13 +460,16 @@ function Test-PluginInstall {
     Write-Step "Revit $Year  --  verifying..."
     $pluginRoot    = "$AddinsDir\$PLUGIN_FOLDER"
     $commandSetDir = "$pluginRoot\Commands\RevitMCPCommandSet\$Year"
+    $serverRoot    = "$pluginRoot\Commands\RevitMCPCommandSet\server"
     $required = @(
         @{ P = "$AddinsDir\$ADDIN_FILE";                    L = "Add-in manifest (.addin)"       },
         @{ P = "$pluginRoot\RevitMCPPlugin.dll";             L = "Main plugin DLL"                },
         @{ P = "$pluginRoot\RevitMCPSDK.dll";                L = "RevitMCP SDK DLL"               },
         @{ P = "$pluginRoot\Newtonsoft.Json.dll";            L = "Newtonsoft.Json"                },
         @{ P = "$pluginRoot\Commands\commandRegistry.json";  L = "Command registry"               },
-        @{ P = "$commandSetDir\RevitMCPCommandSet.dll";      L = "Command set DLL (Revit $Year)"  }
+        @{ P = "$commandSetDir\RevitMCPCommandSet.dll";      L = "Command set DLL (Revit $Year)"  },
+        @{ P = "$serverRoot\build\index.js";                 L = "MCP server (index.js)"          },
+        @{ P = "$serverRoot\runtime\node.exe";               L = "Bundled Node.js runtime"        }
     )
     $allOk = $true
     foreach ($f in $required) {
@@ -610,7 +629,6 @@ if (-not $SkipMcpConfig) {
         Write-Ok "Claude Desktop found: $claudeDir"
         $cfgInfo    = Get-ClaudeDesktopConfig $claudeDir
         $configPath = $cfgInfo.Path
-        $nodeAvail  = [bool](Get-Command node -ErrorAction SilentlyContinue)
 
         $config = if ($cfgInfo.Exists -and $cfgInfo.Config) {
             $cfgInfo.Config
@@ -620,21 +638,23 @@ if (-not $SkipMcpConfig) {
             [PSCustomObject]@{}
         } else { [PSCustomObject]@{} }
 
-        if (-not $nodeAvail) {
-            Write-Warn "Claude Desktop  --  skipping (Node.js not available yet)"
-            Write-Info "Re-run after installing Node.js: .\install.ps1 -SkipNodeCheck"
+        # Use the local server installed with the plugin (not the npm package)
+        $serverPath = Get-McpServerPath
+        if (-not $serverPath) {
+            Write-Warn "Claude Desktop  --  local server not found, skipping config"
+            Write-Info "This should not happen  --  check that the plugin was installed correctly"
         } else {
-            # Use the local server installed with the plugin (not the npm package)
-            $serverPath = Get-McpServerPath
-            if (-not $serverPath) {
-                Write-Warn "Claude Desktop  --  local server not found, skipping config"
-                Write-Info "This should not happen  --  check that the plugin was installed correctly"
+            $nodePath = Get-NodePath
+            if (-not $nodePath) {
+                Write-Warn "Claude Desktop  --  Node.js not found (system or bundled), skipping config"
+                Write-Info "Install Node.js from https://nodejs.org then re-run: .\install.ps1 -SkipNodeCheck"
             } else {
                 if (-not $config.mcpServers) {
                     $config | Add-Member -NotePropertyName 'mcpServers' -NotePropertyValue ([PSCustomObject]@{})
                 }
                 $revitMcpEntry = New-RevitMcpEntry $serverPath
-                Write-Info "Using local server: $serverPath"
+                Write-Info "Node: $nodePath"
+                Write-Info "Server: $serverPath"
                 $config.mcpServers | Add-Member -NotePropertyName 'revit-mcp' -NotePropertyValue $revitMcpEntry -Force
                 $config | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
                 Write-Ok "Claude Desktop  --  revit-mcp configured"

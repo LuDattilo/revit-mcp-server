@@ -87,11 +87,35 @@ function Test-RevitInstalled {
 
 <#
 .SYNOPSIS
+    Find the best available Node.js executable.
+    Checks the system PATH first, then falls back to the portable node.exe
+    bundled alongside the plugin (shipped in server/runtime/node.exe).
+
+.OUTPUTS
+    String full path to node.exe, or $null if not found anywhere.
+#>
+function Get-NodePath {
+    # 1. System node (already in PATH — preferred for developers)
+    $sysNode = Get-Command node -ErrorAction SilentlyContinue
+    if ($sysNode) { return $sysNode.Source }
+
+    # 2. Portable node.exe bundled with the plugin (for end-users without Node.js)
+    foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+        $portableNode = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\runtime\node.exe"
+        if (Test-Path $portableNode) { return $portableNode }
+    }
+
+    return $null
+}
+
+<#
+.SYNOPSIS
     Check if Node.js is installed and meets the minimum version requirement.
+    Checks system PATH first, then the portable runtime bundled with the plugin.
 
 .OUTPUTS
     PSCustomObject with properties: Available (bool), Version (string),
-    Major (int), Path (string), MeetsMinimum (bool).
+    Major (int), Path (string), MeetsMinimum (bool), IsBundled (bool).
 #>
 function Get-NodeStatus {
     $result = [PSCustomObject]@{
@@ -100,12 +124,14 @@ function Get-NodeStatus {
         Major        = 0
         Path         = $null
         MeetsMinimum = $false
+        IsBundled    = $false
     }
-    $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
-    if ($nodeCmd) {
+    $nodePath = Get-NodePath
+    if ($nodePath) {
         $result.Available = $true
-        $result.Path      = $nodeCmd.Source
-        $result.Version   = (& node --version 2>$null).TrimStart('v')
+        $result.Path      = $nodePath
+        $result.IsBundled = -not [bool](Get-Command node -ErrorAction SilentlyContinue)
+        $result.Version   = (& "$nodePath" --version 2>$null).TrimStart('v')
         $result.Major     = [int](($result.Version -split '\.')[0])
         $result.MeetsMinimum = $result.Major -ge $MIN_NODE
     }
@@ -237,10 +263,13 @@ function Get-McpServerPath {
 #>
 function New-RevitMcpEntry {
     param([string]$ServerPath)
-    return [PSCustomObject]@{
-        command = 'cmd'
-        args    = @('/c', 'node', $ServerPath)
+    $nodePath = Get-NodePath
+    if ($nodePath) {
+        # Use the node executable directly (system or bundled portable)
+        return [PSCustomObject]@{ command = $nodePath; args = @($ServerPath) }
     }
+    # Last resort: rely on node in PATH via cmd shell
+    return [PSCustomObject]@{ command = 'cmd'; args = @('/c', 'node', $ServerPath) }
 }
 
 function Get-ClaudeDesktopConfig {

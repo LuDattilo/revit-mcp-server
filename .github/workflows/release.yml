@@ -31,13 +31,31 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       # ---------------------------------------------------------------
-      # Build MCP Server (TypeScript)
+      # Build MCP Server (TypeScript) + bundle portable Node.js
       # ---------------------------------------------------------------
       - name: Build MCP Server
         working-directory: server
         run: |
           npm ci
           npm run build
+          npm prune --omit=dev
+
+      - name: Bundle portable Node.js (Windows x64)
+        run: |
+          # Use the same Node.js version active in this runner so that
+          # better-sqlite3's native addon ABI matches exactly.
+          $nodeVersion = "v" + (& node --version 2>$null).TrimStart('v')
+          $nodeUrl = "https://nodejs.org/dist/$nodeVersion/node-$nodeVersion-win-x64.zip"
+          Write-Host "Downloading portable Node.js $nodeVersion..."
+          Invoke-WebRequest -Uri $nodeUrl -OutFile 'node-portable.zip' `
+              -Headers @{'User-Agent'='mcp-revit-installer'}
+          Expand-Archive -Path 'node-portable.zip' -DestinationPath 'node-portable-extract'
+          New-Item -ItemType Directory -Force -Path 'server/runtime' | Out-Null
+          $extracted = Get-ChildItem 'node-portable-extract' -Directory | Select-Object -First 1
+          Copy-Item "$($extracted.FullName)/node.exe" 'server/runtime/node.exe'
+          Remove-Item 'node-portable.zip', 'node-portable-extract' -Recurse -Force
+          Write-Host "Portable Node.js $nodeVersion ready at server/runtime/node.exe"
+        shell: pwsh
 
       # ---------------------------------------------------------------
       # Build Plugin + CommandSet via combined solution
@@ -75,6 +93,19 @@ jobs:
           foreach ($rv in $revitVersions) {
             $addinDir = "plugin/bin/AddIn $($rv.Year) $($rv.Config)"
             if (Test-Path $addinDir) {
+              # Bundle MCP server into the AddIn output so users need nothing pre-installed.
+              # Layout: revit_mcp_plugin/Commands/RevitMCPCommandSet/server/
+              #   build/         <- compiled TypeScript (JS)
+              #   node_modules/  <- production dependencies (includes better-sqlite3 native addon)
+              #   runtime/       <- portable node.exe matching the ABI of node_modules
+              #   package.json   <- required for ESM "type":"module" resolution
+              $serverDest = "$addinDir/revit_mcp_plugin/Commands/RevitMCPCommandSet/server"
+              Write-Host "Bundling server into $serverDest"
+              Copy-Item -Path 'server/build'        -Destination "$serverDest/build"        -Recurse -Force
+              Copy-Item -Path 'server/node_modules' -Destination "$serverDest/node_modules" -Recurse -Force
+              Copy-Item -Path 'server/runtime'      -Destination "$serverDest/runtime"      -Recurse -Force
+              Copy-Item -Path 'server/package.json' -Destination "$serverDest/package.json" -Force
+
               $zipName = "$outputDir/mcp-servers-for-revit-$version-Revit$($rv.Year).zip"
               Compress-Archive -Path "$addinDir/*" -DestinationPath $zipName
               Write-Host "Created $zipName"

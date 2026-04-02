@@ -33,16 +33,26 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     $REVIT_YEARS   = 2023..2026
     $MCP_HOST      = '127.0.0.1'
     $MCP_PORT      = 8080
+    function Get-NodePath {
+        $sysNode = Get-Command node -ErrorAction SilentlyContinue
+        if ($sysNode) { return $sysNode.Source }
+        foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+            $p = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\runtime\node.exe"
+            if (Test-Path $p) { return $p }
+        }
+        return $null
+    }
     function Get-NodeStatus {
         $result = [PSCustomObject]@{
             Available = $false; Version = $null; Major = 0
-            Path = $null; MeetsMinimum = $false
+            Path = $null; MeetsMinimum = $false; IsBundled = $false
         }
-        $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
-        if ($nodeCmd) {
+        $nodePath = Get-NodePath
+        if ($nodePath) {
             $result.Available = $true
-            $result.Path      = $nodeCmd.Source
-            $result.Version   = (& node --version 2>$null).TrimStart('v')
+            $result.Path      = $nodePath
+            $result.IsBundled = -not [bool](Get-Command node -ErrorAction SilentlyContinue)
+            $result.Version   = (& "$nodePath" --version 2>$null).TrimStart('v')
             $result.Major     = [int](($result.Version -split '\.')[0])
             $result.MeetsMinimum = $result.Major -ge $MIN_NODE
         }
@@ -57,10 +67,11 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     }
     function New-RevitMcpEntry {
         param([string]$ServerPath)
-        return [PSCustomObject]@{
-            command = 'cmd'
-            args    = @('/c', 'node', $ServerPath)
+        $nodePath = Get-NodePath
+        if ($nodePath) {
+            return [PSCustomObject]@{ command = $nodePath; args = @($ServerPath) }
         }
+        return [PSCustomObject]@{ command = 'cmd'; args = @('/c', 'node', $ServerPath) }
     }
     function Get-ClaudeDesktopDir {
         $candidates = @(
@@ -129,33 +140,31 @@ HEAD "1. Node.js"
 $nodeStatus = Get-NodeStatus
 if ($nodeStatus.Available) {
     if ($nodeStatus.MeetsMinimum) {
-        OK "Node.js $($nodeStatus.Version)  ($($nodeStatus.Path))"
+        if ($nodeStatus.IsBundled) {
+            OK "Node.js $($nodeStatus.Version)  (bundled portable runtime — $($nodeStatus.Path))"
+        } else {
+            OK "Node.js $($nodeStatus.Version)  ($($nodeStatus.Path))"
+        }
         $nodeOk = $true
     } else {
         FAIL "Node.js $($nodeStatus.Version) found but v18+ required -- install from https://nodejs.org"
         $nodeOk = $false
     }
 } else {
-    FAIL "Node.js not found -- install from https://nodejs.org"
+    FAIL "Node.js not found (system or bundled) -- install from https://nodejs.org"
     $nodeOk = $false
 }
 
 
 # ── 2. Local MCP server (installed with the plugin) ──────────────────────────
 HEAD "2. Local MCP server"
-$serverPath = $null
-
-if ($nodeOk) {
-    $serverPath = Get-McpServerPath
-    if ($serverPath) {
-        OK "Local server found"
-        INFO $serverPath
-    } else {
-        FAIL "Local server not found -- reinstall the plugin"
-        INFO "Run: powershell -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/$REPO/main/scripts/install.ps1 | iex`""
-    }
+$serverPath = Get-McpServerPath
+if ($serverPath) {
+    OK "Local server found"
+    INFO $serverPath
 } else {
-    WARN "Skipping server check -- Node.js not available"
+    FAIL "Local server not found -- reinstall the plugin"
+    INFO "Run: powershell -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/$REPO/main/scripts/install.ps1 | iex`""
 }
 
 
@@ -180,7 +189,7 @@ $configPath = Join-Path $claudeDir "claude_desktop_config.json"
 # Build the config entry using the local server
 if ($serverPath) {
     $mcpEntry = New-RevitMcpEntry $serverPath
-    INFO "Will configure: cmd /c node $serverPath"
+    INFO "Will configure: $($mcpEntry.command) $($mcpEntry.args -join ' ')"
 } else {
     $mcpEntry = $null
     WARN "Cannot configure Claude Desktop -- local server not found"
