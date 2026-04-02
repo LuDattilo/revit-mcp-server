@@ -186,36 +186,18 @@ if ($npmCmd) {
         }
     }
 
-    # List globally installed packages that start with mcp
-    $globalPkgs = (cmd /c "npm list -g --depth=0" 2>$null) -join "`n"
-    $mcpLine = ($globalPkgs -split "`n") | Where-Object { $_ -match $NPM_PACKAGE }
-    if ($mcpLine) {
-        Pass "$NPM_PACKAGE in npm global list"
-        Info ($mcpLine.Trim())
-    } else {
-        Fail "$NPM_PACKAGE NOT found in npm global packages"
-        Info "Run: npm install -g $NPM_PACKAGE"
+    # Check local MCP server (installed with the plugin)
+    $serverJs = $null
+    foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+        $candidate = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\build\index.js"
+        if (Test-Path $candidate) { $serverJs = $candidate; break }
     }
-
-    # Check .cmd file directly
-    if ($npmPrefix) {
-        $mcpCmd = Join-Path $npmPrefix "$NPM_PACKAGE.cmd"
-        if (Test-Path $mcpCmd) {
-            Pass "$NPM_PACKAGE.cmd exists"
-            FileOk $mcpCmd
-            # Show first meaningful line of .cmd file
-            $cmdLine = Get-Content $mcpCmd -ErrorAction SilentlyContinue | Select-Object -First 5
-            $cmdLine | ForEach-Object { Info "  $_" }
-        } else {
-            Fail "$NPM_PACKAGE.cmd NOT found"
-            FileMiss $mcpCmd
-        }
-
-        # Also check for .ps1 wrapper
-        $mcpPs1 = Join-Path $npmPrefix "$NPM_PACKAGE.ps1"
-        if (Test-Path $mcpPs1) {
-            Info "$NPM_PACKAGE.ps1 also present: $mcpPs1"
-        }
+    if ($serverJs) {
+        Pass "Local MCP server found"
+        FileOk $serverJs
+    } else {
+        Fail "Local MCP server NOT found -- reinstall the plugin"
+        Info "Expected: %APPDATA%\Autodesk\Revit\Addins\{year}\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\build\index.js"
     }
 } else {
     Fail "npm not found in PATH"

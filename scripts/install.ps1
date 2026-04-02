@@ -122,14 +122,19 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
         }
         return $result
     }
-    function Get-NpmCmdPath {
-        param([string]$PkgName)
-        $prefix = (cmd /c "npm prefix -g" 2>$null | Select-Object -First 1)
-        if ($prefix) { $prefix = $prefix.Trim() }
-        if ([string]::IsNullOrWhiteSpace($prefix)) { return $null }
-        $p = Join-Path $prefix "$PkgName.cmd"
-        if (Test-Path $p) { return $p }
+    function Get-McpServerPath {
+        foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+            $serverJs = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\build\index.js"
+            if (Test-Path $serverJs) { return $serverJs }
+        }
         return $null
+    }
+    function New-RevitMcpEntry {
+        param([string]$ServerPath)
+        return [PSCustomObject]@{
+            command = 'cmd'
+            args    = @('/c', 'node', $ServerPath)
+        }
     }
     function Get-ClaudeDesktopDir {
         $candidates = @(
@@ -393,27 +398,7 @@ if (-not $SkipNodeCheck) {
         }
     }
 
-    # Install mcp-server-for-revit globally so Claude Desktop can find it
-    # even when running as a packaged MSIX app (limited PATH).
-    # Use cmd.exe to avoid PowerShell execution policy restrictions on npm.ps1.
-    # Note: npm bin -g was removed in npm 10 (Node 22+); use npm prefix -g instead.
-    if ($nodeOk -and -not $SkipMcpConfig) {
-        $mcpCmdPath = Get-NpmCmdPath $NPM_PACKAGE
-
-        if ($mcpCmdPath) {
-            Write-Ok "$NPM_PACKAGE already installed globally"
-        } else {
-            Write-Step "Installing $NPM_PACKAGE globally (required for Claude Desktop MSIX)..."
-            cmd /c "npm install -g $NPM_PACKAGE" 2>&1 | Out-Null
-            $mcpCmdPath = Get-NpmCmdPath $NPM_PACKAGE
-            if ($mcpCmdPath) {
-                Write-Ok "$NPM_PACKAGE installed globally"
-            } else {
-                Write-Warn "Could not install $NPM_PACKAGE  --  Claude Desktop config will fall back to npx"
-                $mcpCmdPath = $null
-            }
-        }
-    }
+    # No npm package needed -- the local server installed with the plugin is used directly.
     Write-Host ""
 }
 
@@ -635,38 +620,26 @@ if (-not $SkipMcpConfig) {
             [PSCustomObject]@{}
         } else { [PSCustomObject]@{} }
 
-        if ($cfgInfo.HasRevitMcp) {
-            Write-Ok "Claude Desktop  --  revit-mcp already configured"
-            Write-Info "Config: $configPath"
-        } elseif (-not $nodeAvail) {
+        if (-not $nodeAvail) {
             Write-Warn "Claude Desktop  --  skipping (Node.js not available yet)"
             Write-Info "Re-run after installing Node.js: .\install.ps1 -SkipNodeCheck"
         } else {
-            if (-not $config.mcpServers) {
-                $config | Add-Member -NotePropertyName 'mcpServers' -NotePropertyValue ([PSCustomObject]@{})
-            }
-
-            # Prefer absolute path to globally installed .cmd so Claude Desktop
-            # MSIX (which has a limited PATH) can always find the executable.
-            # Fall back to npx if the global install is not available.
-            $revitMcpEntry = if ($mcpCmdPath -and (Test-Path $mcpCmdPath)) {
-                Write-Info "Using global install: $mcpCmdPath"
-                [PSCustomObject]@{
-                    command = 'cmd'
-                    args    = @('/c', $mcpCmdPath)
-                }
+            # Use the local server installed with the plugin (not the npm package)
+            $serverPath = Get-McpServerPath
+            if (-not $serverPath) {
+                Write-Warn "Claude Desktop  --  local server not found, skipping config"
+                Write-Info "This should not happen  --  check that the plugin was installed correctly"
             } else {
-                Write-Info "Global install not found  --  using npx fallback"
-                [PSCustomObject]@{
-                    command = 'cmd'
-                    args    = @('/c', 'npx', '-y', $NPM_PACKAGE)
+                if (-not $config.mcpServers) {
+                    $config | Add-Member -NotePropertyName 'mcpServers' -NotePropertyValue ([PSCustomObject]@{})
                 }
+                $revitMcpEntry = New-RevitMcpEntry $serverPath
+                Write-Info "Using local server: $serverPath"
+                $config.mcpServers | Add-Member -NotePropertyName 'revit-mcp' -NotePropertyValue $revitMcpEntry -Force
+                $config | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
+                Write-Ok "Claude Desktop  --  revit-mcp configured"
+                Write-Info "Config: $configPath"
             }
-
-            $config.mcpServers | Add-Member -NotePropertyName 'revit-mcp' -NotePropertyValue $revitMcpEntry -Force
-            $config | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
-            Write-Ok "Claude Desktop  --  revit-mcp configured"
-            Write-Info "Config: $configPath"
         }
     }
     Write-Host ""

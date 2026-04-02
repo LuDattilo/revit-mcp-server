@@ -48,19 +48,19 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
         }
         return $result
     }
-    function Get-NpmGlobalPrefix {
-        $prefix = (cmd /c "npm prefix -g" 2>$null | Select-Object -First 1)
-        if ($prefix) { $prefix = $prefix.Trim() }
-        if ([string]::IsNullOrWhiteSpace($prefix)) { return $null }
-        return $prefix
-    }
-    function Get-NpmCmdPath {
-        param([string]$PkgName)
-        $prefix = Get-NpmGlobalPrefix
-        if (-not $prefix) { return $null }
-        $p = Join-Path $prefix "$PkgName.cmd"
-        if (Test-Path $p) { return $p }
+    function Get-McpServerPath {
+        foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+            $serverJs = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\build\index.js"
+            if (Test-Path $serverJs) { return $serverJs }
+        }
         return $null
+    }
+    function New-RevitMcpEntry {
+        param([string]$ServerPath)
+        return [PSCustomObject]@{
+            command = 'cmd'
+            args    = @('/c', 'node', $ServerPath)
+        }
     }
     function Get-ClaudeDesktopDir {
         $candidates = @(
@@ -141,45 +141,21 @@ if ($nodeStatus.Available) {
 }
 
 
-# ── 2. mcp-server-for-revit npm package + .cmd file ──────────────────────────
-HEAD "2. npm package: $NPM_PACKAGE"
-$mcpCmdPath = $null
+# ── 2. Local MCP server (installed with the plugin) ──────────────────────────
+HEAD "2. Local MCP server"
+$serverPath = $null
 
 if ($nodeOk) {
-    $npmPrefix = Get-NpmGlobalPrefix
-
-    if ($npmPrefix) {
-        INFO "npm global prefix: $npmPrefix"
-        $mcpCmdPath = Get-NpmCmdPath $NPM_PACKAGE
-
-        if ($mcpCmdPath) {
-            OK "$NPM_PACKAGE.cmd exists"
-            INFO $mcpCmdPath
-        } else {
-            $candidate = Join-Path $npmPrefix "$NPM_PACKAGE.cmd"
-            WARN "$NPM_PACKAGE.cmd not found -- installing..."
-            cmd /c "npm install -g $NPM_PACKAGE" 2>&1 | Out-Null
-            $mcpCmdPath = Get-NpmCmdPath $NPM_PACKAGE
-            if ($mcpCmdPath) {
-                FIXED "$NPM_PACKAGE installed globally"
-                INFO $mcpCmdPath
-            } else {
-                FAIL "Could not install $NPM_PACKAGE"
-                INFO "Try manually: npm install -g $NPM_PACKAGE"
-            }
-        }
+    $serverPath = Get-McpServerPath
+    if ($serverPath) {
+        OK "Local server found"
+        INFO $serverPath
     } else {
-        WARN "Could not determine npm global prefix"
-        # Fallback: try where.exe
-        $whereResult = (cmd /c "where $NPM_PACKAGE.cmd" 2>$null | Select-Object -First 1)
-        if ($whereResult -and (Test-Path $whereResult.Trim())) {
-            $mcpCmdPath = $whereResult.Trim()
-            OK "$NPM_PACKAGE.cmd found via where.exe"
-            INFO $mcpCmdPath
-        }
+        FAIL "Local server not found -- reinstall the plugin"
+        INFO "Run: powershell -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/$REPO/main/scripts/install.ps1 | iex`""
     }
 } else {
-    WARN "Skipping npm check -- Node.js not available"
+    WARN "Skipping server check -- Node.js not available"
 }
 
 
@@ -201,21 +177,20 @@ if (-not $claudeDir) {
 
 $configPath = Join-Path $claudeDir "claude_desktop_config.json"
 
-# Decide what command to use in the config
-if ($mcpCmdPath) {
-    $mcpEntry = [ordered]@{
-        command = 'cmd'
-        args    = @('/c', $mcpCmdPath)
-    }
-    INFO "Will configure: cmd /c $mcpCmdPath"
+# Build the config entry using the local server
+if ($serverPath) {
+    $mcpEntry = New-RevitMcpEntry $serverPath
+    INFO "Will configure: cmd /c node $serverPath"
 } else {
-    $mcpEntry = [ordered]@{ command = $NPM_PACKAGE }
-    WARN "Falling back to npx-style config (no absolute path)"
+    $mcpEntry = $null
+    WARN "Cannot configure Claude Desktop -- local server not found"
 }
 
 $needWrite = $false
 
-if (Test-Path $configPath) {
+if (-not $mcpEntry) {
+    WARN "Skipping Claude Desktop configuration -- no server available"
+} elseif (Test-Path $configPath) {
     try {
         $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
     } catch {

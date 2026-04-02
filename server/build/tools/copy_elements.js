@@ -1,0 +1,61 @@
+import { errorMessage } from "../utils/errorUtils.js";
+import { z } from "zod";
+import { withRevitConnection } from "../utils/ConnectionManager.js";
+export function registerCopyElementsTool(server) {
+    server.tool("copy_elements", "Copy elements between views within the same document. Useful for copying detail items, annotations, or model elements from one view to another.\n\nGUIDANCE:\n- Copy between views: provide sourceViewId, targetViewId, and elementIds\n- Duplicate annotations: copy dimensions, text notes between views\n- Copy detail items: replicate detailing from one view to another\n\nTIPS:\n- Some elements can only be copied between compatible view types\n- Model elements (walls, doors) exist in 3D and don't need view-to-view copy\n- Use modify_element with action=\"copy\" for simple same-view duplication", {
+        elementIds: z
+            .array(z.number())
+            .describe("Array of element IDs to copy"),
+        sourceViewId: z
+            .number()
+            .describe("Source view ID where elements currently exist"),
+        targetViewId: z
+            .number()
+            .describe("Target view ID to copy elements to"),
+        offsetX: z
+            .number()
+            .optional()
+            .describe("X offset in mm for the copied elements (default: 0)"),
+        offsetY: z
+            .number()
+            .optional()
+            .describe("Y offset in mm for the copied elements (default: 0)"),
+        offsetZ: z
+            .number()
+            .optional()
+            .describe("Z offset in mm for the copied elements (default: 0)"),
+    }, async (args, extra) => {
+        const params = {
+            elementIds: args.elementIds,
+            sourceViewId: args.sourceViewId,
+            targetViewId: args.targetViewId,
+            offsetX: args.offsetX ?? 0,
+            offsetY: args.offsetY ?? 0,
+            offsetZ: args.offsetZ ?? 0,
+        };
+        try {
+            const response = await withRevitConnection(async (revitClient) => {
+                return await revitClient.sendCommand("copy_elements", params);
+            });
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(response, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: `Copy elements failed: ${errorMessage(error)}`,
+                    },
+                ],
+                isError: true,
+            };
+        }
+    });
+}

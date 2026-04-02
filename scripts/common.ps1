@@ -205,6 +205,44 @@ function Get-ClaudeDesktopCandidates {
     Config (parsed object or $null), HasRevitMcp (bool),
     RevitMcpEntry (object or $null).
 #>
+# ==============================================================================
+# MCP Server (local installation)
+# ==============================================================================
+
+<#
+.SYNOPSIS
+    Find the path to the locally installed MCP server (index.js).
+    Searches all Revit versions from newest to oldest and returns the first found.
+
+.OUTPUTS
+    String path to index.js, or $null if not installed.
+#>
+function Get-McpServerPath {
+    foreach ($year in ($REVIT_YEARS | Sort-Object -Descending)) {
+        $serverJs = "$env:APPDATA\Autodesk\Revit\Addins\$year\$PLUGIN_FOLDER\Commands\RevitMCPCommandSet\server\build\index.js"
+        if (Test-Path $serverJs) { return $serverJs }
+    }
+    return $null
+}
+
+<#
+.SYNOPSIS
+    Build the Claude Desktop mcpServers entry for revit-mcp using the local server.
+
+.PARAMETER ServerPath
+    Full path to the server index.js file.
+
+.OUTPUTS
+    PSCustomObject suitable for JSON serialisation.
+#>
+function New-RevitMcpEntry {
+    param([string]$ServerPath)
+    return [PSCustomObject]@{
+        command = 'cmd'
+        args    = @('/c', 'node', $ServerPath)
+    }
+}
+
 function Get-ClaudeDesktopConfig {
     param([string]$ClaudeDir)
     $configPath = "$ClaudeDir\claude_desktop_config.json"

@@ -100,9 +100,12 @@ namespace AIGeneratedCode
 
             var syntaxTree = CSharpSyntaxTree.ParseText(wrappedCode);
 
-            // Add required assembly references (reference all loaded assemblies)
+            // Add required assembly references (deduplicate by simple name to avoid conflicts
+            // caused by addins like BIM360 loading assemblies with the same name)
             var references = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+                .GroupBy(a => a.GetName().Name)
+                .Select(g => g.First())
                 .Select(a => MetadataReference.CreateFromFile(a.Location))
                 .Cast<MetadataReference>()
                 .ToList();

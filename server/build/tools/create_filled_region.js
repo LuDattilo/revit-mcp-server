@@ -1,0 +1,33 @@
+import { errorMessage } from "../utils/errorUtils.js";
+import { z } from "zod";
+import { withRevitConnection } from "../utils/ConnectionManager.js";
+export function registerCreateFilledRegionTool(server) {
+    server.tool("create_filled_region", "Create a 2D filled region (hatched area) in a view with specified boundary points and fill pattern. Useful for area shading, detail views, and presentation drawings.\n\nGUIDANCE:\n- Rectangular region: provide 4 corner points forming a rectangle\n- Custom shape: provide any closed polygon boundary points\n- Use for area highlighting, hatching, or graphic annotations\n\nTIPS:\n- Points must form a valid closed polygon in mm\n- Region appears in the specified view only\n- Use get_available_family_types or check Filled Region Types for available patterns", {
+        boundaryPoints: z
+            .array(z.object({ x: z.number(), y: z.number() }))
+            .describe("Boundary points in mm defining the filled region outline (minimum 3 points)"),
+        viewId: z
+            .number()
+            .optional()
+            .describe("View ID to create the region in (default: active view)"),
+        filledRegionTypeName: z
+            .string()
+            .optional()
+            .describe("Filled region type name (default: first available)"),
+    }, async (args, extra) => {
+        const params = {
+            boundaryPoints: args.boundaryPoints,
+            viewId: args.viewId ?? 0,
+            filledRegionTypeName: args.filledRegionTypeName ?? "",
+        };
+        try {
+            const response = await withRevitConnection(async (revitClient) => {
+                return await revitClient.sendCommand("create_filled_region", params);
+            });
+            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        }
+        catch (error) {
+            return { content: [{ type: "text", text: `Create filled region failed: ${errorMessage(error)}` }], isError: true };
+        }
+    });
+}

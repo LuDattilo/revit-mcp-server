@@ -1,0 +1,52 @@
+import { RevitClientConnection } from "./SocketClient.js";
+// Mutex to serialize all Revit connections - prevents race conditions
+// when multiple requests are made in parallel
+let connectionMutex = Promise.resolve();
+/**
+ * Connect to the Revit client and execute an operation
+ * @param operation Function to execute once connected
+ * @returns The operation result
+ */
+export async function withRevitConnection(operation) {
+    // Wait for any pending connection to complete before starting a new one
+    const previousMutex = connectionMutex;
+    let releaseMutex;
+    connectionMutex = new Promise((resolve) => {
+        releaseMutex = resolve;
+    });
+    await previousMutex;
+    const revitClient = new RevitClientConnection("localhost", 8080);
+    try {
+        // Connect to Revit client
+        if (!revitClient.isConnected) {
+            await new Promise((resolve, reject) => {
+                const onConnect = () => {
+                    revitClient.socket.removeListener("connect", onConnect);
+                    revitClient.socket.removeListener("error", onError);
+                    resolve();
+                };
+                const onError = (error) => {
+                    revitClient.socket.removeListener("connect", onConnect);
+                    revitClient.socket.removeListener("error", onError);
+                    reject(new Error("Connect to Revit client failed"));
+                };
+                revitClient.socket.on("connect", onConnect);
+                revitClient.socket.on("error", onError);
+                revitClient.connect();
+                setTimeout(() => {
+                    revitClient.socket.removeListener("connect", onConnect);
+                    revitClient.socket.removeListener("error", onError);
+                    reject(new Error("Connection to Revit client timed out"));
+                }, 5000);
+            });
+        }
+        // Execute operation
+        return await operation(revitClient);
+    }
+    finally {
+        // Disconnect
+        revitClient.disconnect();
+        // Release the mutex so the next request can proceed
+        releaseMutex();
+    }
+}

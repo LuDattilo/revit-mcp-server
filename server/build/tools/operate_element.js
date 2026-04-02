@@ -1,0 +1,53 @@
+import { errorMessage } from "../utils/errorUtils.js";
+import { z } from "zod";
+import { withRevitConnection } from "../utils/ConnectionManager.js";
+export function registerOperateElementTool(server) {
+    server.tool("operate_element", "Operate on Revit elements by performing actions such as select, selectionBox, setColor, setTransparency, delete, hide, etc.\n\nGUIDANCE:\n- Select elements: action=\"select\", elementIds=[...] — highlights in Revit UI\n- Hide elements: action=\"hide\", elementIds=[...] — hides in current view\n- Isolate elements: action=\"isolate\", elementIds=[...] — shows only these elements\n- Reset view: action=\"resetIsolation\" to show all elements again\n\nTIPS:\n- Use ai_element_filter or get_current_view_elements to get element IDs first\n- \"isolate\" is great for focusing on specific elements during review\n- \"hide\" only affects the current view, not other views\n- Combine with override_graphics for visual emphasis", {
+        data: z
+            .object({
+            elementIds: z
+                .array(z
+                .number()
+                .describe("A valid Revit element ID to operate on"))
+                .describe("Array of Revit element IDs to perform the specified action on"),
+            action: z
+                .string()
+                .describe("The operation to perform on elements. Valid values: Select, SelectionBox, SetColor, SetTransparency, Delete, Hide, TempHide, Isolate, Unhide, ResetIsolate, Highlight. Select enables direct element selection in the active view. SelectionBox allows selection of elements by drawing a rectangular window in the view. SetColor changes the color of elements (requires elementColor parameter). SetTransparency adjusts element transparency (requires transparencyValue parameter). Highlight is a convenience operation that sets elements to red color (internally calls SetColor with red). Delete permanently removes elements from the project. Hide makes elements invisible in the current view until explicitly shown. TempHide temporarily hides elements in the current view. Isolate displays only selected elements while hiding all others. Unhide reveals previously hidden elements. ResetIsolate restores normal visibility to the view."),
+            transparencyValue: z
+                .number()
+                .default(50)
+                .describe("Transparency value (0-100) for SetTransparency action. Higher values increase transparency."),
+            colorValue: z
+                .array(z.number())
+                .default([255, 0, 0])
+                .describe("RGB color values for SetColor action. Default is red [255,0,0].")
+        })
+            .describe("Parameters for operating on Revit elements with specific actions"),
+    }, async (args, extra) => {
+        const params = args;
+        try {
+            const response = await withRevitConnection(async (revitClient) => {
+                return await revitClient.sendCommand("operate_element", params);
+            });
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(response, null, 2),
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: `Operate elements failed: ${errorMessage(error)}`,
+                    },
+                ],
+                isError: true,
+            };
+        }
+    });
+}
