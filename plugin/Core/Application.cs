@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using revit_mcp_plugin.UI;
+using revit_mcp_plugin.Utils;
 
 
 
@@ -12,6 +13,9 @@ namespace revit_mcp_plugin.Core
     {
         public Result OnStartup(UIControlledApplication application)
         {
+            // Auto-configure Claude Desktop on first run (silent, never crashes)
+            ClaudeDesktopConfigurator.EnsureConfigured();
+
             // Register Dockable Panel
             try
             {
