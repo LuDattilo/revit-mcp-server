@@ -472,6 +472,11 @@
       "commandName": "manage_unplaced_views",
       "description": "Identify and optionally delete views not placed on any sheet. Defaults to safe list/preview mode.",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "export_to_excel",
+      "description": "Export elements by category to Excel (.xlsx) with color-coded columns",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
