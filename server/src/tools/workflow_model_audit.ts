@@ -1,0 +1,47 @@
+import { errorMessage } from "../utils/errorUtils.js";
+import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+
+export function registerWorkflowModelAuditTool(server: McpServer) {
+  server.tool(
+    "workflow_model_audit",
+    `Complete model health audit in one call. Checks: health score (A-F), warnings, in-place families, CAD imports, unused family types, unplaced rooms. Returns a comprehensive report with actionable recommendations.
+
+GUIDANCE:
+- "Audit this model completely": call with defaults
+- "Quick audit without family check": includeFamilies=false
+- Use this instead of calling check_model_health + get_warnings + audit_families separately`,
+    {
+      includeWarnings: z.boolean().optional().default(true)
+        .describe("Include warning details in the report."),
+      includeFamilies: z.boolean().optional().default(true)
+        .describe("Include unused family type detection (slower on large models)."),
+      maxWarnings: z.number().optional().default(50)
+        .describe("Maximum warnings to include in detail."),
+    },
+    async (args) => {
+      try {
+        const response = await withRevitConnection(async (revitClient) => {
+          return await revitClient.sendCommand("workflow_model_audit", {
+            includeWarnings: args.includeWarnings ?? true,
+            includeFamilies: args.includeFamilies ?? true,
+            maxWarnings: args.maxWarnings ?? 50,
+          });
+        });
+
+        const data = typeof response === 'object' ? (response as any)?.data ?? response : response;
+        const enriched = addSuggestions(response, [
+          suggestIf((data?.unusedFamilyTypeCount ?? 0) > 0, "Purge unused families and types", "Clean up detected unused items"),
+          suggestIf((data?.cadImportCount ?? 0) > 0, "Clean up CAD imports", "Remove unnecessary CAD files"),
+          suggestIf((data?.healthScore ?? 100) < 70, "Export model warnings to review offline", "Score below 70 needs detailed attention"),
+        ]);
+
+        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
+      } catch (error) {
+        return { content: [{ type: "text" as const, text: `Workflow model audit failed: ${errorMessage(error)}` }], isError: true };
+      }
+    }
+  );
+}

@@ -502,6 +502,11 @@
       "commandName": "get_linked_elements",
       "description": "Query elements from linked Revit models",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "workflow_model_audit",
+      "description": "Complete model health audit: score, warnings, families, CAD, purge candidates",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
