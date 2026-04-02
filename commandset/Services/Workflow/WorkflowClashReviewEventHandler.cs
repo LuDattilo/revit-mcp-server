@@ -167,7 +167,11 @@ namespace RevitMCPCommandSet.Services.Workflow
             foreach (Category cat in doc.Settings.Categories)
             {
                 if (cat.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+#if REVIT2024_OR_GREATER
+                    return (BuiltInCategory)cat.Id.Value;
+#else
                     return (BuiltInCategory)cat.Id.IntegerValue;
+#endif
             }
             return BuiltInCategory.INVALID;
         }

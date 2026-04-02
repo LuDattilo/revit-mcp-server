@@ -79,7 +79,11 @@ namespace RevitMCPCommandSet.Services
                                 if (cat.Name.Equals(catName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     var catElements = new FilteredElementCollector(linkDoc)
+#if REVIT2024_OR_GREATER
+                                        .OfCategory((BuiltInCategory)cat.Id.Value)
+#else
                                         .OfCategory((BuiltInCategory)cat.Id.IntegerValue)
+#endif
                                         .WhereElementIsNotElementType()
                                         .Take(MaxElements)
                                         .ToList();
