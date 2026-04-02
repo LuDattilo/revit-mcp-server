@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 
 export function registerBatchCreateSheetsTool(server: McpServer) {
   server.tool(
@@ -34,8 +35,17 @@ export function registerBatchCreateSheetsTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("batch_create_sheets", args);
         });
+
+        const data = typeof response === 'object' ? response : {};
+        const sheetsCreated = data.sheetsCreated ?? data.createdSheets?.length ?? data.count ?? 0;
+
+        const enriched = addSuggestions(response, [
+          suggestIf(sheetsCreated > 0, "Place views on the new sheets", "Sheets are empty — place viewports to populate them"),
+          suggestIf(sheetsCreated > 0, "Align viewports across the new sheets", "Consistent viewport placement improves drawing set quality"),
+        ]);
+
         return {
-          content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }],
         };
       } catch (error) {
         return {

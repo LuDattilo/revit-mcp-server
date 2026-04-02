@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 
 export function registerAuditFamiliesTool(server: McpServer) {
   server.tool(
@@ -19,7 +20,17 @@ export function registerAuditFamiliesTool(server: McpServer) {
             categoryFilter: args.categoryFilter ?? "",
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+
+        const data = typeof response === 'object' ? response : {};
+        const unusedCount = data.unusedFamilyCount ?? data.unusedFamilies?.length ?? 0;
+        const issueCount = data.issueCount ?? data.issues?.length ?? 0;
+
+        const enriched = addSuggestions(response, [
+          suggestIf(unusedCount > 0, `Purge ${unusedCount} unused families to reduce file size`, `${unusedCount} unused families are bloating the model`),
+          suggestIf(issueCount > 0, "Rename families that don't follow naming conventions", `${issueCount} families have naming or health issues`),
+        ]);
+
+        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
       } catch (error) {
         return { content: [{ type: "text", text: `Audit families failed: ${errorMessage(error)}` }], isError: true };
       }

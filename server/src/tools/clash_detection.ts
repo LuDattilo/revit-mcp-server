@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 
 export function registerClashDetectionTool(server: McpServer) {
   server.tool(
@@ -47,7 +48,16 @@ export function registerClashDetectionTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("clash_detection", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+
+        const data = typeof response === 'object' ? response : {};
+        const clashCount = data.clashCount ?? data.clashes?.length ?? 0;
+
+        const enriched = addSuggestions(response, [
+          suggestIf(clashCount > 0, "Isolate the clashing elements in the current view", `${clashCount} clashes detected — isolate them for review`),
+          suggestIf(clashCount > 0, "Create a section box around the clash area", "Section box helps focus on the clash location in 3D"),
+        ]);
+
+        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
       } catch (error) {
         return { content: [{ type: "text", text: `Clash detection failed: ${errorMessage(error)}` }], isError: true };
       }

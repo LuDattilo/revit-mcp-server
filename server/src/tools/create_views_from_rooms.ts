@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 
 export function registerCreateViewsFromRoomsTool(server: McpServer) {
   server.tool(
@@ -31,7 +32,16 @@ export function registerCreateViewsFromRoomsTool(server: McpServer) {
             namingPattern: args.namingPattern ?? "{RoomNumber} - {RoomName}",
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+
+        const data = typeof response === 'object' ? response : {};
+        const viewsCreated = data.viewsCreated ?? data.createdViews?.length ?? data.count ?? 0;
+
+        const enriched = addSuggestions(response, [
+          suggestIf(viewsCreated > 0, "Tag all rooms in the created views", "Room tags complete the documentation for the new views"),
+          suggestIf(viewsCreated > 0, "Create a color legend by department", "Color-coded legend helps visualize departmental layout"),
+        ]);
+
+        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
       } catch (error) {
         return { content: [{ type: "text", text: `Create views from rooms failed: ${errorMessage(error)}` }], isError: true };
       }

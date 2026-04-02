@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 export function registerAuditFamiliesTool(server) {
     server.tool("audit_families", "Comprehensive family audit: health score, unused families, in-place families, instance counts per family/type, category breakdown, and cleanup recommendations.\n\nGUIDANCE:\n- Full audit: call with no parameters for comprehensive family analysis\n- Filter by category: categoryFilter=\"Doors\" to audit only specific category\n- Include unused: includeUnused=true (default) shows families with zero instances\n\nTIPS:\n- Health score factors: unused families, in-place families, CAD imports\n- Recommendations include specific cleanup actions\n- Use purge_unused to remove families flagged as unused\n- Category breakdown shows which areas need most attention", {
         includeUnused: z.boolean().optional().describe("Include unused families in results. Default: true."),
@@ -13,7 +14,14 @@ export function registerAuditFamiliesTool(server) {
                     categoryFilter: args.categoryFilter ?? "",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            const data = typeof response === 'object' ? response : {};
+            const unusedCount = data.unusedFamilyCount ?? data.unusedFamilies?.length ?? 0;
+            const issueCount = data.issueCount ?? data.issues?.length ?? 0;
+            const enriched = addSuggestions(response, [
+                suggestIf(unusedCount > 0, `Purge ${unusedCount} unused families to reduce file size`, `${unusedCount} unused families are bloating the model`),
+                suggestIf(issueCount > 0, "Rename families that don't follow naming conventions", `${issueCount} families have naming or health issues`),
+            ]);
+            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
         }
         catch (error) {
             return { content: [{ type: "text", text: `Audit families failed: ${errorMessage(error)}` }], isError: true };
