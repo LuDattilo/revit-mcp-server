@@ -8,6 +8,9 @@ export function registerExportElementsDataTool(server: McpServer) {
   server.tool(
     "export_elements_data",
     `Export elements by category with selected parameters. Returns columns + rows in JSON or CSV.
+Default limit is 100 elements. Response includes truncated:true and totalCount when results are limited.
+
+TOKEN OPTIMIZATION: Always specify parameterNames to return only needed columns — this skips expensive parameter discovery and dramatically reduces response size.
 
 GUIDANCE: Core data-extraction workflow:
 - Export all doors with Mark, Level, Width, Height:
@@ -39,6 +42,7 @@ QUICK PROMPTS:
         .optional()
         .describe(
           "Parameter names to include as columns (e.g. 'Mark', 'Level', 'Comments'). " +
+          "When provided, skips expensive parameter discovery — faster and smaller response. " +
           "Leave empty to export ALL parameters discovered on the elements."
         ),
       includeTypeParameters: z
@@ -67,9 +71,9 @@ QUICK PROMPTS:
       maxElements: z
         .number()
         .optional()
-        .default(5000)
+        .default(100)
         .describe(
-          "Maximum number of elements to return. Increase for large exports; reduce for quick previews."
+          "Maximum elements to return. Default 100. Use higher values only when needed. The response includes truncated:true and totalCount when limited."
         ),
       filterParameterName: z
         .string()
@@ -97,7 +101,7 @@ QUICK PROMPTS:
             includeTypeParameters: args.includeTypeParameters ?? false,
             includeElementId: args.includeElementId ?? true,
             outputFormat: args.outputFormat ?? "json",
-            maxElements: args.maxElements ?? 5000,
+            maxElements: args.maxElements ?? 100,
             filterParameterName: args.filterParameterName ?? "",
             filterValue: args.filterValue ?? "",
             filterOperator: args.filterOperator ?? "equals",

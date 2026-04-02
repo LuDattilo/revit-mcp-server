@@ -38,7 +38,7 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
                 bool includeTypeParameters = parameters?["includeTypeParameters"]?.Value<bool>() ?? false;
                 bool includeElementId = parameters?["includeElementId"]?.Value<bool>() ?? true;
                 string outputFormat = parameters?["outputFormat"]?.ToString() ?? "json";
-                int maxElements = parameters?["maxElements"]?.Value<int>() ?? 5000;
+                int maxElements = parameters?["maxElements"]?.Value<int>() ?? 100;
                 string filterParameterName = parameters?["filterParameterName"]?.ToString() ?? "";
                 string filterValue = parameters?["filterValue"]?.ToString() ?? "";
                 string filterOperator = parameters?["filterOperator"]?.ToString() ?? "equals";

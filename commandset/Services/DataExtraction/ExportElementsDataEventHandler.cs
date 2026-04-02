@@ -19,7 +19,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         public bool IncludeTypeParameters { get; set; } = false;
         public bool IncludeElementId { get; set; } = true;
         public string OutputFormat { get; set; } = "json"; // "json" or "csv"
-        public int MaxElements { get; set; } = 5000;
+        public int MaxElements { get; set; } = 100;
         public string FilterParameterName { get; set; } = "";
         public string FilterValue { get; set; } = "";
         public string FilterOperator { get; set; } = "equals"; // equals, contains, greater_than, less_than, not_equals
@@ -44,7 +44,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             IncludeTypeParameters = includeTypeParameters;
             IncludeElementId = includeElementId;
             OutputFormat = string.IsNullOrEmpty(outputFormat) ? "json" : outputFormat.ToLower();
-            MaxElements = maxElements > 0 ? maxElements : 5000;
+            MaxElements = maxElements > 0 ? maxElements : 100;
             FilterParameterName = filterParameterName ?? "";
             FilterValue = filterValue ?? "";
             FilterOperator = string.IsNullOrEmpty(filterOperator) ? "equals" : filterOperator.ToLower();
@@ -105,6 +105,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                                  "Check parameter name (may be localized) and value format.";
                 }
 
+                bool truncated = filteredCount > elements.Count;
+
                 Result = new AIResult<object>
                 {
                     Success = true,
@@ -114,6 +116,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                         totalCount,
                         filteredCount,
                         exportedCount = elements.Count,
+                        truncated,
                         categoriesUsed = Categories.Count > 0 ? Categories : new List<string> { "All" },
                         outputFormat = OutputFormat,
                         columns,
@@ -512,8 +515,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         {
             var suggestions = new List<string>();
 
-            if (filteredCount == MaxElements)
-                suggestions.Add($"Result is limited to {MaxElements} elements. Use maxElements parameter to increase the limit or add category/filter constraints.");
+            if (filteredCount > MaxElements)
+                suggestions.Add($"Result is truncated to {MaxElements} of {filteredCount} elements. Use maxElements parameter to increase the limit or add category/filter constraints.");
 
             suggestions.Add("Use sync_csv_parameters to write values back to Revit elements using the ElementId column.");
             suggestions.Add("Use get_element_parameters with a specific ElementId to inspect all parameters of a single element.");
