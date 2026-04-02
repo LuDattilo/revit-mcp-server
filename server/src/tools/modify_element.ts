@@ -12,7 +12,7 @@ const pointSchema = z.object({
 export function registerModifyElementTool(server: McpServer) {
   server.tool(
     "modify_element",
-    "Modify Revit elements by moving, rotating, mirroring, or copying them. Coordinates are in millimeters.\n\nGUIDANCE:\n- Move element: action=\"move\", elementId, translation={x,y,z} in mm\n- Rotate element: action=\"rotate\", elementId, angle in degrees, axis point\n- Copy element: action=\"copy\", elementId, translation={x,y,z} — creates duplicate\n- Mirror element: action=\"mirror\", elementId, mirrorPlane definition\n\nTIPS:\n- Translation values are relative offsets in mm, not absolute positions\n- Rotation angle is in degrees, counterclockwise\n- Use get_selected_elements to get IDs of elements to modify\n- For bulk operations, use create_array instead",
+    "Move, rotate, or mirror elements in the model.",
     {
       data: z.object({
         elementIds: z
@@ -23,9 +23,7 @@ export function registerModifyElementTool(server: McpServer) {
           .describe("The modification action to perform"),
         translation: pointSchema
           .optional()
-          .describe(
-            "Translation vector in mm (required for 'move' action). E.g. {x: 1000, y: 0, z: 0} moves 1m in X"
-          ),
+          .describe("Translation vector in mm (required for 'move' action)."),
         rotationCenter: pointSchema
           .optional()
           .describe(
@@ -42,9 +40,7 @@ export function registerModifyElementTool(server: McpServer) {
           ),
         mirrorPlaneNormal: pointSchema
           .optional()
-          .describe(
-            "Normal vector of the mirror plane (required for 'mirror' action). E.g. {x: 1, y: 0, z: 0} for YZ plane"
-          ),
+          .describe("Normal vector of the mirror plane (required for 'mirror' action)."),
         copyOffset: pointSchema
           .optional()
           .describe(

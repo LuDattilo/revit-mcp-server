@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreatePointBasedElementTool(server: McpServer) {
   server.tool(
     "create_point_based_element",
-    "Create one or more point-based elements in Revit such as doors, windows, or furniture. Supports batch creation with detailed parameters including family type ID, position, dimensions, and level information. All units are in millimeters (mm).\n\nGUIDANCE:\n- Place a door: familyName=\"Single-Flush\", typeName=\"0915 x 2134mm\", x/y/z in mm, hostId=wall element ID\n- Place furniture: familyName=\"Desk\", typeName=\"1525 x 762mm\", x/y/z in mm\n- Place multiple items: call this tool once per element, or use create_array for repeated patterns\n\nTIPS:\n- Use get_available_family_types first to find exact family and type names\n- Coordinates are in millimeters from project origin\n- hostId is required for hosted families (doors, windows) — use ai_element_filter to find wall IDs",
+    "Place point-based family instances at coordinates.",
     {
       data: z
         .array(

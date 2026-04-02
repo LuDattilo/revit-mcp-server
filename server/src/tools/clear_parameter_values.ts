@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerClearParameterValuesTool(server: McpServer) {
   server.tool(
     "clear_parameter_values",
-    "Clear (empty) parameter values across multiple elements. String parameters are set to empty string, numeric to 0, ElementId to InvalidElementId.",
+    "Clear parameter values on elements by category, view, or selection.",
     {
       parameterName: z.string().describe("Parameter to clear."),
       categories: z.array(z.string()).optional().describe("Filter by categories (e.g. ['Walls', 'Doors'])."),

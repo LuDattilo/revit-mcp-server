@@ -7,19 +7,14 @@ import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 export function registerWorkflowSheetSetTool(server: McpServer) {
   server.tool(
     "workflow_sheet_set",
-    `Create a set of sheets with title blocks in one call. Provide sheet numbers and names, and optionally specify a title block family name.
-
-GUIDANCE:
-- "Create 3 architectural sheets": sheets=[{number:"A101",name:"Floor Plan"},{number:"A102",name:"Elevations"},{number:"A103",name:"Sections"}]
-- "Create sheets with a specific title block": titleBlockName="A1 Metric"
-- After creating sheets, use place_viewport and align_viewports to add and arrange views`,
+    "Auto-create sheets from views with title blocks and viewports.",
     {
       sheets: z.array(z.object({
         number: z.string().describe("Sheet number (e.g. 'A101')."),
         name: z.string().describe("Sheet name/title (e.g. 'Floor Plan - Level 1')."),
       })).describe("Array of sheet definitions with number and name."),
       titleBlockName: z.string().optional()
-        .describe("Title block family or type name. If omitted, the first available title block is used."),
+        .describe("Title block name. Default: first available."),
     },
     async (args) => {
       try {

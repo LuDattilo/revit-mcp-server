@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCadLinkCleanupTool(server: McpServer) {
   server.tool(
     "cad_link_cleanup",
-    "Audit and clean up CAD imports and links in the model. List all CAD files (imports and links), identify bloat, and optionally delete them. Models often accumulate forgotten CAD imports that increase file size.\n\nGUIDANCE:\n- Audit CAD imports: action=\"list\" to see all CAD files in the model\n- Delete specific: action=\"delete\", provide CAD link IDs to remove\n- Full cleanup: action=\"deleteAll\" to remove all CAD imports\n\nTIPS:\n- CAD imports increase file size and can cause performance issues\n- List first to review before deleting\n- check_model_health includes CAD import count in health score\n- Consider linking CAD files instead of importing",
+    "Analyze and clean up imported/linked CAD files in the model.",
     {
       action: z
         .enum(["list", "delete"])

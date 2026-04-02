@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateViewTool(server: McpServer) {
   server.tool(
     "create_view",
-    "Create a new Revit view. Supports FloorPlan, CeilingPlan, Section, Elevation, and 3D view types. For plan views, specify level elevation. For sections, specify direction. Coordinates in mm.\n\nGUIDANCE:\n- Floor plan: viewType=\"FloorPlan\", specify level name\n- Section: viewType=\"Section\", provide section line start/end/depth\n- 3D view: viewType=\"3D\" for default 3D, or specify orientation\n- Elevation: viewType=\"Elevation\", specify direction (North/South/East/West)\n\nTIPS:\n- Use get_project_info to see available levels for plan views\n- Use apply_view_template after creation to set consistent standards\n- Duplicate an existing view with duplicate_view for similar setups",
+    "Create floor plan, ceiling plan, section, elevation, or 3D views.",
     {
       viewType: z
         .enum(["FloorPlan", "CeilingPlan", "Section", "Elevation", "3D"])
@@ -33,9 +33,7 @@ export function registerCreateViewTool(server: McpServer) {
           z: z.number(),
         })
         .optional()
-        .describe(
-          "View direction vector for Section/Elevation (e.g. {x:0, y:1, z:0} for looking North)"
-        ),
+        .describe("Direction vector for Section/Elevation views."),
       viewFamilyTypeName: z
         .string()
         .optional()

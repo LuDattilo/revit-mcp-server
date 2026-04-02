@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateSheetTool(server: McpServer) {
   server.tool(
     "create_sheet",
-    "Create a new sheet in the Revit project with an optional title block. Returns the sheet ID, number, and name.\n\nGUIDANCE:\n- Standard sheet: provide sheetNumber=\"A101\", sheetName=\"Floor Plan\", titleBlockName\n- Use get_available_family_types with category \"Title Blocks\" to find title block names\n- After creating sheet, use place_viewport to add views\n\nTIPS:\n- Sheet numbers must be unique in the project\n- Use batch_create_sheets for multiple sheets at once\n- Use create_revision to add revision tracking to sheets",
+    "Create a new sheet with a title block.",
     {
       sheetNumber: z
         .string()

@@ -6,14 +6,12 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerBatchRenameTool(server: McpServer) {
   server.tool(
     "batch_rename",
-    "Batch rename views, sheets, or elements using find/replace, prefix/suffix, or parameter-based naming rules. Useful for enforcing naming conventions across the project.\n\nGUIDANCE:\n- Rename views: targetType=\"views\", findText=\"old\", replaceText=\"new\"\n- Add prefix to sheets: targetType=\"sheets\", prefix=\"A-\"\n- Remove suffix: targetType=\"views\", suffix to remove via find/replace\n\nTIPS:\n- Supports find/replace, prefix, suffix operations\n- Preview changes first with dryRun=true before committing\n- Use renumber_elements for sequential numbering instead\n- Works on views, sheets, rooms, and other named elements",
+    "Batch rename elements using find/replace, prefix, suffix, or regex.",
     {
       elementIds: z
         .array(z.number())
         .optional()
-        .describe(
-          "Specific element IDs to rename. If omitted, uses targetCategory to find elements."
-        ),
+        .describe("Specific element IDs to rename."),
       targetCategory: z
         .enum(["Views", "Sheets", "Levels", "Grids", "Rooms"])
         .optional()
@@ -39,9 +37,7 @@ export function registerBatchRenameTool(server: McpServer) {
       dryRun: z
         .boolean()
         .optional()
-        .describe(
-          "If true (default), only previews changes without applying. Set to false to apply."
-        ),
+        .describe("If true (default), only previews changes without applying."),
     },
     async (args, extra) => {
       const params = {

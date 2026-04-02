@@ -6,12 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetLinkedElementsTool(server: McpServer) {
   server.tool(
     "get_linked_elements",
-    `Query elements from linked Revit models. Extracts data without modifying the linked file.
-
-GUIDANCE:
-- "Show all walls from the structural link": linkName="Structural", categories=["Walls"]
-- "Get doors from all links with Mark and Level": categories=["Doors"], parameterNames=["Mark","Level"]
-- "List all elements in linked model 'MEP.rvt'": linkName="MEP"`,
+    "Query elements from linked Revit models by category.",
     {
       linkName: z.string().optional()
         .describe("Filter by link name (partial match). Empty = all linked models."),

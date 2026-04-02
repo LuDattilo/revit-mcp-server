@@ -7,20 +7,14 @@ import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 export function registerWorkflowRoomDocumentationTool(server: McpServer) {
   server.tool(
     "workflow_room_documentation",
-    `Document all rooms in one call: collect room data (number, name, area, volume, level, department), optionally create callout section views from room bounding boxes, and tag all rooms in the active view.
-
-GUIDANCE:
-- "Document all rooms on Level 1": levelName="Level 1"
-- "Just collect room data without creating views": createSections=false
-- "Document rooms with 500mm offset for sections": offset=500
-- Use this instead of calling export_room_data + create_callout_from_rooms + tag_all_rooms separately`,
+    "Auto-generate room documentation: plans, sections, schedules.",
     {
       levelName: z.string().optional()
         .describe("Filter rooms by level name. If omitted, all rooms in the model are included."),
       createSections: z.boolean().optional().default(true)
         .describe("Create callout section views from each room's bounding box. Default true."),
       offset: z.number().optional().default(300)
-        .describe("Offset in mm for section view boundaries beyond the room bounding box. Default 300."),
+        .describe("Section view boundary offset in mm. Default: 300."),
     },
     async (args) => {
       try {

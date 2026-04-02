@@ -12,7 +12,7 @@ import {
 export function registerQueryStoredDataTool(server: McpServer) {
   server.tool(
     "query_stored_data",
-    "Query stored Revit project and room data from the local database. Supports various query types: get all projects, get project by ID/name, get rooms by project, get all rooms, or get database statistics.",
+    "Query data previously stored via store_project_data.",
     {
       query_type: z.enum([
         "all_projects",

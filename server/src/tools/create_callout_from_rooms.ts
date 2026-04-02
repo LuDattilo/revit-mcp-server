@@ -6,13 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateCalloutFromRoomsTool(server: McpServer) {
   server.tool(
     "create_callout_from_rooms",
-    `Create callout views for rooms. One callout per room, placed on the room's floor plan.
-
-GUIDANCE:
-- "Create callouts for all rooms on Level 1": levelName="Level 1"
-- "Create callout for room 101": roomIds=[ROOM_ELEMENT_ID]
-- "Create callouts with 500mm offset": offset=500
-- "Create callouts at 1:100 scale": scale=100`,
+    "Create callout views from rooms with auto-naming and crop regions.",
     {
       roomIds: z.array(z.number()).optional()
         .describe("Specific room element IDs. If empty, uses levelName or all rooms."),

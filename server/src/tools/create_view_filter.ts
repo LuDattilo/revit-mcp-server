@@ -6,13 +6,11 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateViewFilterTool(server: McpServer) {
   server.tool(
     "create_view_filter",
-    "Create or apply a view filter to control element visibility and graphics overrides in views. Can create parameter-based filters and apply them to views with color/pattern overrides.\n\nGUIDANCE:\n- Hide elements by parameter: action=\"create\", parameterName=\"Level\", value=\"Level 1\", filterRule=\"equals\"\n- Color by type: create filter + apply with override_graphics\n- List existing: action=\"list\" to see all view filters\n\nTIPS:\n- Filters affect element visibility/graphics in the views they're applied to\n- Use apply after create: action=\"apply\" with filterId and viewId\n- Combine with override_graphics for color-coded views\n- Use create_color_legend for automated color-by-parameter workflows",
+    "Create, apply, or list view filters with parameter-based rules.",
     {
       action: z
         .enum(["create", "apply", "list"])
-        .describe(
-          "Action: 'create' a new filter, 'apply' existing filter to view, 'list' all filters"
-        ),
+        .describe("'create', 'apply', or 'list'."),
       filterName: z
         .string()
         .optional()

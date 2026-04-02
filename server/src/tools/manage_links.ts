@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerManageLinksTool(server: McpServer) {
   server.tool(
     "manage_links",
-    "Manage linked Revit models: list all links with status, reload, unload, or load links. Essential for multi-discipline BIM coordination.\n\nGUIDANCE:\n- List links: action=\"list\" — shows all linked Revit models\n- Reload link: action=\"reload\", linkId — refreshes from source file\n- Unload link: action=\"unload\", linkId — removes from memory but keeps reference\n\nTIPS:\n- Linked models must be accessible at their file paths\n- Reload after the linked model has been updated externally\n- Unloading reduces memory usage without losing the link definition",
+    "List, reload, unload, or remove linked Revit/CAD/IFC files.",
     {
       action: z
         .enum(["list", "reload", "unload"])

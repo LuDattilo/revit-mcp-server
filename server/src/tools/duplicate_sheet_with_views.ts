@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerDuplicateSheetWithViewsTool(server: McpServer) {
   server.tool(
     "duplicate_sheet_with_views",
-    "Duplicate a sheet with its views, legends, and schedules. Views can be duplicated or shared.\n\nGUIDANCE:\n- Duplicate sheet with views: provide sheetId\n- Views can be duplicated with different options: Duplicate, DuplicateWithDetailing, DuplicateAsDependent\n- Legends and schedules can be shared across sheets without duplication\n- Use newSheetNumberPrefix to organize new sheet numbers\n\nTIPS:\n- DuplicateWithDetailing preserves annotations and detail items\n- DuplicateAsDependent creates dependent views synced with the original\n- Legends can always be placed on multiple sheets\n- Schedules are shared by reference, not duplicated",
+    "Duplicate a sheet and its placed views onto a new sheet.",
     {
       sheetId: z.number().describe("ElementId of the source sheet to duplicate."),
       copies: z.number().optional().default(1).describe("Number of copies to create. Default: 1."),
@@ -14,7 +14,7 @@ export function registerDuplicateSheetWithViewsTool(server: McpServer) {
       keepLegends: z.boolean().optional().default(true).describe("Keep legend views on new sheets. Default: true."),
       keepSchedules: z.boolean().optional().default(true).describe("Keep schedules on new sheets. Default: true."),
       newSheetNumberPrefix: z.string().optional().describe("Prefix for new sheet numbers."),
-      viewDuplicateOption: z.enum(["Duplicate", "DuplicateWithDetailing", "DuplicateAsDependent"]).optional().default("DuplicateWithDetailing").describe("How to duplicate views: Duplicate, DuplicateWithDetailing, or DuplicateAsDependent. Default: DuplicateWithDetailing."),
+      viewDuplicateOption: z.enum(["Duplicate", "DuplicateWithDetailing", "DuplicateAsDependent"]).optional().default("DuplicateWithDetailing").describe("Duplicate, DuplicateWithDetailing, or DuplicateAsDependent."),
     },
     async (args, extra) => {
       try {

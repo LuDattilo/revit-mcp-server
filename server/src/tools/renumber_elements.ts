@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerRenumberElementsTool(server: McpServer) {
   server.tool(
     "renumber_elements",
-    "Sequentially renumber rooms, doors, windows, or parking elements by spatial order or custom sequence. Supports prefix/suffix, custom start number, and dry-run preview.\n\nGUIDANCE:\n- Number rooms by location: category=\"Rooms\", sortBy=\"spatial\" — numbers left-to-right, top-to-bottom\n- Number doors by room: category=\"Doors\", sortBy=\"spatial\"\n- Custom sequence: provide startNumber and prefix (e.g. prefix=\"D-\", startNumber=101)\n\nTIPS:\n- Spatial ordering goes left-to-right, top-to-bottom in plan view\n- Use batch_rename for text-based renaming instead\n- Preview with dryRun=true before committing changes\n- Works on Rooms, Doors, Windows, Parking elements",
+    "Renumber rooms, doors, windows, or parking by location or name.",
     {
       elementIds: z
         .array(z.number())
@@ -19,7 +19,7 @@ export function registerRenumberElementsTool(server: McpServer) {
       parameterName: z
         .string()
         .optional()
-        .describe("Custom parameter name to set the number on (default: uses built-in number parameter)"),
+        .describe("Parameter to set number on. Default: built-in number param."),
       startNumber: z
         .number()
         .optional()
@@ -30,7 +30,7 @@ export function registerRenumberElementsTool(server: McpServer) {
       sortBy: z
         .enum(["location", "name", "none"])
         .optional()
-        .describe("Sort order before numbering: location (spatial), name (alphabetical), or none (as-is)"),
+        .describe("'location', 'name', or 'none'."),
       dryRun: z
         .boolean()
         .optional()

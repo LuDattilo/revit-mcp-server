@@ -7,12 +7,7 @@ import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 export function registerWorkflowModelAuditTool(server: McpServer) {
   server.tool(
     "workflow_model_audit",
-    `Complete model health audit in one call. Checks: health score (A-F), warnings, in-place families, CAD imports, unused family types, unplaced rooms. Returns a comprehensive report with actionable recommendations.
-
-GUIDANCE:
-- "Audit this model completely": call with defaults
-- "Quick audit without family check": includeFamilies=false
-- Use this instead of calling check_model_health + get_warnings + audit_families separately`,
+    "Run a comprehensive model health audit with scoring.",
     {
       includeWarnings: z.boolean().optional().default(true)
         .describe("Include warning details in the report."),

@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateArrayTool(server: McpServer) {
   server.tool(
     "create_array",
-    "Create linear or radial arrays of elements. Useful for repetitive patterns like columns along a grid, fixtures along a corridor, etc.\n\nGUIDANCE:\n- Linear array: arrayType=\"linear\", elementIds, direction={x,y,z}, count, spacing in mm\n- Radial array: arrayType=\"radial\", center point, angle, count\n- Copy row of columns: select column IDs, set direction and spacing\n\nTIPS:\n- Use get_selected_elements or ai_element_filter to get element IDs first\n- Spacing in mm for linear, degrees for radial\n- Original elements are included in the count",
+    "Create linear or radial arrays of elements.",
     {
       elementIds: z
         .array(z.number())

@@ -6,13 +6,11 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateScheduleTool(server: McpServer) {
   server.tool(
     "create_schedule",
-    "Create a schedule view in Revit. Supports Regular, KeySchedule, and MaterialTakeoff types. Specify a BuiltInCategory name (e.g. OST_Walls) or leave empty for multi-category.\n\nGUIDANCE:\n- Door schedule: category=\"Doors\", fields=[\"Mark\",\"Level\",\"Width\",\"Height\",\"Comments\"]\n- Room schedule: category=\"Rooms\", fields=[\"Number\",\"Name\",\"Area\",\"Level\",\"Department\"]\n- Wall schedule: category=\"Walls\", fields=[\"Type\",\"Length\",\"Area\",\"Base Constraint\"]\n\nTIPS:\n- Use get_element_parameters on a sample element to discover available field names\n- Add filters to limit schedule scope (e.g. by level)\n- Use export_schedule to get schedule data as CSV\n- Use get_schedule_data to read existing schedule contents",
+    "Create a schedule view for a category with fields and filters.",
     {
       categoryName: z
         .string()
-        .describe(
-          "BuiltInCategory name like 'OST_Walls', 'OST_Doors', 'OST_Rooms'. Use empty string for multi-category schedule."
-        ),
+        .describe("BuiltInCategory name like 'OST_Walls', 'OST_Doors', 'OST_Rooms'."),
       name: z.string().optional().describe("Schedule name"),
       type: z
         .enum(["Regular", "KeySchedule", "MaterialTakeoff"])
@@ -50,9 +48,7 @@ export function registerCreateScheduleTool(server: McpServer) {
             fieldName: z.string().describe("Field name to filter by"),
             filterType: z
               .string()
-              .describe(
-                "Filter type (Equal, NotEqual, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Contains, NotContains, BeginsWith, NotBeginsWith, EndsWith, NotEndsWith, HasValue, HasNoValue)"
-              ),
+              .describe("Equal, NotEqual, GreaterThan, LessThan, Contains, etc."),
             filterValue: z.string().describe("Filter value"),
           })
         )

@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateSurfaceBasedElementTool(server: McpServer) {
   server.tool(
     "create_surface_based_element",
-    "Create one or more surface-based elements in Revit such as floors, ceilings, or roofs. Supports batch creation with detailed parameters including family type ID, boundary lines, thickness, and level information. All units are in millimeters (mm).\n\nGUIDANCE:\n- Create a floor: provide boundary points as [{x,y,z},...] forming a closed loop\n- Create a ceiling: same approach with ceiling family type\n- Use export_room_data to get room boundaries, then create floors matching rooms\n\nTIPS:\n- Points must form a valid closed polygon (no self-intersections)\n- The last point auto-connects to the first\n- Use get_available_family_types with category \"Floors\" to see available types",
+    "Create surface-based elements (floors, ceilings, roofs) from points.",
     {
       data: z
         .array(
@@ -17,7 +17,7 @@ export function registerCreateSurfaceBasedElementTool(server: McpServer) {
             category: z
               .enum(["OST_Floors", "OST_Ceilings", "OST_Roofs"])
               .optional()
-              .describe("The Revit built-in category for the element. Use OST_Floors for floors, OST_Ceilings for ceilings, OST_Roofs for roofs. If not specified, will be determined from typeId."),
+              .describe("The Revit built-in category for the element."),
             typeId: z
               .number()
               .optional()

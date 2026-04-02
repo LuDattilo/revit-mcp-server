@@ -6,15 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerManageViewTemplatesTool(server: McpServer) {
   server.tool(
     "manage_view_templates",
-    `List, duplicate, delete, or rename view templates in the Revit project.
-
-GUIDANCE:
-- "List all view templates": action="list"
-- "List floor plan templates": action="list", filterViewType="FloorPlan"
-- "Duplicate template 12345": action="duplicate", templateIds=[12345], newName="My Copy"
-- "Delete templates": action="delete", templateIds=[12345, 12346]
-- "Rename template": action="rename", templateIds=[12345], newName="New Name"
-- "Replace 'Draft' with 'Final' in all template names": action="batch_rename", findText="Draft", replaceText="Final"`,
+    "List, create, apply, or modify view templates.",
     {
       action: z.enum(["list", "duplicate", "delete", "rename", "batch_rename"])
         .describe("Operation to perform."),

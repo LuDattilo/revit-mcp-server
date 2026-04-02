@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerImportTableTool(server: McpServer) {
   server.tool(
     "import_table",
-    "Import a CSV/TSV file as a table into a Revit Legend or Drafting view. Creates text notes arranged in a grid. NOTE: For Excel files, first convert to CSV.",
+    "Import a table (CSV/JSON) and apply values to element parameters.",
     {
       filePath: z
         .string()

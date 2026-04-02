@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreatePlaceholderSheetsTool(server: McpServer) {
   server.tool(
     "create_placeholder_sheets",
-    "Create, list, convert, or delete placeholder sheets. Placeholder sheets are sheet stubs without a title block that can be promoted to full sheets later.\n\nGUIDANCE:\n- create: provide sheets array with number and name for each placeholder\n- list: returns all placeholder sheets in the model\n- convert: provide sheetIds and titleBlockId to promote placeholders to real sheets\n- delete: provide sheetIds to remove placeholder sheets\n\nTIPS:\n- Use 'list' first to see existing placeholders before converting or deleting\n- Use get_available_family_types with \"Title Blocks\" to find title block IDs for convert\n- Converting a placeholder preserves its number and name",
+    "Create multiple placeholder sheets with sequential numbering.",
     {
       action: z
         .enum(["create", "list", "convert", "delete"])

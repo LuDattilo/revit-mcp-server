@@ -6,13 +6,11 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateStructuralFramingSystemTool(server: McpServer) {
   server.tool(
     "create_structural_framing_system",
-    "Create a structural beam framing system in Revit. Generates beams within a rectangular boundary at fixed spacing intervals. The system uses Revit's BeamSystem API to create properly connected beam layouts. All units are in millimeters (mm).\n\nGUIDANCE:\n- Beam grid between 2 points: provide start/end points, spacing, and beam type\n- Floor framing: create beams spanning between grids or walls\n- Use after create_grid to add structural framing to grid layout\n\nTIPS:\n- Use get_available_family_types with category \"Structural Framing\" for beam types\n- Spacing in mm — beams auto-distribute between start and end\n- Direction controls whether beams run parallel to X or Y axis",
+    "Create a beam system from boundary lines on a level.",
     {
       levelName: z
         .string()
-        .describe(
-          "Name of the level to place the beam system on (e.g., 'Level 1', 'Level 2'). If the level doesn't exist but follows 'Level N' pattern, it will be auto-created at 4000mm floor-to-floor height."
-        ),
+        .describe("Level name (e.g. 'Level 1')."),
       xMin: z
         .number()
         .describe("Minimum X coordinate of the rectangular boundary in millimeters"),
@@ -32,9 +30,7 @@ export function registerCreateStructuralFramingSystemTool(server: McpServer) {
       directionEdge: z
         .enum(["bottom", "right", "top", "left"])
         .default("bottom")
-        .describe(
-          "Which edge defines the beam direction. Beams run perpendicular to this edge. 'bottom'/'top' = beams run in Y direction, 'left'/'right' = beams run in X direction."
-        ),
+        .describe("Which edge defines the beam direction."),
       layoutRule: z
         .enum(["fixed_distance"])
         .default("fixed_distance")
@@ -44,27 +40,19 @@ export function registerCreateStructuralFramingSystemTool(server: McpServer) {
       justify: z
         .enum(["beginning", "center", "end", "directionline"])
         .default("center")
-        .describe(
-          "Beam justification within the layout. 'center' places beams symmetrically, 'beginning'/'end' align to boundary edges."
-        ),
+        .describe("Beam justification within the layout."),
       beamTypeName: z
         .string()
         .optional()
-        .describe(
-          "Name of the beam family type to use (e.g., 'W10x12', 'W-Wide Flange'). If not provided, the first available structural framing type will be used."
-        ),
+        .describe("Beam family type name (e.g. 'W10x12')."),
       elevation: z
         .number()
         .default(0)
-        .describe(
-          "Elevation offset from the level in millimeters. Use this to adjust the vertical position of the beam system."
-        ),
+        .describe("Elevation offset from the level in millimeters."),
       is3d: z
         .boolean()
         .default(false)
-        .describe(
-          "Whether to create a 3D beam system. Set to true for sloped or non-planar systems."
-        ),
+        .describe("Whether to create a 3D beam system."),
     },
     async (args, extra) => {
       const params = {

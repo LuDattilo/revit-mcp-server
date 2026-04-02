@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerRenameViewsTool(server: McpServer) {
   server.tool(
     "rename_views",
-    "Batch rename Revit views with prefix, suffix, or find-and-replace. Filter by view type or name pattern.\n\nGUIDANCE:\n- Add prefix: operation=\"prefix\", prefix=\"A-\"\n- Add suffix: operation=\"suffix\", suffix=\"_OLD\"\n- Find/replace: operation=\"find_replace\", findText=\"old\", replaceText=\"new\"\n- Filter by type: viewTypes=[\"FloorPlan\", \"Section\"]\n- Filter by name: filterName=\"Level\" to only rename views containing \"Level\"\n\nTIPS:\n- Preview changes first with dryRun=true (default) before committing\n- Combine viewTypes and filterName for precise targeting\n- View templates and system browser views are always excluded",
+    "Rename views using find/replace, prefix, suffix, or regex.",
     {
       operation: z
         .enum(["prefix", "suffix", "find_replace"])
@@ -52,9 +52,7 @@ export function registerRenameViewsTool(server: McpServer) {
         .boolean()
         .optional()
         .default(true)
-        .describe(
-          "If true (default), only previews changes without applying. Set to false to execute."
-        ),
+        .describe("If true (default), only previews changes without applying."),
     },
     async (args, extra) => {
       const params = {

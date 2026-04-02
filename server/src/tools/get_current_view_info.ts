@@ -5,7 +5,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetCurrentViewInfoTool(server: McpServer) {
   server.tool(
     "get_current_view_info",
-    "Get detailed information about the current active Revit view, including view type, name, scale, and other properties.\n\nGUIDANCE:\n- Check active view: returns view name, type, level, scale, and crop settings\n- Use before create_dimensions or create_text_note to understand view context\n- Verify view type before operations that require specific view types\n\nTIPS:\n- Some operations only work in plan views (e.g. tag_all_rooms)\n- Section/elevation views have different coordinate systems\n- Use create_view to switch to a different view type if needed",
+    "Get details about the active view (type, scale, crop, etc.).",
     {},
     async (args, extra) => {
       try {

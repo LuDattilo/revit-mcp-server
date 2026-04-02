@@ -7,16 +7,7 @@ import { addSuggestions } from "../utils/suggestions.js";
 export function registerWorkflowDataRoundtripTool(server: McpServer) {
   server.tool(
     "workflow_data_roundtrip",
-    `Export elements to Excel for a roundtrip edit-and-reimport workflow. Creates a color-coded .xlsx file with ElementId, Category, Family, Type, and parameter columns.
-
-Column colors: GREEN = editable instance parameter, YELLOW = type parameter, RED = read-only.
-Returns the file path and step-by-step instructions for the roundtrip workflow.
-
-GUIDANCE:
-- "Export doors for editing and reimport": categories=["Doors"]
-- "Roundtrip walls with Mark and Width": categories=["Walls"], parameterNames=["Mark","Width"]
-- "Export everything with type parameters": includeTypeParameters=true
-- When done editing, ask me to import the file back`,
+    "Export parameters to CSV, edit externally, and re-import.",
     {
       categories: z.array(z.string()).optional()
         .describe("Category names to export (e.g. 'Walls', 'Doors'). Empty = all categories."),

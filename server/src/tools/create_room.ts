@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateRoomTool(server: McpServer) {
   server.tool(
     "create_room",
-    "Create and place rooms in Revit at specified locations. Rooms are placed within enclosed wall boundaries and can be named and numbered. The location point should be inside an enclosed area bounded by walls. All coordinates are in millimeters (mm).\n\nGUIDANCE:\n- Place room at center of enclosed area: provide x,y coordinates inside walls\n- Auto-place all rooms: use with allBoundedSpaces=true to place rooms in every enclosed area\n- Custom naming: provide name, number, and optionally department/comments\n\nTIPS:\n- Rooms need enclosed walls to be valid — check model has walls first\n- Use tag_all_rooms after creating rooms to label them in views\n- Use export_room_data to verify room placement and properties",
+    "Create rooms at specified locations with optional parameters.",
     {
       data: z
         .array(
@@ -24,13 +24,11 @@ export function registerCreateRoomTool(server: McpServer) {
                 y: z.number().describe("Y coordinate in mm (should be inside enclosed walls)"),
                 z: z.number().describe("Z coordinate in mm (typically 0 or level elevation)"),
               })
-              .describe(
-                "The location point where the room will be placed - must be inside an enclosed area"
-              ),
+              .describe("Location point in mm - must be inside enclosed walls."),
             levelId: z
               .number()
               .optional()
-              .describe("Revit Level ElementId. If not provided, uses the nearest level to the Z coordinate"),
+              .describe("Revit Level ElementId."),
             upperLimitId: z
               .number()
               .optional()

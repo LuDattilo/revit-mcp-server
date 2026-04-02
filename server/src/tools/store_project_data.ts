@@ -5,7 +5,7 @@ import { storeProject, getProjectByName } from "../database/service.js";
 export function registerStoreProjectDataTool(server: McpServer) {
   server.tool(
     "store_project_data",
-    "Store or update Revit project metadata in the local database. This captures project information with a timestamp for later retrieval.",
+    "Store key-value data in the Revit project as extensible storage.",
     {
       project_name: z.string().describe("The name of the Revit project"),
       project_path: z.string().optional().describe("File path to the project"),

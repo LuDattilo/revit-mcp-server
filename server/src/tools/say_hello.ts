@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSayHelloTool(server: McpServer) {
   server.tool(
     "say_hello",
-    "Display a greeting dialog in Revit. Useful for testing the connection between Claude and Revit.",
+    "Display a greeting dialog in Revit. Tests MCP connection.",
     {
       message: z
         .string()

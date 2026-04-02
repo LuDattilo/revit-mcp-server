@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerBatchModifyViewRangeTool(server: McpServer) {
   server.tool(
     "batch_modify_view_range",
-    "Batch modify View Range settings (Top, Cut Plane, Bottom, View Depth offsets) on multiple plan views at once. Only specified offsets are changed; others remain unchanged.\n\nGUIDANCE:\n- Set cut plane: modify cut plane height for multiple plan views at once\n- Adjust bottom: change bottom clip offset for views\n- Standardize: apply same view range settings across all floor plans\n\nTIPS:\n- View range only applies to plan views (floor plans, ceiling plans)\n- Heights are relative to the associated level\n- Use get_current_view_info to check current view range settings\n- Changes affect element visibility in plan views",
+    "Batch-modify view range (cut plane, top, bottom) for plan views.",
     {
       viewIds: z.array(z.number()).describe("IDs of plan views to modify."),
       topOffsetMm: z.number().optional().describe("Top clip plane offset from level in mm."),

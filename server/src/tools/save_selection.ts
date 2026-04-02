@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSaveSelectionTool(server: McpServer) {
   server.tool(
     "save_selection",
-    "Save a named selection of elements in Revit using SelectionFilterElement (native Saved Selection).\n\nGUIDANCE:\n- Save current Revit UI selection by name for later reuse\n- Optionally specify explicit element IDs instead of using current selection\n- Use overwrite=true to replace an existing saved selection\n\nTIPS:\n- Saved selections persist in the Revit document\n- Use load_selection to recall saved selections later\n- Use delete_selection to remove saved selections",
+    "Save the current element selection with a name for later recall.",
     {
       name: z
         .string()

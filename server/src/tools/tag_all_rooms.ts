@@ -6,7 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerTagAllRoomsTool(server: McpServer) {
   server.tool(
     "tag_all_rooms",
-    "Create tags for all rooms in the current active view. Tags will be placed at the center point of each room, displaying the room name and number.\n\nGUIDANCE:\n- Tag all rooms in active view: call with no parameters\n- Tags show room name and number\n- Run after create_room to annotate placed rooms\n\nTIPS:\n- Only tags rooms in the current plan view\n- Rooms must be placed first (use create_room)\n- Tags require a room tag family loaded in the project\n- Reposition tags manually in Revit if overlapping",
+    "Tag rooms in the current view with room tags.",
     {
       useLeader: z
         .boolean()
@@ -16,11 +16,11 @@ export function registerTagAllRoomsTool(server: McpServer) {
       tagTypeId: z
         .string()
         .optional()
-        .describe("The ID of the specific room tag family type to use. If not provided, the default room tag type will be used"),
+        .describe("The ID of the specific room tag family type to use."),
       roomIds: z
         .array(z.number())
         .optional()
-        .describe("Optional array of specific room element IDs to tag. If not provided, all rooms in the current view will be tagged"),
+        .describe("Optional array of specific room element IDs to tag."),
     },
     async (args, extra) => {
       const params = args;

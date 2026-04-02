@@ -6,14 +6,7 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerImportFromExcelTool(server: McpServer) {
   server.tool(
     "import_from_excel",
-    `Import parameter values from an Excel (.xlsx) file back into Revit elements.
-The file must have an 'ElementId' column (use export_to_excel with includeElementId=true).
-Read-only parameters and system columns (Category, Family, Type) are skipped.
-
-GUIDANCE:
-- Always use dryRun=true first to preview changes before applying.
-- "Update parameters from Excel": filePath="C:/path/to/file.xlsx"
-- Workflow: export_to_excel → edit in Excel → import_from_excel`,
+    "Import data from Excel into Revit element parameters.",
     {
       filePath: z.string().describe("Full path to the .xlsx file to import."),
       sheetName: z.string().optional().describe("Worksheet name. Default: first sheet."),

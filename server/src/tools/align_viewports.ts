@@ -6,11 +6,11 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerAlignViewportsTool(server: McpServer) {
   server.tool(
     "align_viewports",
-    "Align viewports on sheets to match a reference viewport position. Use a source viewport as reference and align multiple target viewports to the same position. Supports alignment by sheet placement or model coordinates.\n\nGUIDANCE:\n- Align to reference: pick a referenceViewportId, then align other viewports to match\n- Cross-sheet alignment: align same view type across multiple sheets\n- Consistent layouts: ensure floor plans align on all sheets\n\nTIPS:\n- Reference viewport position is preserved, others move to match\n- Works across different sheets\n- Use after batch_create_sheets + place_viewport for consistent sheet sets\n- Aligns by viewport center point",
+    "Align viewports across sheets by placement or model coordinates.",
     {
       sourceViewportId: z.number().describe("ID of the reference viewport to align to."),
       targetViewportIds: z.array(z.number()).describe("IDs of viewports to align."),
-      alignMode: z.enum(["placement", "coordinates"]).optional().describe("Alignment mode: 'placement' matches position on sheet, 'coordinates' matches model coordinates. Default: placement."),
+      alignMode: z.enum(["placement", "coordinates"]).optional().describe("'placement' (sheet position) or 'coordinates' (model). Default: placement."),
     },
     async (args, extra) => {
       try {

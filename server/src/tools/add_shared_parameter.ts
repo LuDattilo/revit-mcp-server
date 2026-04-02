@@ -6,36 +6,26 @@ import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerAddSharedParameterTool(server: McpServer) {
   server.tool(
     "add_shared_parameter",
-    "Add a shared parameter from the shared parameter file to specified categories. Requires a shared parameter file to be set in Revit.\n\nGUIDANCE:\n- Add from shared parameter file: provide parameterName, groupName in the .txt file\n- Bind to categories: specify which Revit categories get the parameter\n- Instance vs Type: choose binding type based on data needs\n\nTIPS:\n- Requires a shared parameter file (.txt) configured in the project\n- Use get_shared_parameters to see existing shared parameters\n- Use manage_project_parameters for project parameters (no shared file needed)\n- Parameter names must exist in the shared parameter file",
+    "Add a shared parameter from the shared parameter file to categories.",
     {
       parameterName: z
         .string()
-        .describe(
-          "Name of the shared parameter to add. Must exist in the specified group of the shared parameter file, or will be created."
-        ),
+        .describe("Name of the shared parameter to add."),
       groupName: z
         .string()
-        .describe(
-          "Name of the parameter group in the shared parameter file where the parameter is defined (e.g. 'Identity Data', 'My Group')."
-        ),
+        .describe("Group name in the shared parameter file."),
       categories: z
         .array(z.string())
-        .describe(
-          "List of Revit category names to bind the parameter to (e.g. ['Walls', 'Floors', 'Doors'])."
-        ),
+        .describe("Category names to bind to (e.g. ['Walls', 'Doors'])."),
       isInstance: z
         .boolean()
         .optional()
         .default(true)
-        .describe(
-          "If true, binds as an instance parameter. If false, binds as a type parameter. Defaults to true."
-        ),
+        .describe("If true, binds as an instance parameter."),
       parameterGroup: z
         .string()
         .optional()
-        .describe(
-          "Display group for the parameter in the element properties panel. For Revit 2022+, use GroupTypeId property names (e.g. 'Data', 'IdentityData'). For older versions, use BuiltInParameterGroup enum names (e.g. 'PG_DATA'). Defaults to 'Data' / 'PG_DATA'."
-        ),
+        .describe("Display group for the parameter in the element properties panel."),
     },
     async (args, extra) => {
       try {
