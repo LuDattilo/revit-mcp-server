@@ -9,6 +9,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Top Bar - minimal like claude.ai -->
@@ -103,8 +104,41 @@
             </Grid>
         </Border>
 
+        <!-- Prompt Chips - contextual suggestions -->
+        <Border Grid.Row="3" x:Name="ChipsBar" Background="#FAF9F7" Padding="12,6"
+                BorderBrush="#F0EEEB" BorderThickness="0,1,0,0"
+                Visibility="Collapsed">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="PromptChips">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="12" Background="#E3F2FD" Margin="0,0,6,4"
+                                    Padding="10,5" Cursor="Hand"
+                                    MouseLeftButtonDown="Chip_Click">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#BBDEFB"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding Text}" FontSize="12" Foreground="#1565C0"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
         <!-- Input - claude.ai exact style -->
-        <Border Grid.Row="3" Background="White" Padding="16,10,16,16">
+        <Border Grid.Row="4" Background="White" Padding="16,10,16,16">
             <Border Background="White" CornerRadius="22"
                     BorderBrush="#D4D1CC" BorderThickness="1"
                     Padding="2">

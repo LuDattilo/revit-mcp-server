@@ -50,6 +50,8 @@ namespace revit_mcp_plugin.Core
 
         public bool IsRunning => _isRunning;
 
+        public UIApplication UiApplication => _uiApp;
+
         public int Port
         {
             get => _port;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,7 +17,9 @@ namespace revit_mcp_plugin.UI
     {
         private static MCPDockablePanel _instance;
         private readonly ObservableCollection<ChatMessage> _messages = new ObservableCollection<ChatMessage>();
+        private readonly ObservableCollection<PromptChip> _chips = new ObservableCollection<PromptChip>();
         private readonly DispatcherTimer _statusTimer;
+        private readonly DispatcherTimer _chipsTimer;
         private ClaudeRevitClient _client;
         private bool _isProcessing;
         private bool _lastStatus;
@@ -36,6 +39,10 @@ namespace revit_mcp_plugin.UI
             _statusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _statusTimer.Tick += (s, e) => UpdateStatus();
 
+            PromptChips.ItemsSource = _chips;
+            _chipsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            _chipsTimer.Tick += (s, e) => UpdateChips();
+
             ChatInput.TextChanged += (s, e) =>
             {
                 Placeholder.Visibility = string.IsNullOrEmpty(ChatInput.Text)
@@ -51,7 +58,9 @@ namespace revit_mcp_plugin.UI
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             _statusTimer.Start();
+            _chipsTimer.Start();
             UpdateStatus();
+            UpdateChips();
             ChatInput.Focus();
         }
 
@@ -114,6 +123,123 @@ namespace revit_mcp_plugin.UI
                 _isProcessing = false;
                 SendButton.IsEnabled = true;
                 TypingIndicator.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UpdateChips()
+        {
+            try
+            {
+                if (!Core.SocketService.Instance.IsRunning)
+                {
+                    _chips.Clear();
+                    ChipsBar.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                var uiApp = Core.SocketService.Instance.UiApplication;
+                if (uiApp?.ActiveUIDocument == null)
+                {
+                    SetChips(new[] { new PromptChip("Open a project to get started") });
+                    return;
+                }
+
+                var doc = uiApp.ActiveUIDocument.Document;
+                var activeView = doc.ActiveView;
+                var selection = uiApp.ActiveUIDocument.Selection;
+                int selectedCount = selection.GetElementIds().Count;
+
+                var chips = new List<PromptChip>();
+
+                // Selection-based chips (highest priority)
+                if (selectedCount > 0)
+                {
+                    chips.Add(new PromptChip($"Show parameters ({selectedCount} selected)", "Show me the parameters of the selected elements"));
+                    chips.Add(new PromptChip("Isolate in view", "Isolate the selected elements in the current view"));
+                    chips.Add(new PromptChip("Measure distance", "Measure the distance between the selected elements"));
+                }
+
+                // View-type chips
+                if (activeView is Autodesk.Revit.DB.ViewPlan)
+                {
+                    bool hasRooms = new Autodesk.Revit.DB.FilteredElementCollector(doc, activeView.Id)
+                        .OfCategory(Autodesk.Revit.DB.BuiltInCategory.OST_Rooms)
+                        .GetElementCount() > 0;
+
+                    if (hasRooms)
+                    {
+                        chips.Add(new PromptChip("Tag all rooms", "Tag all rooms in the current view"));
+                        chips.Add(new PromptChip("Color rooms by department", "Create a color legend for rooms by department"));
+                        chips.Add(new PromptChip("Export room data", "Export all room data"));
+                        chips.Add(new PromptChip("Create callouts for rooms", "Create callout views for all rooms on this level"));
+                    }
+                    else
+                    {
+                        chips.Add(new PromptChip("Check model health", "Check the health of this model"));
+                        chips.Add(new PromptChip("Show warnings", "Show me all model warnings"));
+                        chips.Add(new PromptChip("Export to Excel", "Export all elements in this view to Excel"));
+                    }
+                }
+                else if (activeView is Autodesk.Revit.DB.View3D)
+                {
+                    chips.Add(new PromptChip("Check model health", "Check the health of this model"));
+                    chips.Add(new PromptChip("Detect clashes", "Check for clashes between structural elements and MEP"));
+                    chips.Add(new PromptChip("Section box from selection", "Create a section box around the selected elements"));
+                    chips.Add(new PromptChip("Audit families", "Audit all families in this project"));
+                }
+                else if (activeView is Autodesk.Revit.DB.ViewSheet)
+                {
+                    chips.Add(new PromptChip("Align viewports", "Align all viewports on this sheet"));
+                    chips.Add(new PromptChip("Add revision", "Add a revision to this sheet"));
+                    chips.Add(new PromptChip("Export to PDF", "Export all sheets to PDF"));
+                    chips.Add(new PromptChip("Duplicate sheet", "Duplicate this sheet with all content"));
+                }
+                else if (activeView is Autodesk.Revit.DB.ViewSchedule)
+                {
+                    chips.Add(new PromptChip("Export schedule to CSV", "Export this schedule to CSV"));
+                    chips.Add(new PromptChip("Export to Excel", "Export this schedule to Excel"));
+                }
+                else if (activeView is Autodesk.Revit.DB.ViewSection || activeView is Autodesk.Revit.DB.ViewDrafting)
+                {
+                    chips.Add(new PromptChip("Add dimensions", "Create dimensions in this view"));
+                    chips.Add(new PromptChip("Add text note", "Add a text note in this view"));
+                    chips.Add(new PromptChip("Export to PDF", "Export all sheets to PDF"));
+                }
+
+                // Fallback if no view-specific chips were added
+                if (chips.Count == 0 || (selectedCount == 0 && chips.Count < 3))
+                {
+                    chips.Add(new PromptChip("Model statistics", "How many elements are in this model? Give me statistics by category"));
+                    chips.Add(new PromptChip("Check model health", "Check the health of this model"));
+                    chips.Add(new PromptChip("Export to Excel", "Export all elements to Excel"));
+                    chips.Add(new PromptChip("List warnings", "Show me all model warnings"));
+                }
+
+                // Limit to 6
+                SetChips(chips.Take(6));
+            }
+            catch
+            {
+                // Never crash the panel due to chip updates
+                _chips.Clear();
+                ChipsBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void SetChips(IEnumerable<PromptChip> chips)
+        {
+            _chips.Clear();
+            foreach (var chip in chips)
+                _chips.Add(chip);
+            ChipsBar.Visibility = _chips.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void Chip_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is PromptChip chip && !_isProcessing)
+            {
+                ChatInput.Text = chip.Prompt;
+                Send_Click(sender, e);
             }
         }
 
@@ -281,6 +407,18 @@ namespace revit_mcp_plugin.UI
                 ["exported"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 ["messages"] = array
             }.ToString(Newtonsoft.Json.Formatting.Indented);
+        }
+    }
+
+    public class PromptChip
+    {
+        public string Text { get; set; }
+        public string Prompt { get; set; }
+
+        public PromptChip(string text, string prompt = null)
+        {
+            Text = text;
+            Prompt = prompt ?? text;
         }
     }
 
