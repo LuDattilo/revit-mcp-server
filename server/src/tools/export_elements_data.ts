@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions } from "../utils/suggestions.js";
 
 export function registerExportElementsDataTool(server: McpServer) {
   server.tool(
@@ -102,8 +103,13 @@ QUICK PROMPTS:
             filterOperator: args.filterOperator ?? "equals",
           });
         });
+        const enriched = addSuggestions(response, [
+          { prompt: "Update these elements with the modified data using sync_csv_parameters", reason: "Export-edit-import workflow" },
+          { prompt: "Export this data to Excel for easier editing", reason: "Excel is more convenient for bulk parameter editing" },
+        ]);
+
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }],
+          content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }],
         };
       } catch (error) {
         return {

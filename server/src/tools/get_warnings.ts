@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 
 export function registerGetWarningsTool(server: McpServer) {
   server.tool(
@@ -35,11 +36,19 @@ export function registerGetWarningsTool(server: McpServer) {
           return await revitClient.sendCommand("get_warnings", params);
         });
 
+        const data = typeof response === 'object' ? response : {};
+        const count = data.warningCount ?? data.warnings?.length ?? 0;
+
+        const enriched = addSuggestions(response, [
+          suggestIf(count > 0, "Isolate the elements with the most warnings in the current view", `${count} warnings need attention`),
+          suggestIf(count > 20, "Check model health for an overall score", "Many warnings — a health audit gives the big picture"),
+        ]);
+
         return {
           content: [
             {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
+              type: "text" as const,
+              text: JSON.stringify(enriched, null, 2),
             },
           ],
         };

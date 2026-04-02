@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
 
 export function registerCheckModelHealthTool(server: McpServer) {
   server.tool(
@@ -13,8 +14,19 @@ export function registerCheckModelHealthTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("check_model_health", {});
         });
+        const data = typeof response === 'object' ? response : {};
+        const score = data.healthScore ?? data.score ?? 100;
+        const warningCount = data.warningCount ?? data.warnings?.length ?? 0;
+        const unusedFamilies = data.unusedFamilies ?? data.unusedFamilyCount ?? 0;
+
+        const enriched = addSuggestions(response, [
+          suggestIf(warningCount > 0, `Show me all ${warningCount} model warnings`, `${warningCount} warnings found in the model`),
+          suggestIf(unusedFamilies > 0, `Purge ${unusedFamilies} unused families`, `${unusedFamilies} unused families detected`),
+          suggestIf(score < 80, "Audit all families for health issues", "Health score below 80 — detailed family audit recommended"),
+        ]);
+
         return {
-          content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
+          content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }],
         };
       } catch (error) {
         return {

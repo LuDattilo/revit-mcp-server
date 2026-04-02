@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions } from "../utils/suggestions.js";
 
 export function registerExportToExcelTool(server: McpServer) {
   server.tool(
@@ -47,7 +48,14 @@ GUIDANCE:
             maxElements: args.maxElements ?? 10000,
           });
         });
-        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+        const data = typeof response === 'object' ? response : {};
+        const filePath = data.filePath ?? "";
+
+        const enriched = addSuggestions(response, [
+          { prompt: `When you're done editing, ask me to import ${filePath} back into Revit`, reason: "Excel roundtrip: edit the file then re-import" },
+        ]);
+
+        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
       } catch (error) {
         return { content: [{ type: "text" as const, text: `Export to Excel failed: ${errorMessage(error)}` }], isError: true };
       }
