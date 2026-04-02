@@ -487,6 +487,11 @@
       "commandName": "manage_view_templates",
       "description": "List, duplicate, delete, or rename view templates",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_callout_from_rooms",
+      "description": "Create callout views for rooms with boundary offset",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
