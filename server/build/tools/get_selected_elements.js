@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetSelectedElementsTool(server) {
-    server.tool("get_selected_elements", "Get elements currently selected in Revit. You can limit the number of returned elements.\n\nGUIDANCE:\n- Get IDs of manually selected elements in Revit UI\n- Use as starting point for batch operations (modify, delete, copy)\n- Select elements in Revit first, then call this tool\n\nTIPS:\n- Returns empty if nothing is selected in Revit\n- Use the returned IDs with modify_element, delete_element, copy_elements\n- For programmatic selection, use ai_element_filter instead", {
+    server.tool("get_selected_elements", "Get info about currently selected elements in Revit.", {
         limit: z
             .number()
             .optional()

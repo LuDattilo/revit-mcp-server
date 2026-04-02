@@ -2,10 +2,10 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSendCodeToRevitTool(server) {
-    server.tool("send_code_to_revit", "Send C# code to Revit for execution. The code will be inserted into a template with access to the Revit Document and parameters. Your code should be written to work within the Execute method of the template.\n\nGUIDANCE:\n- Execute custom C# code: provide code string that runs in Revit context\n- Access to Document: use 'doc' variable for the active document\n- Access to UIDocument: use 'uidoc' for UI operations\n- Return data: use 'result' variable to return values\n\nTIPS:\n- ADVANCED: Use only when no dedicated MCP tool exists for the operation\n- Code runs on Revit's UI thread — keep it fast\n- Full Revit API access — be careful with transactions\n- Wrap modifications in Transaction blocks\n- Test code with small operations first", {
+    server.tool("send_code_to_revit", "Execute custom C# code in Revit for advanced operations.", {
         code: z
             .string()
-            .describe("The C# code to execute in Revit. This code will be inserted into the Execute method of a template with access to Document and parameters."),
+            .describe("The C# code to execute in Revit."),
         parameters: z
             .array(z.any())
             .optional()

@@ -12,6 +12,8 @@ export function registerGetElementsInSpatialVolumeTool(server) {
         customMaxX: z.number().optional().describe("Max X in mm (for custom bounding box)."),
         customMaxY: z.number().optional().describe("Max Y in mm (for custom bounding box)."),
         customMaxZ: z.number().optional().describe("Max Z in mm (for custom bounding box)."),
+        maxElementsPerVolume: z.number().optional().default(100)
+            .describe("Max elements returned per room/area/volume. Default 100."),
     }, async (args, extra) => {
         try {
             const response = await withRevitConnection(async (revitClient) => {
@@ -19,6 +21,7 @@ export function registerGetElementsInSpatialVolumeTool(server) {
                     volumeIds: args.volumeIds ?? [],
                     volumeType: args.volumeType ?? "room",
                     categoryFilter: args.categoryFilter ?? [],
+                    maxElementsPerVolume: args.maxElementsPerVolume ?? 100,
                     customMinX: args.customMinX ?? 0,
                     customMinY: args.customMinY ?? 0,
                     customMinZ: args.customMinZ ?? 0,

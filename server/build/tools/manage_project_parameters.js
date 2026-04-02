@@ -2,28 +2,14 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerManageProjectParametersTool(server) {
-    server.tool("manage_project_parameters", `Manage project parameters (CRUD): list, create, delete, or modify category bindings.
-
-GUIDANCE for common workflows:
-- List all parameters first to see what exists: action="list"
-- Create a text instance parameter on Walls: action="create", parameterName="MyParam", dataType="Text", categories=["Walls"], isInstance=true
-- Add more categories to an existing parameter: action="modify", parameterName="MyParam", categories=["Doors","Windows"]
-- Remove an unused parameter: action="delete", parameterName="MyParam"
-
-TIPS:
-- isInstance=true means per-element values; isInstance=false means per-type values (shared by all instances of a type)
-- groupUnder controls which group the parameter appears under in the Properties panel
-- Common groups: "PG_IDENTITY_DATA", "PG_TEXT", "PG_GENERAL", "PG_CONSTRAINTS", "PG_DATA", "PG_GEOMETRY"
-- action="modify" always merges new categories with existing ones — it never removes existing bindings
-- dataType options: "Text", "Integer", "Number", "Length", "Area", "Volume", "YesNo", "URL"
-- Category names must match Revit's display names exactly (e.g. "Walls", "Doors", "Floors", "Generic Models")`, {
+    server.tool("manage_project_parameters", "Add, list, or delete project parameters with category bindings.", {
         action: z
             .enum(["list", "create", "delete", "modify"])
-            .describe('Operation to perform. "list" returns all project parameters with bindings. "create" adds a new parameter. "delete" removes a parameter by name. "modify" adds category bindings to an existing parameter.'),
+            .describe("list, create, delete, or modify category bindings."),
         parameterName: z
             .string()
             .optional()
-            .describe('Name of the project parameter. Required for create, delete, and modify. Case-insensitive match for delete and modify.'),
+            .describe("Parameter name. Required for create/delete/modify."),
         dataType: z
             .enum(["Text", "Integer", "Number", "Length", "Area", "Volume", "YesNo", "URL"])
             .optional()
@@ -33,21 +19,21 @@ TIPS:
             .string()
             .optional()
             .default("PG_IDENTITY_DATA")
-            .describe('BuiltInParameterGroup name controlling which section the parameter appears under in Properties. Only used for action="create". Examples: "PG_IDENTITY_DATA", "PG_TEXT", "PG_GENERAL", "PG_CONSTRAINTS". Default: "PG_IDENTITY_DATA".'),
+            .describe("Properties panel group. Default: PG_IDENTITY_DATA."),
         isInstance: z
             .boolean()
             .optional()
             .default(true)
-            .describe('If true (default), creates an instance parameter (per-element). If false, creates a type parameter (per-type). Only used for action="create".'),
+            .describe("Instance (true, default) or type (false) parameter."),
         categories: z
             .array(z.string())
             .optional()
-            .describe('List of Revit category names to bind the parameter to (e.g. ["Walls", "Floors"]). Required for create and modify. Names must match Revit display names exactly.'),
+            .describe("Category names to bind to (e.g. ['Walls', 'Floors'])."),
         isShared: z
             .boolean()
             .optional()
             .default(false)
-            .describe("Reserved for future use. Currently all parameters are created as project parameters. Default: false."),
+            .describe("Reserved for future use. Default: false."),
     }, async (args, extra) => {
         try {
             const response = await withRevitConnection(async (revitClient) => {

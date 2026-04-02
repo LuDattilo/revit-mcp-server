@@ -1,0 +1,34 @@
+import { errorMessage } from "../utils/errorUtils.js";
+import { z } from "zod";
+import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+export function registerWorkflowModelAuditTool(server) {
+    server.tool("workflow_model_audit", "Run a comprehensive model health audit with scoring.", {
+        includeWarnings: z.boolean().optional().default(true)
+            .describe("Include warning details in the report."),
+        includeFamilies: z.boolean().optional().default(true)
+            .describe("Include unused family type detection (slower on large models)."),
+        maxWarnings: z.number().optional().default(50)
+            .describe("Maximum warnings to include in detail."),
+    }, async (args) => {
+        try {
+            const response = await withRevitConnection(async (revitClient) => {
+                return await revitClient.sendCommand("workflow_model_audit", {
+                    includeWarnings: args.includeWarnings ?? true,
+                    includeFamilies: args.includeFamilies ?? true,
+                    maxWarnings: args.maxWarnings ?? 50,
+                });
+            });
+            const data = typeof response === 'object' ? response?.data ?? response : response;
+            const enriched = addSuggestions(response, [
+                suggestIf((data?.unusedFamilyTypeCount ?? 0) > 0, "Purge unused families and types", "Clean up detected unused items"),
+                suggestIf((data?.cadImportCount ?? 0) > 0, "Clean up CAD imports", "Remove unnecessary CAD files"),
+                suggestIf((data?.healthScore ?? 100) < 70, "Export model warnings to review offline", "Score below 70 needs detailed attention"),
+            ]);
+            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+        }
+        catch (error) {
+            return { content: [{ type: "text", text: `Workflow model audit failed: ${errorMessage(error)}` }], isError: true };
+        }
+    });
+}

@@ -2,11 +2,11 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateRevisionTool(server) {
-    server.tool("create_revision", "Manage project revisions: list all revisions, create a new revision, or add the latest revision to sheets. Essential for documentation tracking and issue management.\n\nGUIDANCE:\n- List revisions: action=\"list\" to see existing revisions\n- New revision: action=\"create\", description=\"Updated floor plan\", date=\"2024-01-15\"\n- Add to sheets: action=\"addToSheets\", revisionId and sheetIds\n\nTIPS:\n- Revisions track document changes for construction documentation\n- Each revision gets a unique sequence number\n- Add revisions to sheets before issuing/printing", {
+    server.tool("create_revision", "List, create, or assign revisions to sheets.", {
         action: z
             .enum(["list", "create", "add_to_sheets"])
             .optional()
-            .describe("Action: list revisions, create new, or add latest revision to sheets (default: list)"),
+            .describe("'list', 'create', or 'add_to_sheets'. Default: list."),
         date: z.string().optional().describe("Revision date string (for create)"),
         description: z.string().optional().describe("Revision description (for create)"),
         issuedBy: z.string().optional().describe("Issued by name (for create)"),

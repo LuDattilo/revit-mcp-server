@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateTextNoteTool(server) {
-    server.tool("create_text_note", "Create text note annotations in a Revit view. Coordinates are in millimeters.\n\nGUIDANCE:\n- Simple annotation: provide text content and XY position in the view\n- Title block note: position text relative to sheet coordinates\n- Multi-line: use \\n for line breaks in text content\n\nTIPS:\n- Position is in view coordinates (paper space for sheets)\n- Use get_current_view_info to understand view extents\n- Text appears in the specified view only", {
+    server.tool("create_text_note", "Create a text note in a view at specified coordinates.", {
         textNotes: z
             .array(z.object({
             text: z.string().describe("The text content"),

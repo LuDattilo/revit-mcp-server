@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerDeleteSelectionTool(server) {
-    server.tool("delete_selection", "Delete a saved selection from the Revit document by name.\n\nGUIDANCE:\n- Remove a previously saved selection that is no longer needed\n- Use load_selection without a name first to list available selections\n\nTIPS:\n- This only deletes the saved selection definition, not the elements themselves\n- Use delete_element to delete actual model elements", {
+    server.tool("delete_selection", "Delete currently selected elements with optional dryRun preview.", {
         name: z
             .string()
             .describe("Name of the saved selection to delete"),

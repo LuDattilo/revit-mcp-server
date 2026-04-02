@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateDimensionsTool(server) {
-    server.tool("create_dimensions", "Create dimension annotations in the current Revit view. Supports dimensioning between elements (walls, doors, windows) by element IDs, or between two points with automatic reference detection. All coordinates are in millimeters (mm).\n\nGUIDANCE:\n- Dimension between walls: provide element IDs of walls to dimension between\n- Linear dimension: provide reference points along a line\n- Use after create_grid to dimension grid spacing\n\nTIPS:\n- Dimensions require a view — they appear in the current/specified view\n- Elements must be visible in the view to be dimensioned\n- Use get_current_view_elements to find element IDs in the active view", {
+    server.tool("create_dimensions", "Create dimension lines between references or elements.", {
         dimensions: z
             .array(z.object({
             startPoint: z
@@ -26,11 +26,11 @@ export function registerCreateDimensionsTool(server) {
                 z: z.number().describe("Z coordinate in mm"),
             })
                 .optional()
-                .describe("Location of the dimension line itself (mm). If not provided, defaults to midpoint offset by 1 foot"),
+                .describe("Location of the dimension line itself (mm)."),
             elementIds: z
                 .array(z.number())
                 .optional()
-                .describe("Element IDs to dimension between. If provided, references are extracted from these elements. If empty, references are auto-detected at start/end points"),
+                .describe("Element IDs to dimension between."),
             dimensionType: z
                 .string()
                 .optional()

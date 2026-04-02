@@ -2,14 +2,14 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerDuplicateViewTool(server) {
-    server.tool("duplicate_view", "Duplicate one or more views with options: independent copy, dependent (linked to parent), or with detailing (copies annotations). Supports custom name prefix/suffix.\n\nGUIDANCE:\n- Independent copy: duplicateType=\"independent\" — separate crop/annotations\n- Dependent copy: duplicateType=\"dependent\" — synced with parent view\n- With detailing: duplicateType=\"withDetailing\" — copies annotations too\n\nTIPS:\n- Independent views are fully separate from the original\n- Dependent views stay linked — changes to one affect the other\n- Use apply_view_template after duplicating for consistent standards\n- Use batch_rename to organize duplicated view names", {
+    server.tool("duplicate_view", "Duplicate a view (independent, dependent, or with detailing).", {
         viewIds: z
             .array(z.number())
             .describe("View IDs to duplicate"),
         duplicateOption: z
             .enum(["duplicate", "dependent", "withDetailing"])
             .optional()
-            .describe("Duplication mode: duplicate (independent), dependent (linked), withDetailing (copies annotations)"),
+            .describe("'duplicate', 'dependent', or 'withDetailing'."),
         newNamePrefix: z
             .string()
             .optional()

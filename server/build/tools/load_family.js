@@ -2,10 +2,10 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerLoadFamilyTool(server) {
-    server.tool("load_family", "Load a Revit family (.rfa) file into the current project, or list loaded families by category. Can also duplicate existing family types with new parameter values.\n\nGUIDANCE:\n- Load from file: action=\"load\", filePath=\"C:/path/to/family.rfa\"\n- List loaded: action=\"list\" to see all loaded families\n- Duplicate type: action=\"duplicate\", familyName, sourceTypeName, newTypeName\n\nTIPS:\n- File path must be accessible from the Revit machine\n- Loading overwrites existing family if names match\n- Use get_available_family_types to verify loading was successful\n- .rfa files only — use manage_links for .rvt files", {
+    server.tool("load_family", "Load a .rfa family, list loaded families, or duplicate a type.", {
         action: z
             .enum(["load", "list", "duplicate_type"])
-            .describe("Action: 'load' to load a .rfa file, 'list' to list loaded families, 'duplicate_type' to duplicate an existing type"),
+            .describe("'load', 'list', or 'duplicate_type'."),
         familyPath: z
             .string()
             .optional()

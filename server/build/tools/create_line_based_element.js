@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateLineBasedElementTool(server) {
-    server.tool("create_line_based_element", "Create one or more line-based elements in Revit such as walls, beams, or pipes. Supports batch creation with detailed parameters including family type ID, start and end points, thickness, height, and level information. All units are in millimeters (mm).\n\nGUIDANCE:\n- Create a wall: familyName=\"Basic Wall\", typeName=\"Generic - 200mm\", provide start/end points + level\n- Chain walls: use the end point of one wall as the start of the next\n- Create beams: familyName=\"W Shapes\", provide start/end XYZ points\n\nTIPS:\n- Use get_available_family_types to find exact family/type names for walls\n- All coordinates in mm — Revit converts internally\n- For walls, specify levelName or levelId for proper association", {
+    server.tool("create_line_based_element", "Create line-based elements (walls, beams, pipes, ducts, etc.).", {
         data: z
             .array(z.object({
             category: z

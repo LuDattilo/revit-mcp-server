@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerDeleteElementTool(server) {
-    server.tool("delete_element", "Delete one or more elements from the Revit model by their element IDs.\n\nGUIDANCE:\n- Delete by ID: provide elementIds array to remove specific elements\n- Delete selected: use get_selected_elements first to get IDs, then delete\n- Batch cleanup: combine with ai_element_filter to find and delete unwanted elements\n\nTIPS:\n- IRREVERSIBLE in the current session — use with caution\n- Delete will fail for elements with dependencies (hosted elements, etc.)\n- Consider hiding elements instead if unsure about deletion\n- Always verify element IDs before deleting", {
+    server.tool("delete_element", "Delete elements by ID with optional dryRun preview.", {
         elementIds: z
             .array(z.number().int())
             .describe("The IDs of the elements to delete"),

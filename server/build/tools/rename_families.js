@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerRenameFamiliesTool(server) {
-    server.tool("rename_families", "Batch rename Revit families with prefix, suffix, or find-and-replace operations.\n\nGUIDANCE:\n- Add prefix: operation=\"prefix\", prefix=\"NEW_\"\n- Add suffix: operation=\"suffix\", suffix=\"_v2\"\n- Find and replace: operation=\"find_replace\", findText=\"old\", replaceText=\"new\"\n\nTIPS:\n- Preview changes first with dryRun=true before committing\n- Filter by categories to target specific family types\n- Use renameTypes=true to also rename family type names\n- Supports whole_model, active_view, or selection scope", {
+    server.tool("rename_families", "Rename loaded families with find/replace or prefix/suffix.", {
         operation: z
             .enum(["prefix", "suffix", "find_replace"])
             .describe("Type of rename operation to perform"),

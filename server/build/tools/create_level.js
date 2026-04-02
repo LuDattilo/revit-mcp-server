@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCreateLevelTool(server) {
-    server.tool("create_level", "Create one or more levels in Revit at specified elevations. Levels define horizontal planes in the building and are used to host floor plans, ceilings, and other level-based elements. All elevation units are in millimeters (mm).\n\nGUIDANCE:\n- Single level: elevation in mm (e.g. 3000 for 3m above ground)\n- Multiple levels: call once per level, or provide array of elevations\n- Floor plans are auto-created for each new level\n\nTIPS:\n- Elevation 0 = project base point typically\n- Use get_project_info to see existing levels before creating new ones\n- Duplicate names will fail — check existing levels first", {
+    server.tool("create_level", "Create new levels at specified elevations.", {
         data: z
             .array(z.object({
             name: z

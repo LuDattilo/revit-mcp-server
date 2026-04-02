@@ -2,14 +2,14 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerExportFamiliesTool(server) {
-    server.tool("export_families", "Export family .rfa files from the current Revit model to a folder on disk.\n\nGUIDANCE:\n- Exports editable (non-system) families as .rfa files\n- Can filter by category names\n- Optionally groups exported files into subfolders by category\n- Skips system families that cannot be edited/exported\n\nTIPS:\n- Output directory must be writable\n- Use categories filter to export only specific family types\n- Set overwrite=true to replace existing .rfa files\n- groupByCategory creates a subfolder per category for organization", {
+    server.tool("export_families", "Export loaded families as .rfa files to a folder.", {
         outputDirectory: z
             .string()
             .describe("Folder path to export .rfa files"),
         categories: z
             .array(z.string())
             .optional()
-            .describe("Filter by category names (e.g. ['Doors', 'Windows']). If omitted, exports all editable families."),
+            .describe("Filter by category names (e.g. ['Doors', 'Windows'])."),
         groupByCategory: z
             .boolean()
             .optional()

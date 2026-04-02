@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerClearParameterValuesTool(server) {
-    server.tool("clear_parameter_values", "Clear (empty) parameter values across multiple elements. String parameters are set to empty string, numeric to 0, ElementId to InvalidElementId.", {
+    server.tool("clear_parameter_values", "Clear parameter values on elements by category, view, or selection.", {
         parameterName: z.string().describe("Parameter to clear."),
         categories: z.array(z.string()).optional().describe("Filter by categories (e.g. ['Walls', 'Doors'])."),
         scope: z.enum(["whole_model", "active_view", "selection"]).optional().default("whole_model").describe("Scope of elements to target."),

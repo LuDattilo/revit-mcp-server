@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerGetMaterialPropertiesTool(server) {
-    server.tool("get_material_properties", "Get detailed physical, structural, and thermal properties of a specific Revit material. Provide either materialId or materialName.\n\nGUIDANCE:\n- Detailed info: structural, thermal, and appearance properties\n- Compare materials: call for multiple materialIds\n- Use get_materials first to find the materialId\n\nTIPS:\n- Not all materials have structural/thermal properties defined\n- Appearance properties include color, transparency, texture info\n- Use for material specification documentation", {
+    server.tool("get_material_properties", "Get detailed physical/thermal properties of a material.", {
         materialId: z
             .number()
             .optional()
@@ -10,7 +10,7 @@ export function registerGetMaterialPropertiesTool(server) {
         materialName: z
             .string()
             .optional()
-            .describe("The name of the material to look up (case-insensitive exact match, used if materialId is not provided)"),
+            .describe("Material name (case-insensitive). Used if materialId not provided."),
     }, async (args, extra) => {
         try {
             const response = await withRevitConnection(async (revitClient) => {

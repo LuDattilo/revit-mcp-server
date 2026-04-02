@@ -1,8 +1,12 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { addSuggestions } from "../utils/suggestions.js";
 export function registerExportElementsDataTool(server) {
     server.tool("export_elements_data", `Export elements by category with selected parameters. Returns columns + rows in JSON or CSV.
+Default limit is 100 elements. Response includes truncated:true and totalCount when results are limited.
+
+TOKEN OPTIMIZATION: Always specify parameterNames to return only needed columns — this skips expensive parameter discovery and dramatically reduces response size.
 
 GUIDANCE: Core data-extraction workflow:
 - Export all doors with Mark, Level, Width, Height:
@@ -30,6 +34,7 @@ QUICK PROMPTS:
             .array(z.string())
             .optional()
             .describe("Parameter names to include as columns (e.g. 'Mark', 'Level', 'Comments'). " +
+            "When provided, skips expensive parameter discovery — faster and smaller response. " +
             "Leave empty to export ALL parameters discovered on the elements."),
         includeTypeParameters: z
             .boolean()
@@ -51,8 +56,8 @@ QUICK PROMPTS:
         maxElements: z
             .number()
             .optional()
-            .default(5000)
-            .describe("Maximum number of elements to return. Increase for large exports; reduce for quick previews."),
+            .default(100)
+            .describe("Maximum elements to return. Default 100. Use higher values only when needed. The response includes truncated:true and totalCount when limited."),
         filterParameterName: z
             .string()
             .optional()
@@ -76,14 +81,18 @@ QUICK PROMPTS:
                     includeTypeParameters: args.includeTypeParameters ?? false,
                     includeElementId: args.includeElementId ?? true,
                     outputFormat: args.outputFormat ?? "json",
-                    maxElements: args.maxElements ?? 5000,
+                    maxElements: args.maxElements ?? 100,
                     filterParameterName: args.filterParameterName ?? "",
                     filterValue: args.filterValue ?? "",
                     filterOperator: args.filterOperator ?? "equals",
                 });
             });
+            const enriched = addSuggestions(response, [
+                { prompt: "Update these elements with the modified data using sync_csv_parameters", reason: "Export-edit-import workflow" },
+                { prompt: "Export this data to Excel for easier editing", reason: "Excel is more convenient for bulk parameter editing" },
+            ]);
             return {
-                content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
+                content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }],
             };
         }
         catch (error) {

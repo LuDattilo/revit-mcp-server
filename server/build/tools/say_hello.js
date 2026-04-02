@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSayHelloTool(server) {
-    server.tool("say_hello", "Display a greeting dialog in Revit. Useful for testing the connection between Claude and Revit.", {
+    server.tool("say_hello", "Display a greeting dialog in Revit. Tests MCP connection.", {
         message: z
             .string()
             .optional()

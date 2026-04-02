@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerApplyViewTemplateTool(server) {
-    server.tool("apply_view_template", "List available view templates, apply a template to views, or remove template assignments. Essential for consistent drawing standards.\n\nGUIDANCE:\n- List templates: action=\"list\" to see all available view templates\n- Apply template: action=\"apply\", templateName=\"...\", viewIds=[...]\n- Remove template: action=\"remove\", viewIds=[...] to detach template\n\nTIPS:\n- View templates control visibility, graphics, and scale settings\n- Applied templates override individual view settings\n- Use duplicate_view + apply template for consistent view sets\n- Create templates in Revit UI, then apply via MCP for automation", {
+    server.tool("apply_view_template", "Apply or remove a view template on one or more views.", {
         action: z
             .enum(["list", "apply", "remove"])
             .optional()

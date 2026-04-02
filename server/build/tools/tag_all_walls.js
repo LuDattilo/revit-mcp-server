@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerTagAllWallsTool(server) {
-    server.tool("tag_all_walls", "Create tags for all walls in the current active view. Tags will be placed at the middle point of each wall.\n\nGUIDANCE:\n- Tag all walls in active view: call with no parameters\n- Tags show wall type information by default\n- Run after creating walls to annotate the drawing\n\nTIPS:\n- Only tags walls visible in the current view\n- Tags require a wall tag family loaded in the project\n- Use batch_rename to update tag text formatting", {
+    server.tool("tag_all_walls", "Tag walls in the current view with wall tags.", {
         useLeader: z
             .boolean()
             .optional()
@@ -11,7 +11,7 @@ export function registerTagAllWallsTool(server) {
         tagTypeId: z
             .string()
             .optional()
-            .describe("The ID of the specific wall tag family type to use. If not provided, the default wall tag type will be used"),
+            .describe("The ID of the specific wall tag family type to use."),
     }, async (args, extra) => {
         const params = args;
         try {

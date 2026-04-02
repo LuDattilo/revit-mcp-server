@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerCopyElementsTool(server) {
-    server.tool("copy_elements", "Copy elements between views within the same document. Useful for copying detail items, annotations, or model elements from one view to another.\n\nGUIDANCE:\n- Copy between views: provide sourceViewId, targetViewId, and elementIds\n- Duplicate annotations: copy dimensions, text notes between views\n- Copy detail items: replicate detailing from one view to another\n\nTIPS:\n- Some elements can only be copied between compatible view types\n- Model elements (walls, doors) exist in 3D and don't need view-to-view copy\n- Use modify_element with action=\"copy\" for simple same-view duplication", {
+    server.tool("copy_elements", "Copy elements with translation offset, optionally to another level.", {
         elementIds: z
             .array(z.number())
             .describe("Array of element IDs to copy"),

@@ -6,11 +6,11 @@ const pointSchema = z.object({
     y: z.number().describe("Y coordinate in mm"),
 });
 export function registerCreateFloorTool(server) {
-    server.tool("create_floor", "Create a floor element from boundary points or from room boundaries. Coordinates in mm. Specify either boundary points or a roomId to derive the boundary from a room.\n\nGUIDANCE:\n- Floor from points: provide boundary as [{x,y,z},...] in mm, closed polygon\n- Floor from room: use roomId to auto-create floor matching room boundary\n- Multiple floors: roomIds array creates floors for multiple rooms at once\n\nTIPS:\n- Use get_available_family_types with category \"Floors\" to find floor types\n- For room-based floors, rooms must be placed first (use create_room)\n- Offset from level can be set via parameter after creation", {
+    server.tool("create_floor", "Create a floor element from boundary points on a level.", {
         boundaryPoints: z
             .array(pointSchema)
             .optional()
-            .describe("Array of 2D points defining the floor boundary in mm (minimum 3 points). Points are connected in order, last connects to first."),
+            .describe("Array of 2D points defining the floor boundary in mm (minimum 3 points)."),
         roomId: z
             .number()
             .optional()
@@ -22,7 +22,7 @@ export function registerCreateFloorTool(server) {
         levelElevation: z
             .number()
             .optional()
-            .describe("Level elevation in mm for the floor. If omitted, uses the room's level or the closest level."),
+            .describe("Level elevation in mm for the floor."),
         isStructural: z
             .boolean()
             .optional()

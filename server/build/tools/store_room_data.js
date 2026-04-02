@@ -13,7 +13,7 @@ const RoomSchema = z.object({
     metadata: z.record(z.any()).optional().describe("Additional room metadata as key-value pairs")
 });
 export function registerStoreRoomDataTool(server) {
-    server.tool("store_room_data", "Store or update room metadata for a specific Revit project in the local database. Rooms are linked to a project by project name. The project must exist before storing room data.", {
+    server.tool("store_room_data", "Store custom key-value data on room elements.", {
         project_name: z.string().describe("The name of the Revit project this room belongs to"),
         rooms: z.array(RoomSchema).describe("Array of room data to store")
     }, async (args) => {

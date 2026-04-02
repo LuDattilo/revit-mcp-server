@@ -2,15 +2,15 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerSectionBoxFromSelectionTool(server) {
-    server.tool("section_box_from_selection", "Create a 3D view with Section Box fitted around selected elements or specified element IDs. Configurable offset buffer around elements. Can create a new 3D view or apply to current view. Optionally isolates elements.\n\nGUIDANCE:\n- Box around selected elements: provide elementIds to create a 3D section box view\n- Zoom to area: select elements in the area of interest, then create section box\n- Clash investigation: use after clash_detection to zoom into clash locations\n\nTIPS:\n- Creates a new 3D view with the section box fitted to selected elements\n- Use offsetMm to add margin around the elements (default: 500mm)\n- Combine with get_selected_elements to use Revit UI selection\n- Great for presentation views and coordination meetings", {
+    server.tool("section_box_from_selection", "Set or create a 3D section box fitted around selected elements.", {
         elementIds: z
             .array(z.number())
             .optional()
-            .describe("Element IDs to fit the section box around. If omitted, uses current Revit selection."),
+            .describe("Element IDs to fit the section box around."),
         useCurrentSelection: z
             .boolean()
             .optional()
-            .describe("If true, uses currently selected elements in Revit. Default: true when no elementIds provided."),
+            .describe("If true, uses currently selected elements in Revit."),
         offsetMm: z
             .number()
             .optional()
@@ -18,7 +18,7 @@ export function registerSectionBoxFromSelectionTool(server) {
         duplicateView: z
             .boolean()
             .optional()
-            .describe("If true, creates a new 3D view. If false, applies to active 3D view. Default: true."),
+            .describe("If true, creates a new 3D view."),
         viewName: z
             .string()
             .optional()

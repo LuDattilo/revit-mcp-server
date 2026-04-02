@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerColorElementsTool(server) {
-    server.tool("color_elements", "Color elements in the current view based on a category and parameter value. Each unique parameter value gets assigned a distinct color.\n\nGUIDANCE:\n- Color by parameter: provide parameterName and elements are colored by value\n- Custom color: provide specific RGB values for element overrides\n- Reset colors: use override_graphics with reset option to clear\n\nTIPS:\n- Colors are view-specific overrides, not permanent\n- Use create_color_legend for automated color-by-parameter with legend\n- Combine with ai_element_filter to color specific element subsets", {
+    server.tool("color_elements", "Colorize elements by parameter value with auto or custom colors.", {
         categoryName: z
             .string()
             .describe("The name of the Revit category to color (e.g., 'Walls', 'Doors', 'Rooms')"),

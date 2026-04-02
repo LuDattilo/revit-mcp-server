@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerFilterByParameterValueTool(server) {
-    server.tool("filter_by_parameter_value", "A deterministic Revit element filter that finds elements matching exact parameter value conditions. Unlike AI-based filtering, this tool applies precise condition matching (equals, contains, greater_than, etc.) directly on parameter values. Use this when you need to filter elements by a specific parameter with a known condition — for example, find all walls where 'Mark' contains 'EXT', or all doors where 'Fire Rating' equals '60min'. Supports both instance and type parameters, multiple categories, and scoping to the whole model, active view, or current selection.", {
+    server.tool("filter_by_parameter_value", "Filter and select elements by parameter value conditions.", {
         categories: z
             .array(z.string())
             .describe("Revit categories to filter, e.g. ['OST_Walls', 'OST_Doors']"),

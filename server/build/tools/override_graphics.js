@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 export function registerOverrideGraphicsTool(server) {
-    server.tool("override_graphics", "Set per-element graphic overrides in a view: projection line color, surface fill color, transparency, halftone, and lineweight. Can also reset overrides.\n\nGUIDANCE:\n- Set element color: elementIds, lineColor={r,g,b}, fillColor={r,g,b}\n- Make transparent: elementIds, transparency=80 (0-100)\n- Apply halftone: elementIds, halftone=true\n- Reset overrides: elementIds, resetToDefault=true\n\nTIPS:\n- Overrides are view-specific — only affect the current view\n- Use create_color_legend for automated parameter-based coloring\n- Combine with create_view_filter for rule-based overrides\n- Transparency 0 = opaque, 100 = fully transparent", {
+    server.tool("override_graphics", "Override element graphics (color, lineweight, pattern, transparency).", {
         elementIds: z
             .array(z.number())
             .describe("Element IDs to override"),
