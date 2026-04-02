@@ -482,6 +482,11 @@
       "commandName": "import_from_excel",
       "description": "Import parameter values from Excel (.xlsx) back into Revit elements",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "manage_view_templates",
+      "description": "List, duplicate, delete, or rename view templates",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
