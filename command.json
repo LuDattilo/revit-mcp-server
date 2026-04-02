@@ -517,6 +517,16 @@
       "commandName": "workflow_data_roundtrip",
       "description": "Export elements to Excel for roundtrip edit-and-reimport workflow",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "workflow_room_documentation",
+      "description": "Collect room data, create section views, and tag rooms in one call",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "workflow_sheet_set",
+      "description": "Create a set of sheets with title blocks in one call",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
