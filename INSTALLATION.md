@@ -123,6 +123,8 @@ cd mcp-servers-for-revit
 
 ### Passo 2: Build del Server MCP
 
+> **Nota**: `server/build/` è già incluso nel repository — questo passo è necessario solo se modifichi il sorgente TypeScript.
+
 ```bash
 cd server
 npm install
@@ -174,55 +176,45 @@ Per una build Release, copia manualmente l'output:
 
 ## Configurazione del Server MCP
 
-Il server MCP e' il ponte tra gli assistenti AI (Claude, Cline) e il plugin Revit. Va configurato nel tuo client AI.
+Il server MCP è il ponte tra gli assistenti AI (Claude, Cline) e il plugin Revit.
+Il server locale (`server/build/index.js`) è già incluso nel pacchetto di installazione — non serve installare nessun package npm esterno.
 
-### Per Claude Code (CLI)
+### Per Claude Desktop (dopo installazione tramite install.ps1)
 
-```bash
-claude mcp add mcp-server-for-revit -- cmd /c npx -y mcp-server-for-revit
+Lo script `install.ps1` configura automaticamente Claude Desktop. Se hai bisogno di configurarlo manualmente o di ripristinarlo, esegui:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\fix-mcp.ps1
 ```
 
-### Per Claude Desktop
-
-1. Apri Claude Desktop
-2. Vai in **Settings > Developer > Edit Config**
-3. Modifica `claude_desktop_config.json`:
+Oppure modifica manualmente `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ```json
 {
     "mcpServers": {
-        "mcp-server-for-revit": {
+        "revit-mcp": {
             "command": "cmd",
-            "args": ["/c", "npx", "-y", "mcp-server-for-revit"]
+            "args": ["/c", "node", "%APPDATA%\\Autodesk\\Revit\\Addins\\2025\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\build\\index.js"]
         }
     }
 }
 ```
 
-4. Riavvia Claude Desktop
-5. Verifica che l'icona del martello appaia (indica connessione MCP attiva)
+> **Nota**: sostituisci `2025` con la tua versione di Revit se diversa.
+
+Riavvia Claude Desktop e verifica che l'icona del martello (🔨) appaia in basso a destra.
+
+### Per Claude Code (CLI)
+
+Il file `.mcp.json` nella cartella del progetto configura il server automaticamente.
+Se apri Claude Code nella cartella di installazione del plugin, il server è già pronto — nessuna configurazione aggiuntiva necessaria.
 
 ### Per Altri Client MCP (Cline, Continue, ecc.)
 
 Configura il server MCP con:
-- **Comando**: `cmd`
-- **Argomenti**: `/c npx -y mcp-server-for-revit`
+- **Comando**: `node`
+- **Argomenti**: percorso assoluto a `server\build\index.js` nella cartella Addins
 - **Trasporto**: stdio
-
-### Configurazione per Sviluppo Locale
-
-Se hai buildato il server da sorgente:
-
-```json
-{
-    "mcpServers": {
-        "mcp-server-for-revit": {
-            "command": "node",
-            "args": ["C:/percorso/mcp-servers-for-revit/server/build/index.js"]
-        }
-    }
-}
-```
 
 ---
 
