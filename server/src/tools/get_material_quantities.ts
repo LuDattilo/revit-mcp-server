@@ -17,11 +17,17 @@ export function registerGetMaterialQuantitiesTool(server: McpServer) {
         .optional()
         .default(false)
         .describe("Whether to only analyze currently selected elements. Defaults to false (analyze entire project)."),
+      maxResults: z
+        .number()
+        .optional()
+        .default(50)
+        .describe("Maximum materials to return. Default 50."),
     },
     async (args, extra) => {
       const params = {
         categoryFilters: args.categoryFilters ?? null,
         selectedElementsOnly: args.selectedElementsOnly ?? false,
+        maxResults: args.maxResults ?? 50,
       };
 
       try {

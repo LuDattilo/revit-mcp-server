@@ -28,14 +28,21 @@ export function registerGetCurrentViewElementsTool(server: McpServer) {
         .number()
         .optional()
         .describe("Maximum number of elements to return"),
+      fields: z
+        .array(z.string())
+        .optional()
+        .describe("Specific properties to include per element (e.g. ['Mark','Level','Family']). Omit for all. Reduces response size."),
     },
     async (args, extra) => {
-      const params = {
+      const params: Record<string, unknown> = {
         modelCategoryList: args.modelCategoryList || [],
         annotationCategoryList: args.annotationCategoryList || [],
         includeHidden: args.includeHidden || false,
         limit: args.limit || 100,
       };
+      if (args.fields) {
+        params.fields = args.fields;
+      }
 
       try {
         const response = await withRevitConnection(async (revitClient) => {

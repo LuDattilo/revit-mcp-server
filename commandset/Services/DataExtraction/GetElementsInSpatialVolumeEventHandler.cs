@@ -16,6 +16,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         public List<long> VolumeIds { get; set; } = new List<long>();
         public string VolumeType { get; set; } = "room"; // room, area, custom
         public List<string> CategoryFilter { get; set; } = new List<string>(); // filter elements by category
+        public int MaxElementsPerVolume { get; set; } = 100;
         public double CustomMinX { get; set; }
         public double CustomMinY { get; set; }
         public double CustomMinZ { get; set; }
@@ -50,13 +51,20 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
                     var elements = FilterByCategories(doc, collector, CategoryFilter);
 
-                    totalElements += elements.Count;
+                    int totalInVolume = elements.Count;
+                    bool volumeTruncated = elements.Count > MaxElementsPerVolume;
+                    if (volumeTruncated)
+                        elements = elements.Take(MaxElementsPerVolume).ToList();
+
+                    totalElements += totalInVolume;
                     volumeResults.Add(new
                     {
                         volumeType = "custom",
                         volumeId = (long)0,
                         volumeName = "Custom Bounding Box",
                         elementCount = elements.Count,
+                        totalElementCount = totalInVolume,
+                        truncated = volumeTruncated,
                         elements = elements.Select(e => FormatElement(e)).ToList()
                     });
                 }
@@ -117,7 +125,12 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                             number = r.Number;
                         }
 
-                        totalElements += elements.Count;
+                        int totalInVolume = elements.Count;
+                        bool volumeTruncated = elements.Count > MaxElementsPerVolume;
+                        if (volumeTruncated)
+                            elements = elements.Take(MaxElementsPerVolume).ToList();
+
+                        totalElements += totalInVolume;
                         volumeResults.Add(new
                         {
                             volumeType = VolumeType,
@@ -128,7 +141,9 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 #endif
                             volumeName = !string.IsNullOrEmpty(number) ? $"{number} - {name}" : spatial.Name,
                             elementCount = elements.Count,
-                            elements = elements.Take(200).Select(e => FormatElement(e)).ToList() // limit per volume
+                            totalElementCount = totalInVolume,
+                            truncated = volumeTruncated,
+                            elements = elements.Select(e => FormatElement(e)).ToList()
                         });
                     }
                 }

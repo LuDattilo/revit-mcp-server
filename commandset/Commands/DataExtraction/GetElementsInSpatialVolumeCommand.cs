@@ -26,6 +26,7 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
                     _handler.VolumeIds = parameters?["volumeIds"]?.ToObject<List<long>>() ?? new List<long>();
                     _handler.VolumeType = parameters?["volumeType"]?.Value<string>() ?? "room";
                     _handler.CategoryFilter = parameters?["categoryFilter"]?.ToObject<List<string>>() ?? new List<string>();
+                    _handler.MaxElementsPerVolume = parameters?["maxElementsPerVolume"]?.Value<int>() ?? 100;
                     _handler.CustomMinX = parameters?["customMinX"]?.Value<double>() ?? 0;
                     _handler.CustomMinY = parameters?["customMinY"]?.Value<double>() ?? 0;
                     _handler.CustomMinZ = parameters?["customMinZ"]?.Value<double>() ?? 0;

@@ -25,9 +25,10 @@ namespace RevitMCPCommandSet.Commands.Access
                 List<string> annotationCategoryList = parameters?["annotationCategoryList"]?.ToObject<List<string>>() ?? new List<string>();
                 bool includeHidden = parameters?["includeHidden"]?.Value<bool>() ?? false;
                 int limit = parameters?["limit"]?.Value<int>() ?? 100;
+                List<string> fields = parameters?["fields"]?.ToObject<List<string>>();
 
                 // Set query parameters
-                _handler.SetQueryParameters(modelCategoryList, annotationCategoryList, includeHidden, limit);
+                _handler.SetQueryParameters(modelCategoryList, annotationCategoryList, includeHidden, limit, fields);
 
                 // Raise external event and wait for completion
                 if (RaiseAndWaitForCompletion(60000)) // 60 second timeout
