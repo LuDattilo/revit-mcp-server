@@ -1,14 +1,16 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using revit_mcp_plugin.Configuration;
 using revit_mcp_plugin.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 namespace revit_mcp_plugin.UI
 {
     /// <summary>
@@ -18,6 +20,22 @@ namespace revit_mcp_plugin.UI
     {
         private ObservableCollection<CommandSet> commandSets;
         private ObservableCollection<CommandConfig> currentCommands;
+        private ICollectionView collectionView;
+
+        /// <summary>
+        /// Maps command name prefixes to user-friendly category labels.
+        /// </summary>
+        private static readonly (string[] Prefixes, string Category)[] CategoryRules = new[]
+        {
+            (new[] { "get_" },                                              "Get / Query"),
+            (new[] { "create_" },                                           "Create"),
+            (new[] { "export_" },                                           "Export"),
+            (new[] { "import_" },                                           "Import"),
+            (new[] { "manage_" },                                           "Manage"),
+            (new[] { "set_", "modify_", "change_", "operate_" },            "Set / Modify"),
+            (new[] { "batch_", "bulk_", "renumber_", "rename_" },           "Batch / Bulk"),
+            (new[] { "check_", "audit_", "clash_", "measure_" },            "Audit / Check"),
+        };
 
         public CommandSetSettingsPage()
         {
@@ -28,10 +46,71 @@ namespace revit_mcp_plugin.UI
             // Set data bindings
             CommandSetListBox.ItemsSource = commandSets;
             FeaturesListView.ItemsSource = currentCommands;
+
+            // Set up CollectionView for filtering and grouping
+            collectionView = CollectionViewSource.GetDefaultView(currentCommands);
+            collectionView.Filter = FilterCommand;
+            collectionView.GroupDescriptions.Add(new PropertyGroupDescription("GroupCategory"));
+
             // Load command sets
             LoadCommandSets();
             // Initial state
             NoSelectionTextBlock.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Determines the display category for a command based on its name prefix.
+        /// </summary>
+        private static string GetCommandCategory(string commandName)
+        {
+            if (string.IsNullOrEmpty(commandName))
+                return "Other";
+
+            string lower = commandName.ToLowerInvariant();
+            foreach (var rule in CategoryRules)
+            {
+                foreach (var prefix in rule.Prefixes)
+                {
+                    if (lower.StartsWith(prefix))
+                        return rule.Category;
+                }
+            }
+            return "Other";
+        }
+
+        /// <summary>
+        /// Filter predicate used by CollectionView — matches search text against
+        /// CommandName and Description (case-insensitive).
+        /// </summary>
+        private bool FilterCommand(object item)
+        {
+            if (item is CommandConfig cmd)
+            {
+                string searchText = SearchTextBox?.Text;
+                if (string.IsNullOrWhiteSpace(searchText))
+                    return true;
+
+                string lower = searchText.ToLowerInvariant();
+                bool matchName = cmd.CommandName != null &&
+                                 cmd.CommandName.ToLowerInvariant().Contains(lower);
+                bool matchDesc = cmd.Description != null &&
+                                 cmd.Description.ToLowerInvariant().Contains(lower);
+                return matchName || matchDesc;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Updates the "XX / YY commands enabled" counter text.
+        /// </summary>
+        private void UpdateCommandCounter()
+        {
+            if (currentCommands == null || CommandCounterText == null)
+                return;
+
+            int enabled = currentCommands.Count(c => c.Enabled);
+            int total = currentCommands.Count;
+            CommandCounterText.Text = $"{enabled} / {total} commands enabled";
         }
 
         private void LoadCommandSets()
@@ -205,22 +284,33 @@ namespace revit_mcp_plugin.UI
         private void CommandSetListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             currentCommands.Clear();
+            // Reset search when switching command sets
+            if (SearchTextBox != null)
+                SearchTextBox.Text = string.Empty;
+
             var selectedCommandSet = CommandSetListBox.SelectedItem as CommandSet;
             if (selectedCommandSet != null)
             {
                 NoSelectionTextBlock.Visibility = Visibility.Collapsed;
                 FeaturesHeaderTextBlock.Text = $"{selectedCommandSet.Name} - Command List";
-                // Load commands from selected command set
+                // Load commands from selected command set, assigning category
                 foreach (var command in selectedCommandSet.Commands)
                 {
+                    command.GroupCategory = GetCommandCategory(command.CommandName);
                     currentCommands.Add(command);
                 }
+                // Refresh grouping/filtering
+                collectionView.Refresh();
             }
             else
             {
                 NoSelectionTextBlock.Visibility = Visibility.Visible;
                 FeaturesHeaderTextBlock.Text = "Command List";
             }
+
+            // Hide detail panel when switching sets
+            DetailPanel.Visibility = Visibility.Collapsed;
+            UpdateCommandCounter();
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -248,6 +338,7 @@ namespace revit_mcp_plugin.UI
 
                 // Refresh the UI
                 FeaturesListView.Items.Refresh();
+                UpdateCommandCounter();
             }
         }
 
@@ -263,6 +354,7 @@ namespace revit_mcp_plugin.UI
 
                 // Refresh the UI
                 FeaturesListView.Items.Refresh();
+                UpdateCommandCounter();
             }
         }
 
@@ -434,6 +526,59 @@ namespace revit_mcp_plugin.UI
             {
                 MessageBox.Show($"Error opening Commands folder: {ex.Message}", "Error",
                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ── New event handlers ──
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string text = SearchTextBox.Text;
+            // Toggle placeholder / clear button visibility
+            SearchPlaceholder.Visibility = string.IsNullOrEmpty(text)
+                ? Visibility.Visible : Visibility.Collapsed;
+            SearchClearButton.Visibility = string.IsNullOrEmpty(text)
+                ? Visibility.Collapsed : Visibility.Visible;
+
+            // Refresh the collection view filter
+            collectionView?.Refresh();
+        }
+
+        private void SearchClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchTextBox.Text = string.Empty;
+            SearchTextBox.Focus();
+        }
+
+        private void CommandCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateCommandCounter();
+        }
+
+        private void FeaturesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = FeaturesListView.SelectedItem as CommandConfig;
+            if (selected != null)
+            {
+                DetailCommandName.Text = selected.CommandName;
+                DetailDescription.Text = string.IsNullOrWhiteSpace(selected.Description)
+                    ? "(no description)" : selected.Description;
+
+                if (selected.SupportedRevitVersions != null && selected.SupportedRevitVersions.Length > 0)
+                {
+                    DetailVersions.Text = "Supported Revit versions: " +
+                                          string.Join(", ", selected.SupportedRevitVersions);
+                }
+                else
+                {
+                    DetailVersions.Text = "Supported Revit versions: unknown";
+                }
+
+                DetailPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                DetailPanel.Visibility = Visibility.Collapsed;
             }
         }
     }
