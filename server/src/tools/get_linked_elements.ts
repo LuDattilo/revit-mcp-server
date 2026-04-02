@@ -1,0 +1,41 @@
+import { errorMessage } from "../utils/errorUtils.js";
+import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { withRevitConnection } from "../utils/ConnectionManager.js";
+
+export function registerGetLinkedElementsTool(server: McpServer) {
+  server.tool(
+    "get_linked_elements",
+    `Query elements from linked Revit models. Extracts data without modifying the linked file.
+
+GUIDANCE:
+- "Show all walls from the structural link": linkName="Structural", categories=["Walls"]
+- "Get doors from all links with Mark and Level": categories=["Doors"], parameterNames=["Mark","Level"]
+- "List all elements in linked model 'MEP.rvt'": linkName="MEP"`,
+    {
+      linkName: z.string().optional()
+        .describe("Filter by link name (partial match). Empty = all linked models."),
+      categories: z.array(z.string()).optional()
+        .describe("Category names to query. Empty = all categories."),
+      parameterNames: z.array(z.string()).optional()
+        .describe("Parameters to extract per element. Empty = just ID/Category/Name."),
+      maxElements: z.number().optional().default(5000)
+        .describe("Max elements per linked model."),
+    },
+    async (args) => {
+      try {
+        const response = await withRevitConnection(async (revitClient) => {
+          return await revitClient.sendCommand("get_linked_elements", {
+            linkName: args.linkName ?? "",
+            categories: args.categories ?? [],
+            parameterNames: args.parameterNames ?? [],
+            maxElements: args.maxElements ?? 5000,
+          });
+        });
+        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+      } catch (error) {
+        return { content: [{ type: "text" as const, text: `Get linked elements failed: ${errorMessage(error)}` }], isError: true };
+      }
+    }
+  );
+}

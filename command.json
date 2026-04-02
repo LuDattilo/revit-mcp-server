@@ -492,6 +492,16 @@
       "commandName": "create_callout_from_rooms",
       "description": "Create callout views for rooms with boundary offset",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "export_shared_parameter_file",
+      "description": "Export project shared parameters to a .txt file",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_linked_elements",
+      "description": "Query elements from linked Revit models",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }
