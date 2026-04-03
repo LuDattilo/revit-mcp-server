@@ -128,6 +128,32 @@ export function compactSummary(obj) {
     return obj;
 }
 /**
+ * Filter an object or array of objects to only include the specified fields.
+ * If fields is empty or undefined, returns the original object unchanged.
+ * Works on both single objects and arrays of objects.
+ */
+export function filterFields(data, fields) {
+    if (!fields || fields.length === 0)
+        return data;
+    const fieldSet = new Set(fields.map(f => f.toLowerCase()));
+    function pick(obj) {
+        if (obj === null || obj === undefined)
+            return obj;
+        if (Array.isArray(obj))
+            return obj.map(item => pick(item));
+        if (typeof obj !== "object")
+            return obj;
+        const result = {};
+        for (const key of Object.keys(obj)) {
+            if (fieldSet.has(key.toLowerCase())) {
+                result[key] = obj[key];
+            }
+        }
+        return result;
+    }
+    return pick(data);
+}
+/**
  * Main wrapper: apply all optimizations based on options.
  * Use this in every tool's response path.
  */

@@ -21,6 +21,10 @@ export function registerGetAvailableFamilyTypesTool(server) {
             .optional()
             .default(false)
             .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
+        fields: z
+            .array(z.string())
+            .optional()
+            .describe("Return only these fields per type (e.g. ['familyName', 'typeName']). Omit to return all."),
     }, async (args, extra) => {
         const params = {
             categoryList: args.categoryList || [],

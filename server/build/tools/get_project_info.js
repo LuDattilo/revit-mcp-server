@@ -25,6 +25,10 @@ export function registerGetProjectInfoTool(server) {
             .optional()
             .default(false)
             .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
+        fields: z
+            .array(z.string())
+            .optional()
+            .describe("Return only these fields in the response (e.g. ['projectName', 'levels']). Omit to return all."),
     }, async (args, extra) => {
         const params = {
             includePhases: args.includePhases ?? true,

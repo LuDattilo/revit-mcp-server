@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 export function registerGetScheduleDataTool(server) {
     server.tool("get_schedule_data", "Read data from an existing schedule view.", {
         scheduleId: z
@@ -11,6 +12,10 @@ export function registerGetScheduleDataTool(server) {
             .number()
             .optional()
             .describe("Maximum rows to return (default: 500)"),
+        fields: z
+            .array(z.string())
+            .optional()
+            .describe("Return only these fields per row. Omit to return all columns."),
     }, async (args, extra) => {
         const params = {
             scheduleId: args.scheduleId ?? 0,
@@ -20,25 +25,10 @@ export function registerGetScheduleDataTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("get_schedule_data", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return toolResponse(response, args);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Get schedule data failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return toolError(`Get schedule data failed: ${errorMessage(error)}`);
         }
     });
 }

@@ -14,6 +14,10 @@ export function registerAnalyzeModelStatisticsTool(server) {
             .optional()
             .default(false)
             .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
+        fields: z
+            .array(z.string())
+            .optional()
+            .describe("Return only these fields (e.g. ['totalElements', 'categories']). Omit to return all."),
     }, async (args, extra) => {
         const params = {
             includeDetailedTypes: args.includeDetailedTypes ?? true,

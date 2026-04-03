@@ -16,6 +16,10 @@ export function registerGetElementParametersTool(server) {
             .optional()
             .default(false)
             .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
+        fields: z
+            .array(z.string())
+            .optional()
+            .describe("Return only these fields per element (e.g. ['Name', 'Value']). Omit to return all."),
     }, async (args, extra) => {
         const params = {
             elementIds: args.elementIds,
