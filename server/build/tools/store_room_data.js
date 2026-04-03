@@ -10,7 +10,7 @@ const RoomSchema = z.object({
     perimeter: z.number().optional().describe("Room perimeter"),
     occupancy: z.string().optional().describe("Occupancy type"),
     comments: z.string().optional().describe("Additional comments"),
-    metadata: z.record(z.any()).optional().describe("Additional room metadata as key-value pairs")
+    metadata: z.record(z.string()).optional().describe("Additional room metadata as key-value pairs")
 });
 export function registerStoreRoomDataTool(server) {
     server.tool("store_room_data", "Store custom key-value data on room elements.", {

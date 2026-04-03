@@ -1,19 +1,51 @@
-import Database from 'better-sqlite3';
+import initSqlJs from 'sql.js';
 import { join } from 'path';
 import { homedir } from 'os';
-import { mkdirSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 // Database path (stored in user home directory)
 const DB_DIR = join(homedir(), '.mcp-revit');
 mkdirSync(DB_DIR, { recursive: true });
 const DB_PATH = join(DB_DIR, 'revit-data.db');
+let db = null;
+let savePending = false;
+// Deferred save: coalesces multiple writes into one disk flush
+function scheduleSave() {
+    if (savePending)
+        return;
+    savePending = true;
+    setImmediate(() => {
+        savePending = false;
+        if (db) {
+            writeFileSync(DB_PATH, Buffer.from(db.export()));
+        }
+    });
+}
+// Force immediate save (for shutdown)
+function flushDatabase() {
+    savePending = false;
+    if (db) {
+        writeFileSync(DB_PATH, Buffer.from(db.export()));
+    }
+}
 // Initialize database connection
-export const db = new Database(DB_PATH);
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+export async function getDatabase() {
+    if (db)
+        return db;
+    const SQL = await initSqlJs();
+    try {
+        const fileBuffer = readFileSync(DB_PATH);
+        db = new SQL.Database(fileBuffer);
+    }
+    catch {
+        db = new SQL.Database();
+    }
+    db.run('PRAGMA foreign_keys = ON');
+    initializeDatabase();
+    return db;
+}
 // Initialize database schema
-export function initializeDatabase() {
-    // Create projects table
-    db.exec(`
+function initializeDatabase() {
+    db.run(`
     CREATE TABLE IF NOT EXISTS projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_name TEXT NOT NULL,
@@ -28,8 +60,7 @@ export function initializeDatabase() {
       metadata TEXT
     )
   `);
-    // Create rooms table
-    db.exec(`
+    db.run(`
     CREATE TABLE IF NOT EXISTS rooms (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id INTEGER NOT NULL,
@@ -48,18 +79,51 @@ export function initializeDatabase() {
       UNIQUE(project_id, room_id)
     )
   `);
-    // Create index for faster queries
-    db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(project_name);
-    CREATE INDEX IF NOT EXISTS idx_projects_timestamp ON projects(timestamp);
-    CREATE INDEX IF NOT EXISTS idx_rooms_project_id ON rooms(project_id);
-    CREATE INDEX IF NOT EXISTS idx_rooms_room_number ON rooms(room_number);
-  `);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(project_name)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_projects_timestamp ON projects(timestamp)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_rooms_project_id ON rooms(project_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_rooms_room_number ON rooms(room_number)`);
+}
+// Run a statement and schedule a deferred save
+export function dbRun(sql, params) {
+    db.run(sql, params);
+    scheduleSave();
+}
+// Get one row
+export function dbGet(sql, params) {
+    const stmt = db.prepare(sql);
+    if (params)
+        stmt.bind(params);
+    const result = stmt.step() ? stmt.getAsObject() : undefined;
+    stmt.free();
+    return result;
+}
+// Get all rows
+export function dbAll(sql, params) {
+    const results = [];
+    const stmt = db.prepare(sql);
+    if (params)
+        stmt.bind(params);
+    while (stmt.step()) {
+        results.push(stmt.getAsObject());
+    }
+    stmt.free();
+    return results;
+}
+// Get last insert rowid
+export function dbLastInsertRowid() {
+    const result = dbGet('SELECT last_insert_rowid() as id');
+    return result?.id;
 }
 // Graceful shutdown
-process.on('exit', () => db.close());
-process.on('SIGTERM', () => { db.close(); process.exit(0); });
-process.on('SIGINT', () => { db.close(); process.exit(0); });
-// Initialize on module load
-initializeDatabase();
+function cleanup() {
+    if (db) {
+        flushDatabase();
+        db.close();
+    }
+}
+process.on('exit', cleanup);
+process.on('SIGTERM', () => { cleanup(); process.exit(0); });
+process.on('SIGINT', () => { cleanup(); process.exit(0); });
+export { db };
 export default db;

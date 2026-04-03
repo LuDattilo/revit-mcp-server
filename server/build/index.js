@@ -2,6 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerTools } from "./tools/register.js";
+import { getDatabase } from "./database/db.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json");
@@ -12,6 +13,8 @@ const server = new McpServer({
 });
 // Start server
 async function main() {
+    // Initialize database (sql.js is async)
+    await getDatabase();
     // Register tools
     await registerTools(server);
     // Connect to transport layer

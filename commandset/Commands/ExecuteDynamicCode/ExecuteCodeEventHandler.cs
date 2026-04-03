@@ -13,9 +13,13 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
     /// </summary>
     public class ExecuteCodeEventHandler : IExternalEventHandler, IWaitableExternalEventHandler
     {
+        public const string TransactionModeAuto = "auto";
+        public const string TransactionModeNone = "none";
+
         // Code execution parameters
         private string _generatedCode;
         private object[] _executionParameters;
+        private string _transactionMode = TransactionModeAuto;
 
         // Execution result info
         public ExecutionResultInfo ResultInfo { get; private set; }
@@ -25,10 +29,11 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
 
         // Set code and parameters for execution
-        public void SetExecutionParameters(string code, object[] parameters = null)
+        public void SetExecutionParameters(string code, object[] parameters = null, string transactionMode = TransactionModeAuto)
         {
             _generatedCode = code;
             _executionParameters = parameters ?? Array.Empty<object>();
+            _transactionMode = transactionMode ?? TransactionModeAuto;
             TaskCompleted = false;
             _resetEvent.Reset();
         }
@@ -47,21 +52,36 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                 var doc = app.ActiveUIDocument.Document;
                 ResultInfo = new ExecutionResultInfo();
 
-                using (var transaction = new Transaction(doc, "Execute AI Code"))
+                if (_transactionMode == TransactionModeNone)
                 {
-                    transaction.Start();
-
-                    // Dynamically compile and execute code
+                    // Let user code manage its own transactions
                     var result = CompileAndExecuteCode(
                         code: _generatedCode,
                         doc: doc,
                         parameters: _executionParameters
                     );
 
-                    transaction.Commit();
-
                     ResultInfo.Success = true;
                     ResultInfo.Result = JsonConvert.SerializeObject(result);
+                }
+                else
+                {
+                    // Default: wrap in a transaction
+                    using (var transaction = new Transaction(doc, "Execute AI Code"))
+                    {
+                        transaction.Start();
+
+                        var result = CompileAndExecuteCode(
+                            code: _generatedCode,
+                            doc: doc,
+                            parameters: _executionParameters
+                        );
+
+                        transaction.Commit();
+
+                        ResultInfo.Success = true;
+                        ResultInfo.Result = JsonConvert.SerializeObject(result);
+                    }
                 }
             }
             catch (Exception ex)

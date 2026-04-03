@@ -28,13 +28,14 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                     throw new ArgumentException("Missing required parameter: 'code'");
                 }
 
-                // Parse code and parameters
+                // Parse code, parameters, and transaction mode
                 string code = parameters["code"].Value<string>();
                 JArray parametersArray = parameters["parameters"] as JArray;
                 object[] executionParameters = parametersArray?.ToObject<object[]>() ?? Array.Empty<object>();
+                string transactionMode = parameters["transactionMode"]?.Value<string>() ?? "auto";
 
                 // Set execution parameters
-                _handler.SetExecutionParameters(code, executionParameters);
+                _handler.SetExecutionParameters(code, executionParameters, transactionMode);
 
                 // Raise external event and wait for completion
                 if (RaiseAndWaitForCompletion(60000)) // 1 minute timeout
