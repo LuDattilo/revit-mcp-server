@@ -1,138 +1,138 @@
-# Guida all'Installazione
+# Installation Guide
 
-Guida completa per installare e configurare **mcp-servers-for-revit** su Autodesk Revit 2023-2026.
-
----
-
-## Indice
-
-- [Prerequisiti](#prerequisiti)
-- [Metodo 1: Installazione da Release (consigliato)](#metodo-1-installazione-da-release-consigliato)
-- [Metodo 2: Build da Sorgente](#metodo-2-build-da-sorgente)
-- [Configurazione del Server MCP](#configurazione-del-server-mcp)
-- [Configurazione della Chiave API (Chat Panel)](#configurazione-della-chiave-api-chat-panel)
-- [Verifica dell'Installazione](#verifica-dellinstallazione)
-- [Aggiornamento](#aggiornamento)
-- [Disinstallazione](#disinstallazione)
-- [Risoluzione Problemi](#risoluzione-problemi)
+Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Revit 2023-2026.
 
 ---
 
-## Prerequisiti
+## Table of Contents
 
-### Software Richiesto (Installazione da Release)
+- [Prerequisites](#prerequisites)
+- [Method 1: Install from Release (recommended)](#method-1-install-from-release-recommended)
+- [Method 2: Build from Source](#method-2-build-from-source)
+- [MCP Server Configuration](#mcp-server-configuration)
+- [API Key Configuration (Chat Panel)](#api-key-configuration-chat-panel)
+- [Verifying the Installation](#verifying-the-installation)
+- [Updating](#updating)
+- [Uninstalling](#uninstalling)
+- [Troubleshooting](#troubleshooting)
 
-| Componente | Versione | Note |
-|------------|----------|------|
-| **Autodesk Revit** | 2023, 2024, 2025 o 2026 | Installato e con licenza attiva |
-| **Claude Desktop** | Qualsiasi | Scaricabile da [claude.ai/download](https://claude.ai/download) |
+---
 
-> **Node.js non richiesto.** Il runtime Node.js è incluso nel pacchetto di installazione (portabile, non viene installato nel sistema).
+## Prerequisites
 
-### Requisiti di Sistema
+### Required Software (Install from Release)
+
+| Component | Version | Notes |
+|-----------|---------|-------|
+| **Autodesk Revit** | 2023, 2024, 2025 or 2026 | Installed with an active license |
+| **Claude Desktop** | Any | Download from [claude.ai/download](https://claude.ai/download) |
+
+> **Node.js not required.** The Node.js runtime is included in the installation package (portable, not installed system-wide).
+
+### System Requirements
 
 - **OS**: Windows 10/11 (64-bit)
-- **RAM**: Minimo 8 GB (consigliati 16 GB con Revit aperto)
-- **Disco**: ~150 MB per plugin + server + runtime Node.js bundled
-- **Rete**: Porta TCP **8080** libera su localhost
+- **RAM**: Minimum 8 GB (16 GB recommended with Revit open)
+- **Disk**: ~150 MB for plugin + server + bundled Node.js runtime
+- **Network**: TCP port **8080** available on localhost
 
-### Requisiti Aggiuntivi per Build da Sorgente
+### Additional Requirements for Building from Source
 
-| Componente | Versione | Per quale versione Revit |
-|------------|----------|--------------------------|
-| **Node.js** | 18 o superiore | Per compilare il server TypeScript |
-| **npm** | Incluso con Node.js | Per installare dipendenze |
+| Component | Version | For which Revit version |
+|-----------|---------|------------------------|
+| **Node.js** | 18 or higher | To compile the TypeScript server |
+| **npm** | Included with Node.js | To install dependencies |
 | **.NET Framework 4.8 SDK** | 4.8+ | Revit 2023-2024 |
 | **.NET 8.0 SDK** | 8.0+ | Revit 2025-2026 |
-| **Visual Studio 2022** | 17.x (opzionale) | Build e debug |
-| **MSBuild** | Incluso con VS o .NET SDK | Build da CLI |
+| **Visual Studio 2022** | 17.x (optional) | Build and debug |
+| **MSBuild** | Included with VS or .NET SDK | CLI build |
 
-### Verifica Prerequisiti (solo per Build da Sorgente)
+### Verify Prerequisites (only for Building from Source)
 
-Apri un terminale e verifica:
+Open a terminal and verify:
 
 ```bash
-# Verifica Node.js
+# Verify Node.js
 node --version
-# Output atteso: v18.x.x o superiore
+# Expected output: v18.x.x or higher
 
-# Verifica npm
+# Verify npm
 npm --version
 
-# Verifica .NET SDK (per build da sorgente)
+# Verify .NET SDK (for building from source)
 dotnet --list-sdks
 ```
 
 ---
 
-## Metodo 1: Installazione da Release (consigliato)
+## Method 1: Install from Release (recommended)
 
-### Passo 1: Scarica la Release
+### Step 1: Download the Release
 
-1. Vai alla pagina [Releases](https://github.com/LuDattilo/revit-mcp-server/releases)
-2. Scarica lo ZIP corrispondente alla tua versione di Revit:
+1. Go to the [Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) page
+2. Download the ZIP matching your Revit version:
    - `mcp-servers-for-revit-vX.Y.Z-Revit2023.zip`
    - `mcp-servers-for-revit-vX.Y.Z-Revit2024.zip`
    - `mcp-servers-for-revit-vX.Y.Z-Revit2025.zip`
    - `mcp-servers-for-revit-vX.Y.Z-Revit2026.zip`
 
-### Passo 2: Estrai nella Cartella Addins di Revit
+### Step 2: Extract to the Revit Addins Folder
 
-1. **Chiudi Revit** se aperto
-2. Apri la cartella Addins di Revit:
+1. **Close Revit** if it is open
+2. Open the Revit Addins folder:
    ```
-   %AppData%\Autodesk\Revit\Addins\<versione>\
+   %AppData%\Autodesk\Revit\Addins\<version>\
    ```
-   Per esempio, per Revit 2026:
+   For example, for Revit 2026:
    ```
    %AppData%\Autodesk\Revit\Addins\2026\
    ```
 
-   > **Suggerimento**: Premi `Win+R`, incolla il percorso e premi Invio per aprire direttamente la cartella.
+   > **Tip**: Press `Win+R`, paste the path and press Enter to open the folder directly.
 
-3. Estrai il contenuto dello ZIP nella cartella. La struttura finale deve essere:
+3. Extract the ZIP contents into the folder. The final structure should be:
 
 ```
-Addins/<versione>/
-├── mcp-servers-for-revit.addin          <-- File manifesto
-└── revit_mcp_plugin/                    <-- Cartella plugin
+Addins/<version>/
+├── mcp-servers-for-revit.addin          <-- Manifest file
+└── revit_mcp_plugin/                    <-- Plugin folder
     ├── RevitMCPPlugin.dll
     ├── Newtonsoft.Json.dll
     ├── ...
     └── Commands/
         └── RevitMCPCommandSet/
             ├── command.json
-            ├── <versione>/              <-- Es: 2026/
+            ├── <version>/              <-- E.g.: 2026/
             │   ├── RevitMCPCommandSet.dll
             │   └── ...
-            └── server/                  <-- Server MCP (incluso nel ZIP)
-                ├── build/               <-- Codice server JS
-                ├── node_modules/        <-- Dipendenze pre-installate
+            └── server/                  <-- MCP Server (included in the ZIP)
+                ├── build/               <-- Server JS code
+                ├── node_modules/        <-- Pre-installed dependencies
                 ├── runtime/
-                │   └── node.exe         <-- Node.js portabile (non richiede installazione)
+                │   └── node.exe         <-- Portable Node.js (no installation required)
                 └── package.json
 ```
 
-### Passo 3: Avvia Revit
+### Step 3: Launch Revit
 
-1. Apri Revit
-2. Se appare un avviso di sicurezza per l'add-in, clicca **"Carica sempre"**
-3. Dovresti vedere il pannello **"Revit MCP Plugin"** nel ribbon
+1. Open Revit
+2. If a security warning appears for the add-in, click **"Always Load"**
+3. You should see the **"Revit MCP Plugin"** panel in the ribbon
 
 ---
 
-## Metodo 2: Build da Sorgente
+## Method 2: Build from Source
 
-### Passo 1: Clona il Repository
+### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/LuDattilo/revit-mcp-server.git
+git clone https://github.com/mcp-servers-for-revit/mcp-servers-for-revit.git
 cd mcp-servers-for-revit
 ```
 
-### Passo 2: Build del Server MCP
+### Step 2: Build the MCP Server
 
-> **Nota**: `server/build/` è già incluso nel repository — questo passo è necessario solo se modifichi il sorgente TypeScript.
+> **Note**: `server/build/` is already included in the repository — this step is only needed if you modify the TypeScript source.
 
 ```bash
 cd server
@@ -141,15 +141,15 @@ npm run build
 cd ..
 ```
 
-### Passo 3: Build del Plugin Revit
+### Step 3: Build the Revit Plugin
 
-Scegli il comando in base alla tua versione di Revit:
+Choose the command based on your Revit version:
 
 ```bash
-# Revit 2023 (.NET Framework 4.8) - richiede MSBuild
+# Revit 2023 (.NET Framework 4.8) - requires MSBuild
 msbuild mcp-servers-for-revit.sln -p:Configuration="Release R23" -restore
 
-# Revit 2024 (.NET Framework 4.8) - richiede MSBuild
+# Revit 2024 (.NET Framework 4.8) - requires MSBuild
 msbuild mcp-servers-for-revit.sln -p:Configuration="Release R24" -restore
 
 # Revit 2025 (.NET 8)
@@ -159,164 +159,165 @@ dotnet build mcp-servers-for-revit.sln -c "Release R25"
 dotnet build mcp-servers-for-revit.sln -c "Release R26"
 ```
 
-> **Nota**: Per Revit 2023/2024 serve MSBuild (incluso con Visual Studio). Per Revit 2025/2026 basta il .NET 8 SDK.
+> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient.
 
-### Passo 4: Deploy Automatico (Debug)
+### Step 4: Automatic Deploy (Debug)
 
-In modalita' Debug, il build copia automaticamente i file nella cartella Addins di Revit:
+In Debug mode, the build automatically copies the files to the Revit Addins folder:
 
 ```bash
-# Il build Debug installa direttamente in Revit
+# The Debug build installs directly into Revit
 dotnet build mcp-servers-for-revit.sln -c "Debug R26"
 ```
 
-### Passo 5: Deploy Manuale (Release)
+### Step 5: Manual Deploy (Release)
 
-Per una build Release, copia manualmente l'output:
+For a Release build, manually copy the output:
 
 ```bash
-# L'output si trova in:
-# plugin/bin/AddIn <anno> Release R<xx>/
+# The output is located in:
+# plugin/bin/AddIn <year> Release R<xx>/
 
-# Copia tutto il contenuto nella cartella Addins di Revit
+# Copy all contents to the Revit Addins folder
 ```
 
 ---
 
-## Configurazione del Server MCP
+## MCP Server Configuration
 
-Il server MCP è il ponte tra gli assistenti AI (Claude, Cline) e il plugin Revit.
-Il server locale (`server/build/index.js`) è già incluso nel pacchetto di installazione — non serve installare nessun package npm esterno.
+The MCP server is the bridge between AI assistants (Claude, Cline) and the Revit plugin.
+The local server (`server/build/index.js`) is already included in the installation package — no external npm package installation is needed.
 
-### Per Claude Desktop (dopo installazione tramite install.ps1)
+### For Claude Desktop (after installation via install.ps1)
 
-Lo script `install.ps1` configura automaticamente Claude Desktop. Se hai bisogno di configurarlo manualmente o di ripristinarlo, esegui:
+The `install.ps1` script automatically configures Claude Desktop. If you need to configure it manually or restore the configuration, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\fix-mcp.ps1
 ```
 
-Oppure modifica manualmente `%APPDATA%\Claude\claude_desktop_config.json`:
+Or manually edit `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ```json
 {
     "mcpServers": {
-        "revit-mcp": {
-            "command": "cmd",
-            "args": ["/c", "node", "%APPDATA%\\Autodesk\\Revit\\Addins\\2025\\revit_mcp_plugin\\Commands\\RevitMCPCommandSet\\server\\build\\index.js"]
+        "mcp-server-for-revit": {
+            "command": "npx",
+            "args": ["-y", "mcp-server-for-revit"]
         }
     }
 }
 ```
 
-> **Nota**: sostituisci `2025` con la tua versione di Revit se diversa.
+Restart Claude Desktop and verify that the hammer icon appears at the bottom right.
 
-Riavvia Claude Desktop e verifica che l'icona del martello (🔨) appaia in basso a destra.
+### For Claude Code (CLI)
 
-### Per Claude Code (CLI)
+Run the following command to register the MCP server:
 
-Il file `.mcp.json` nella cartella del progetto configura il server automaticamente.
-Se apri Claude Code nella cartella di installazione del plugin, il server è già pronto — nessuna configurazione aggiuntiva necessaria.
+```bash
+claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
+```
 
-### Per Altri Client MCP (Cline, Continue, ecc.)
+### For Other MCP Clients (Cline, Continue, etc.)
 
-Configura il server MCP con:
-- **Comando**: `node`
-- **Argomenti**: percorso assoluto a `server\build\index.js` nella cartella Addins
-- **Trasporto**: stdio
+Configure the MCP server with:
+- **Command**: `node`
+- **Arguments**: absolute path to `server\build\index.js` in the Addins folder
+- **Transport**: stdio
 
 ---
 
-## Configurazione della Chiave API (Chat Panel)
+## API Key Configuration (Chat Panel)
 
-Il pannello chat integrato in Revit richiede una chiave API **Anthropic** per funzionare. Questo e' necessario **solo** per il chat panel — l'uso tramite Claude Desktop/Claude Code non richiede configurazione aggiuntiva.
+The built-in chat panel in Revit requires an **Anthropic** API key to work. This is only needed for the chat panel — using it through Claude Desktop/Claude Code does not require additional configuration.
 
-### Ottenere una Chiave API
+### Obtaining an API Key
 
-1. Vai su [console.anthropic.com](https://console.anthropic.com)
-2. Registrati o accedi
-3. Vai in **API Keys** e crea una nuova chiave
-4. Copia la chiave (viene mostrata una sola volta)
+1. Go to [console.anthropic.com](https://console.anthropic.com)
+2. Sign up or log in
+3. Go to **API Keys** and create a new key
+4. Copy the key (it is shown only once)
 
-### Metodo 1: Variabile d'Ambiente (consigliato)
+### Method 1: Environment Variable (recommended)
 
-1. Apri **Impostazioni di Sistema > Variabili d'ambiente**
-2. Aggiungi una nuova variabile utente:
-   - **Nome**: `ANTHROPIC_API_KEY`
-   - **Valore**: `sk-ant-...` (la tua chiave API)
-3. Riavvia Revit
+1. Open **System Settings > Environment Variables**
+2. Add a new user variable:
+   - **Name**: `ANTHROPIC_API_KEY`
+   - **Value**: `sk-ant-...` (your API key)
+3. Restart Revit
 
-Oppure da terminale (sessione corrente):
+Or from a terminal (current session):
 ```bash
 setx ANTHROPIC_API_KEY "sk-ant-..."
 ```
 
-### Metodo 2: File di Testo
+### Method 2: Text File
 
-1. Crea la cartella (se non esiste):
+1. Create the folder (if it doesn't exist):
    ```
    %USERPROFILE%\.claude\
    ```
 
-2. Crea il file `api_key.txt` con la tua chiave API:
+2. Create the file `api_key.txt` with your API key:
    ```
    %USERPROFILE%\.claude\api_key.txt
    ```
-   Contenuto del file (solo la chiave, senza spazi):
+   File contents (key only, no spaces):
    ```
    sk-ant-...
    ```
 
-> **Sicurezza**: Non condividere mai la chiave API. Il file `api_key.txt` e' letto solo localmente dal plugin.
+> **Security**: Never share your API key. The `api_key.txt` file is read locally by the plugin only.
 
 ---
 
-## Verifica dell'Installazione
+## Verifying the Installation
 
-### 1. Verifica Plugin Revit
+### 1. Verify the Revit Plugin
 
-1. Apri Revit
-2. Cerca il pannello **"Revit MCP Plugin"** nel ribbon (tab Add-Ins)
-3. Dovresti vedere 3 pulsanti:
-   - **Revit MCP Switch** — Avvia/ferma il server socket
-   - **MCP Panel** — Mostra/nasconde il pannello chat
-   - **Settings** — Apre le impostazioni
+1. Open Revit
+2. Look for the **"Revit MCP Plugin"** panel in the ribbon (Add-Ins tab)
+3. You should see 3 buttons:
+   - **Revit MCP Switch** — Start/stop the socket service
+   - **MCP Panel** — Show/hide the chat panel
+   - **Settings** — Open settings
 
-### 2. Avvia il Servizio MCP
+### 2. Start the MCP Service
 
-1. Clicca **"Revit MCP Switch"** nel ribbon
-2. Il servizio si avvia sulla porta TCP 8080
-3. L'indicatore nel pannello chat passa a verde: **"MCP Online"**
+1. Click **"Revit MCP Switch"** in the ribbon
+2. The service starts on TCP port 8080
+3. The indicator in the chat panel turns green: **"MCP Online"**
 
-### 3. Test di Connessione
+### 3. Connection Test
 
-Da Claude Desktop o Claude Code, prova:
+From Claude Desktop or Claude Code, try:
 
 ```
-Usa il tool say_hello con messaggio "Test connessione"
+Use the say_hello tool with the message "Connection test"
 ```
 
-Se tutto funziona, apparira' un dialog in Revit con il messaggio.
+If everything works, a dialog will appear in Revit with the message.
 
-### 4. Test del Chat Panel (opzionale)
+### 4. Chat Panel Test (optional)
 
-1. Clicca **"MCP Panel"** per aprire il pannello
-2. Verifica che mostri **"MCP Online"** in alto a destra
-3. Scrivi un messaggio, es: "Dimmi le info del progetto"
-4. Claude dovrebbe rispondere usando i tool Revit
+1. Click **"MCP Panel"** to open the panel
+2. Verify that it shows **"MCP Online"** in the top right
+3. Type a message, e.g.: "Tell me the project info"
+4. Claude should respond using the Revit tools
 
 ---
 
-## Aggiornamento
+## Updating
 
-### Da Release
+### From Release
 
-1. Chiudi Revit
-2. Scarica la nuova release
-3. Sovrascrivi i file nella cartella Addins
-4. Riapri Revit
+1. Close Revit
+2. Download the new release
+3. Overwrite the files in the Addins folder
+4. Reopen Revit
 
-### Da Sorgente
+### From Source
 
 ```bash
 cd mcp-servers-for-revit
@@ -327,55 +328,55 @@ dotnet build mcp-servers-for-revit.sln -c "Debug R26"
 
 ---
 
-## Disinstallazione
+## Uninstalling
 
-1. Chiudi Revit
-2. Vai nella cartella Addins:
+1. Close Revit
+2. Go to the Addins folder:
    ```
-   %AppData%\Autodesk\Revit\Addins\<versione>\
+   %AppData%\Autodesk\Revit\Addins\<version>\
    ```
-3. Elimina:
+3. Delete:
    - `mcp-servers-for-revit.addin`
-   - La cartella `revit_mcp_plugin/`
-4. (Opzionale) Rimuovi la configurazione MCP dal tuo client AI
+   - The `revit_mcp_plugin/` folder
+4. (Optional) Remove the MCP configuration from your AI client
 
 ---
 
-## Risoluzione Problemi
+## Troubleshooting
 
-### Il plugin non appare nel ribbon
+### The plugin does not appear in the ribbon
 
-- Verifica che il file `.addin` sia nella cartella corretta
-- Controlla che la versione dello ZIP corrisponda alla tua versione di Revit
-- Guarda il journal di Revit per errori: `%LOCALAPPDATA%\Autodesk\Revit\Autodesk Revit <versione>\Journals\`
+- Verify that the `.addin` file is in the correct folder
+- Check that the ZIP version matches your Revit version
+- Check the Revit journal for errors: `%LOCALAPPDATA%\Autodesk\Revit\Autodesk Revit <version>\Journals\`
 
-### "MCP Offline" nel pannello chat
+### "MCP Offline" in the chat panel
 
-- Clicca **"Revit MCP Switch"** per avviare il servizio
-- Verifica che la porta 8080 non sia occupata da un altro programma
-- Controlla il firewall di Windows (deve permettere connessioni locali sulla porta 8080)
+- Click **"Revit MCP Switch"** to start the service
+- Verify that port 8080 is not occupied by another program
+- Check the Windows firewall (it must allow local connections on port 8080)
 
-### Claude non riesce a connettersi ai tool
+### Claude cannot connect to tools
 
-- Verifica che il server MCP sia configurato nel client AI
-- Assicurati che Revit sia aperto e il servizio MCP attivo (indicatore verde)
-- Riavvia il client AI dopo aver modificato la configurazione
+- Verify that the MCP server is configured in the AI client
+- Make sure Revit is open and the MCP service is active (green indicator)
+- Restart the AI client after modifying the configuration
 
-### Errore "API key not configured" nel chat panel
+### "API key not configured" error in the chat panel
 
-- Configura la chiave API Anthropic con uno dei metodi descritti sopra
-- Riavvia Revit dopo aver impostato la variabile d'ambiente
-- Verifica che il file `api_key.txt` contenga solo la chiave (`sk-ant-...`), senza spazi o newline extra
+- Configure the Anthropic API key using one of the methods described above
+- Restart Revit after setting the environment variable
+- Verify that the `api_key.txt` file contains only the key (`sk-ant-...`), with no extra spaces or newlines
 
-### Build fallisce per Revit 2023/2024
+### Build fails for Revit 2023/2024
 
-- Installa Visual Studio 2022 con il workload ".NET desktop development"
-- Oppure installa il [Build Tools per Visual Studio 2022](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) con MSBuild
+- Install Visual Studio 2022 with the ".NET desktop development" workload
+- Or install the [Build Tools for Visual Studio 2022](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) with MSBuild
 
-### Porta 8080 gia' in uso
+### Port 8080 already in use
 
-Se un altro programma usa la porta 8080, verifica con:
+If another program is using port 8080, check with:
 ```bash
 netstat -ano | findstr :8080
 ```
-Chiudi il programma che occupa la porta, oppure modifica la porta nel codice sorgente (`SocketService.cs` e `SocketClient.ts`).
+Close the program occupying the port, or change the port in the source code (`SocketService.cs` and `SocketClient.ts`).

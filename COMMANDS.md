@@ -1,6 +1,6 @@
 # Revit MCP Server - Complete Reference
 
-> **62 MCP tools** | **140 unit tests** | **Revit 2023–2026** | Coordinates in **millimeters (mm)**
+> **80+ MCP tools** | **140 unit tests** | **Revit 2023–2026** | Coordinates in **millimeters (mm)**
 
 ---
 
@@ -32,7 +32,7 @@
 1. Build the plugin: `dotnet build plugin/RevitMCPPlugin.csproj -c "Debug R25"`
 2. Build the MCP server: `cd server && npm run build`
 3. Open Revit and click **"Revit MCP Switch"** in the ribbon
-4. Configure `.mcp.json` or Claude Desktop to connect to the MCP server
+4. Configure Claude Desktop to connect to the MCP server
 
 ### Chat Panel (inside Revit)
 The plugin includes a dockable chat panel accessible via **"MCP Panel"** in the ribbon.
@@ -552,11 +552,11 @@ The dockable panel inside Revit provides a Claude-style chat interface:
 - **Setup**: API key via `ANTHROPIC_API_KEY` env var or `~/.claude/api_key.txt`
 
 ### Example prompts for the chat panel:
-- "Che progetto ho aperto?"
-- "Fai un audit del modello"
-- "Crea un livello MCP a 15000mm"
-- "Mostra i warning"
-- "Quanti elementi strutturali ci sono?"
+- "What project do I have open?"
+- "Run a model audit"
+- "Create a level at 15000mm"
+- "Show me the warnings"
+- "How many structural elements are there?"
 
 ---
 

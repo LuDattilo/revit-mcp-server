@@ -12,10 +12,10 @@ server/revit-data.db
 2025/
 2026/
 
-# Loose image files in root
-*.png
-*.jpg
-*.jpeg
+# Loose image files in root (not assets/)
+/*.png
+/*.jpg
+/*.jpeg
 
 # =============================================================================
 # Visual Studio / .NET (plugin/ and commandset/)
@@ -383,3 +383,4 @@ FodyWeavers.xsd
 # =============================================================================
 .claude/
 .DS_Store
+.mcp.json

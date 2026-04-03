@@ -11,7 +11,7 @@
     powershell -ExecutionPolicy Bypass -File .\fix-mcp.ps1
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/fix-mcp.ps1 | iex"
+    powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/mcp-servers-for-revit/mcp-servers-for-revit/main/scripts/fix-mcp.ps1 | iex"
 #>
 
 $ErrorActionPreference = 'Continue'
@@ -24,7 +24,7 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     . $_commonPath
 } else {
     # Inline fallback for irm | iex usage
-    $REPO          = 'LuDattilo/revit-mcp-server'
+    $REPO          = 'mcp-servers-for-revit/mcp-servers-for-revit'
     $PLUGIN_NAME   = 'mcp-servers-for-revit'
     $PLUGIN_FOLDER = 'revit_mcp_plugin'
     $NPM_PACKAGE   = 'mcp-server-for-revit'

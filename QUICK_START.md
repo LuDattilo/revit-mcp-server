@@ -11,7 +11,7 @@ No programming or technical knowledge required.
 |---|------|-----------------|
 | 1 | **Autodesk Revit** (2023, 2024, 2025, or 2026) | Already installed on your PC |
 | 2 | **Claude Desktop** | [claude.ai/download](https://claude.ai/download) — install and sign in |
-| 3 | **Revit MCP Plugin** (ZIP file) | [Download from GitHub Releases](https://github.com/LuDattilo/revit-mcp-server/releases) |
+| 3 | **Revit MCP Plugin** (ZIP file) | [Download from GitHub Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) |
 
 > **You do NOT need** Node.js, Python, Git, or any other developer tool.  
 > Everything is included in the ZIP file.
@@ -22,7 +22,7 @@ No programming or technical knowledge required.
 
 ### Step 1 — Download the correct ZIP
 
-Go to the [Releases page](https://github.com/LuDattilo/revit-mcp-server/releases) and download the ZIP that matches your Revit version:
+Go to the [Releases page](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) and download the ZIP that matches your Revit version:
 
 - `mcp-servers-for-revit-vX.Y.Z-Revit2023.zip`
 - `mcp-servers-for-revit-vX.Y.Z-Revit2024.zip`
@@ -58,7 +58,7 @@ Addins\2025\
    - **MCP Panel** — shows the monitoring panel
    - **Settings** — plugin settings
 
-> **What happens automatically:** The first time Revit loads, the plugin configures Claude Desktop for you. You'll see a dialog saying *"Claude Desktop configurato automaticamente"*. Just click OK.
+> **What happens automatically:** The first time Revit loads, the plugin configures Claude Desktop for you. You'll see a dialog saying *"Claude Desktop configured automatically"*. Just click OK.
 
 ---
 
@@ -129,7 +129,7 @@ Show me all warnings.
 Check for clashes between walls and pipes.
 ```
 
-> **Tip:** For the full list of 78 available commands with example prompts, see the file `GUIDA_PROMPTS.md` in the plugin folder.
+> **Tip:** For the full list of available commands with example prompts, see [COMMANDS.md](COMMANDS.md).
 
 ---
 
@@ -154,7 +154,7 @@ That's it. The plugin remembers the Claude Desktop configuration — you only ne
 | ZIP extracted to wrong folder | Check that `mcp-servers-for-revit.addin` is directly inside `%AppData%\Autodesk\Revit\Addins\2025\` |
 | Wrong ZIP version | Download the ZIP matching your Revit year |
 | DLLs blocked by Windows | Right-click `RevitMCPPlugin.dll` → Properties → check **Unblock** if present. Repeat for other DLLs |
-| Source code instead of release | You should see `.dll` files, NOT `.cs` files. Download the ZIP from [Releases](https://github.com/LuDattilo/revit-mcp-server/releases), not the source code |
+| Source code instead of release | You should see `.dll` files, NOT `.cs` files. Download the ZIP from [Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases), not the source code |
 
 ### Claude Desktop doesn't show the hammer icon
 

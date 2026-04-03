@@ -1,23 +1,17 @@
-[![Cover Image](./assets/cover.svg)](https://github.com/LuDattilo/revit-mcp-server)
+[![Cover Image](./assets/cover.png?v=2)](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit)
 
 # mcp-servers-for-revit
 
-**Connect AI assistants to Autodesk Revit via the Model Context Protocol.**
-
-**Collega assistenti AI ad Autodesk Revit tramite il Model Context Protocol.**
+**Connect AI assistants to Autodesk Revit via the Model Context Protocol.** | [Italiano](README_IT.md)
 
 ---
 
 mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 80+ tools covering project info, model analysis, element creation, batch operations, data export, and more.
 
-mcp-servers-for-revit permette a client AI come Claude, Cline e altri strumenti compatibili MCP di leggere, creare, modificare e cancellare elementi nei progetti Revit in tempo reale. Espone oltre 80 tool che coprono informazioni di progetto, analisi del modello, creazione di elementi, operazioni batch, esportazione dati e altro.
-
 > [!NOTE]
-> Based on [revit-mcp](https://github.com/romanzarkhin/revit-mcp) by Roman Zarkhin (original 15-tool concept), expanded to 80+ tools by the [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) community, and consolidated into a single repo by [sparx-fire](https://sparx-fire.com) (Bobby Galli). This fork adds language-independent operation, an embedded Claude chat panel, and a PowerShell installer.
->
-> Basato su [revit-mcp](https://github.com/romanzarkhin/revit-mcp) di Roman Zarkhin (concept originale con 15 tool), ampliato a oltre 80 tool dalla community [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit), e consolidato in un unico repo da [sparx-fire](https://sparx-fire.com) (Bobby Galli). Questo fork aggiunge funzionamento indipendente dalla lingua, un pannello chat Claude integrato e un installer PowerShell.
+> This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
 
-## Key Features / Funzionalita principali
+## Key Features
 
 - **80+ MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
 - **Revit 2023, 2024, 2025, 2026** — fully tested on all four versions
@@ -26,16 +20,7 @@ mcp-servers-for-revit permette a client AI come Claude, Cline e altri strumenti 
 - **Real-time execution** — AI requests are executed immediately on the active model via TCP/JSON-RPC 2.0
 - **Extensible command set** — add new commands without modifying the plugin core
 
----
-
-- **Oltre 80 tool MCP** — info progetto, salute del modello, rilevamento interferenze, CRUD elementi, operazioni batch, export dati (PDF/DWG/IFC/CSV)
-- **Revit 2023, 2024, 2025, 2026** — completamente testato su tutte e quattro le versioni
-- **Indipendente dalla lingua** — funziona con qualsiasi lingua dell'interfaccia Revit (inglese, italiano, francese, tedesco, ecc.) usando la risoluzione BuiltInCategory
-- **Pannello chat Claude integrato** — pannello agganciabile all'interno di Revit con accesso diretto all'AI (API Anthropic, extended thinking abilitato)
-- **Esecuzione in tempo reale** — le richieste AI vengono eseguite immediatamente sul modello attivo via TCP/JSON-RPC 2.0
-- **Command set estensibile** — aggiungi nuovi comandi senza modificare il core del plugin
-
-## Architecture / Architettura
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -57,9 +42,9 @@ flowchart LR
 | **Revit Plugin** (`plugin/`) | C# | Runs inside Revit, listens on `localhost:8080`, dispatches commands |
 | **Command Set** (`commandset/`) | C# | Implements Revit API operations, returns structured results |
 
-## Requirements / Requisiti
+## Requirements
 
-### To use / Per l'utilizzo
+### To use
 
 | Requirement | Details |
 |-------------|---------|
@@ -68,7 +53,7 @@ flowchart LR
 | **OS** | Windows 10/11 (Revit is Windows-only) |
 | **Anthropic API key** (optional) | Required only for the built-in chat panel. Set via `%USERPROFILE%\.claude\api_key.txt` or env `ANTHROPIC_API_KEY` |
 
-### To build from source / Per compilare da sorgente
+### To build from source
 
 | Requirement | Details |
 |-------------|---------|
@@ -78,56 +63,54 @@ flowchart LR
 | **Node.js 18+** | For the MCP server |
 | **Revit API assemblies** | Installed with Revit (referenced automatically via NuGet) |
 
-## Quick Start / Avvio rapido
+## Quick Start
 
-### 1. Install the Revit plugin / Installa il plugin Revit
+### 1. Install the Revit plugin
 
-#### Option A: Automatic install (recommended) / Installazione automatica (consigliata)
+#### Option A: Automatic install (recommended)
 
-Open PowerShell and paste this command: / Apri PowerShell e incolla questo comando:
+Open PowerShell and paste this command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/install.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/mcp-servers-for-revit/mcp-servers-for-revit/main/scripts/install.ps1 | iex"
 ```
 
-The script: / Lo script:
-- Detects installed Revit versions automatically / Rileva automaticamente le versioni di Revit installate
-- Downloads the correct pre-built Release from GitHub / Scarica la Release precompilata corretta da GitHub
-- Extracts to the right folder and unblocks all DLLs / Estrae nella cartella giusta e sblocca tutte le DLL
-- Verifies all dependencies are present / Verifica che tutte le dipendenze siano presenti
-- Checks for Node.js (required for MCP server) and offers to install it / Controlla Node.js (necessario per il server MCP) e offre di installarlo
-- Configures Claude Desktop if installed / Configura Claude Desktop se installato
+The script:
+- Detects installed Revit versions automatically
+- Downloads the correct pre-built Release from GitHub
+- Extracts to the right folder and unblocks all DLLs
+- Verifies all dependencies are present
+- Checks for Node.js (required for MCP server) and offers to install it
+- Configures Claude Desktop if installed
 
 ```powershell
-# Install for a specific Revit version / Installa per una versione specifica
+# Install for a specific Revit version
 .\install.ps1 -RevitVersion 2025
 
-# Install a specific release / Installa una release specifica
+# Install a specific release
 .\install.ps1 -Tag v1.2.0
 
-# Uninstall / Disinstalla
+# Uninstall
 .\install.ps1 -Uninstall
 ```
 
-#### Option B: Manual install / Installazione manuale
+#### Option B: Manual install
 
 > [!IMPORTANT]
-> **Download the pre-built ZIP from the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page.** Do NOT clone the repository or copy the source code — the source contains `.cs` files, not compiled `.dll` files. The plugin will not work without compiled binaries.
->
-> **Scarica lo ZIP precompilato dalla pagina [Releases](https://github.com/LuDattilo/revit-mcp-server/releases).** NON clonare il repository o copiare il codice sorgente — il sorgente contiene file `.cs`, non file `.dll` compilati. Il plugin non funzionera senza i binari compilati.
+> **Download the pre-built ZIP from the [Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) page.** Do NOT clone the repository or copy the source code — the source contains `.cs` files, not compiled `.dll` files. The plugin will not work without compiled binaries.
 
-Extract the ZIP to: / Estrai lo ZIP in:
+Extract the ZIP to:
 
 ```
 %AppData%\Autodesk\Revit\Addins\<your Revit version>\
 ```
 
-To open this folder quickly, press `Win+R` and type: / Per aprire questa cartella rapidamente, premi `Win+R` e digita:
+To open this folder quickly, press `Win+R` and type:
 ```
 %AppData%\Autodesk\Revit\Addins
 ```
 
-After extraction your folder **must** look like this / Dopo l'estrazione la cartella **deve** apparire cosi:
+After extraction your folder **must** look like this:
 
 ```
 Addins/2025/
@@ -148,15 +131,13 @@ Addins/2025/
 
 > [!WARNING]
 > If `RevitMCPPlugin.dll` is missing or the `revit_mcp_plugin/` subfolder is not present, the plugin will not load. Check that you extracted the **contents** of the ZIP, not the ZIP file itself.
->
-> Se `RevitMCPPlugin.dll` manca o la sottocartella `revit_mcp_plugin/` non e presente, il plugin non si carichera. Verifica di aver estratto il **contenuto** dello ZIP, non il file ZIP stesso.
 
-### 2. Configure the MCP server / Configura il server MCP
+### 2. Configure the MCP server
 
 **Claude Code**
 
 ```bash
-claude mcp add revit-mcp -- cmd /c npx -y mcp-server-for-revit
+claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
 ```
 
 **Claude Desktop**
@@ -166,38 +147,32 @@ Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_co
 ```json
 {
     "mcpServers": {
-        "revit-mcp": {
-            "command": "cmd",
-            "args": ["/c", "npx", "-y", "mcp-server-for-revit"]
+        "mcp-server-for-revit": {
+            "command": "npx",
+            "args": ["-y", "mcp-server-for-revit"]
         }
     }
 }
 ```
 
-### 3. Start Revit / Avvia Revit
+### 3. Start Revit
 
 The plugin loads automatically. In the **Add-Ins** ribbon tab you should see **three buttons** in the "Revit MCP Plugin" panel:
 
-Il plugin si carica automaticamente. Nella scheda ribbon **Add-Ins** dovresti vedere **tre pulsanti** nel pannello "Revit MCP Plugin":
-
-| Button | Function / Funzione |
-|--------|---------------------|
-| **Revit MCP Switch** | Start/stop the TCP server / Avvia/ferma il server TCP |
-| **MCP Panel** | Show/hide the built-in chat panel / Mostra/nascondi il pannello chat integrato |
-| **Settings** | Plugin settings / Impostazioni del plugin |
+| Button | Function |
+|--------|----------|
+| **Revit MCP Switch** | Start/stop the TCP server |
+| **MCP Panel** | Show/hide the built-in chat panel |
+| **Settings** | Plugin settings |
 
 Click **"Revit MCP Switch"** to start the TCP server. When the status indicator turns green, the connection is active.
 
-Clicca **"Revit MCP Switch"** per avviare il server TCP. Quando l'indicatore di stato diventa verde, la connessione e attiva.
-
 > [!TIP]
-> If you only see the **Switch** button but not **MCP Panel** or **Settings**, the plugin did not load correctly. See [Troubleshooting](#troubleshooting--risoluzione-problemi) below.
->
-> Se vedi solo il pulsante **Switch** ma non **MCP Panel** o **Settings**, il plugin non si e caricato correttamente. Vedi [Risoluzione problemi](#troubleshooting--risoluzione-problemi) sotto.
+> If you only see the **Switch** button but not **MCP Panel** or **Settings**, the plugin did not load correctly. See [Troubleshooting](#troubleshooting) below.
 
 ![Architecture](./assets/architecture.svg)
 
-## Supported Revit Versions / Versioni Revit supportate
+## Supported Revit Versions
 
 | Version | .NET Target | Status | Notes |
 |---------|-------------|--------|-------|
@@ -208,13 +183,11 @@ Clicca **"Revit MCP Switch"** per avviare il server TCP. Quando l'indicatore di 
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 
-Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di compilazione (`REVIT2023`, `REVIT2024`, ecc.) per gestire le differenze API tra le versioni (es. `ElementId` e `long` in R24+, `int` in R23).
+## Supported Tools (80+)
 
-## Supported Tools (80+) / Tool supportati (80+)
+### Project & Model Info
 
-### Project & Model Info / Info progetto e modello
-
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `get_project_info` | Project metadata, levels, phases, links, worksets |
 | `get_current_view_info` | Active view type, name, scale, detail level |
@@ -228,9 +201,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `get_shared_parameters` | Project parameters bound to categories |
 | `manage_links` | List, reload, or unload linked Revit models |
 
-### Model Analysis & Auditing / Analisi e audit del modello
+### Model Analysis & Auditing
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `ai_element_filter` | Intelligent element query by category, type, visibility, bounding box |
 | `analyze_model_statistics` | Element counts by category, type, family, and level |
@@ -239,17 +212,17 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `measure_between_elements` | Distance measurement (center-to-center, closest points, bounding box) |
 | `get_elements_in_spatial_volume` | Find elements within a 3D bounding region |
 
-### Materials & Quantities / Materiali e quantita
+### Materials & Quantities
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `get_materials` | List materials filtered by class or name |
 | `get_material_properties` | Physical, structural, and thermal properties |
 | `get_material_quantities` | Material takeoffs: area, volume, element counts |
 
-### Element Creation / Creazione elementi
+### Element Creation
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `create_line_based_element` | Walls, beams, pipes (start/end points) |
 | `create_point_based_element` | Doors, windows, furniture (insertion point) |
@@ -261,9 +234,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `create_structural_framing_system` | Beam framing systems within a boundary |
 | `create_array` | Linear or radial arrays of elements |
 
-### Element Modification / Modifica elementi
+### Element Modification
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `modify_element` | Move, rotate, mirror, or copy elements |
 | `operate_element` | Select, hide, isolate, highlight, delete |
@@ -276,9 +249,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `delete_element` | Delete elements by ID |
 | `load_family` | Load a family file (.rfa) into the project |
 
-### Views & Sheets / Viste e tavole
+### Views & Sheets
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `create_view` | Create floor plans, sections, elevations, 3D views |
 | `duplicate_view` | Duplicate views (independent, dependent, with detailing) |
@@ -292,9 +265,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `create_schedule` | Create schedule views with fields, filters, sorting |
 | `create_revision` | List, create, or add revisions to sheets |
 
-### Annotation / Annotazioni
+### Annotation
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `create_dimensions` | Dimension annotations between elements or points |
 | `create_text_note` | Text note annotations in views |
@@ -302,9 +275,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `tag_all_walls` | Auto-tag all walls in the active view |
 | `tag_all_rooms` | Auto-tag all rooms in the active view |
 
-### Data Export / Esportazione dati
+### Data Export
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `export_room_data` | All room data (area, volume, department, finishes) |
 | `export_elements_data` | Bulk element data export with filtering (JSON/CSV) |
@@ -312,9 +285,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `get_schedule_data` | Read schedule contents or list all schedules |
 | `batch_export` | Export sheets/views to PDF, DWG, or IFC |
 
-### Batch Operations & Cleanup / Operazioni batch e pulizia
+### Batch Operations & Cleanup
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `batch_rename` | Batch rename views, sheets, levels, grids, rooms |
 | `renumber_elements` | Sequential renumbering of rooms, doors, windows |
@@ -323,9 +296,9 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `cad_link_cleanup` | Audit and clean up CAD imports and links |
 | `add_shared_parameter` | Add shared parameters to categories |
 
-### Advanced / Avanzato
+### Advanced
 
-| Tool | Description / Descrizione |
+| Tool | Description |
 | ---- | ----------- |
 | `send_code_to_revit` | Execute arbitrary C# code inside Revit |
 | `store_project_data` | Store project metadata in local database |
@@ -333,17 +306,15 @@ Tutti i tool funzionano su tutte le versioni. Il command set usa costanti di com
 | `query_stored_data` | Query stored project and room data |
 | `say_hello` | Display a greeting dialog (connection test) |
 
-## Built-in Chat Panel / Pannello chat integrato
+## Built-in Chat Panel
 
 The Revit plugin includes a dockable chat panel that connects directly to the Anthropic API. It provides a Claude chat interface inside Revit where the AI can autonomously execute tools on the active model.
-
-Il plugin Revit include un pannello chat agganciabile che si connette direttamente alle API Anthropic. Fornisce un'interfaccia di chat Claude all'interno di Revit dove l'AI puo eseguire autonomamente i tool sul modello attivo.
 
 - **Model**: Claude Sonnet 4.6 with extended thinking (10K token budget)
 - **System prompt**: Autonomous mode — Claude executes actions directly without unnecessary confirmations
 - **Features**: Tool execution feedback, thinking summary, round progress, stop/cancel, chat export (TXT/MD/JSON)
 
-## Known Limitations / Limitazioni note
+## Known Limitations
 
 | Limitation | Details |
 |------------|---------|
@@ -356,55 +327,42 @@ Il plugin Revit include un pannello chat agganciabile che si connette direttamen
 | **No streaming** | Tool results are returned as a single response; large results (e.g., exporting thousands of elements) may take time |
 | **Anthropic API key** | The built-in chat panel requires an Anthropic API key. External MCP clients (Claude Code, Claude Desktop) use their own authentication |
 
-| Limitazione | Dettagli |
-|-------------|----------|
-| **Solo Windows** | Revit funziona solo su Windows; macOS/Linux non sono supportati |
-| **Singolo modello** | Il plugin opera solo sul documento attivo; i documenti in background non sono accessibili |
-| **Porta TCP 8080** | Il plugin ascolta su `localhost:8080`; se la porta e occupata, il server non si avvia |
-| **Nessuna integrazione undo** | Le operazioni eseguite dai tool AI creano transazioni Revit standard ma non sono raggruppate in un singolo passo di annullamento |
-| **`send_code_to_revit`** | Puo fallire se addin di terze parti causano conflitti di assembly (es. riferimenti DLL duplicati) |
-| **I nomi dei parametri sono localizzati** | I nomi dei parametri Revit dipendono dalla lingua dell'interfaccia. Usa i nomi BuiltInCategory (es. `OST_Walls`) per le categorie. Il command set risolve le categorie automaticamente, ma i nomi dei parametri devono corrispondere alla lingua di Revit |
-| **Nessuno streaming** | I risultati dei tool vengono restituiti come risposta singola; risultati grandi (es. esportazione di migliaia di elementi) possono richiedere tempo |
-| **Chiave API Anthropic** | Il pannello chat integrato richiede una chiave API Anthropic. I client MCP esterni (Claude Code, Claude Desktop) usano la propria autenticazione |
+## Troubleshooting
 
-## Troubleshooting / Risoluzione problemi
-
-### Only the Switch button appears (no MCP Panel or Settings) / Compare solo il pulsante Switch
+### Only the Switch button appears (no MCP Panel or Settings)
 
 **Cause:** The plugin was not installed correctly — usually because source code was copied instead of the pre-built Release, or files are missing.
 
-**Causa:** Il plugin non e stato installato correttamente — di solito perche e stato copiato il codice sorgente invece della Release precompilata, oppure mancano dei file.
+**Fix:**
 
-**Fix / Soluzione:**
+1. Close Revit
+2. Delete the old installation from `%AppData%\Autodesk\Revit\Addins\<version>\`
+3. Download the correct ZIP from the [Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) page
+4. Extract and verify the folder structure matches the one shown in [Step 1](#1-install-the-revit-plugin)
+5. Restart Revit
 
-1. Close Revit / Chiudi Revit
-2. Delete the old installation from `%AppData%\Autodesk\Revit\Addins\<version>\` / Cancella la vecchia installazione
-3. Download the correct ZIP from the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page / Scarica lo ZIP corretto dalla pagina Releases
-4. Extract and verify the folder structure matches the one shown in [Step 1](#1-install-the-revit-plugin--installa-il-plugin-revit) / Estrai e verifica che la struttura corrisponda a quella mostrata nel Passo 1
-5. Restart Revit / Riavvia Revit
+### Plugin does not appear in Add-Ins tab
 
-### Plugin does not appear in Add-Ins tab / Il plugin non compare nella scheda Add-Ins
-
-- Verify that `mcp-servers-for-revit.addin` exists directly inside `%AppData%\Autodesk\Revit\Addins\<version>\` (not in a subfolder) / Verifica che il file `.addin` sia direttamente in quella cartella (non in una sottocartella)
-- Verify the ZIP version matches your Revit version (e.g., Revit2025 ZIP for Revit 2025) / Verifica che la versione dello ZIP corrisponda alla tua versione di Revit
-- Check that Revit did not block the DLLs: right-click each `.dll` → Properties → if you see "Unblock" at the bottom, check it and click OK / Controlla che Revit non abbia bloccato le DLL: tasto destro su ogni `.dll` → Proprieta → se vedi "Sblocca" in basso, spuntalo e clicca OK
+- Verify that `mcp-servers-for-revit.addin` exists directly inside `%AppData%\Autodesk\Revit\Addins\<version>\` (not in a subfolder)
+- Verify the ZIP version matches your Revit version (e.g., Revit2025 ZIP for Revit 2025)
+- Check that Revit did not block the DLLs: right-click each `.dll` → Properties → if you see "Unblock" at the bottom, check it and click OK
 
 ### "Connection refused" when using Claude Desktop or Claude Code
 
-- Ensure Revit is open and the MCP Switch is **ON** (green indicator) / Assicurati che Revit sia aperto e l'MCP Switch sia **acceso** (indicatore verde)
-- Check that port 8080 is not used by another application: `netstat -an | findstr 8080` / Controlla che la porta 8080 non sia usata da un'altra applicazione
+- Ensure Revit is open and the MCP Switch is **ON** (green indicator)
+- Check that port 8080 is not used by another application: `netstat -an | findstr 8080`
 
-### Other common issues / Altri problemi comuni
+### Other common issues
 
-| Issue / Problema | Solution / Soluzione |
-|------------------|----------------------|
+| Issue | Solution |
+|-------|----------|
 | "Element not found" | Verify element ID with `get_current_view_elements` |
 | "Parameter not found" | Check exact name with `get_element_parameters` — names are localized |
 | "Family type not found" | Use `get_available_family_types` for exact names |
 | "Tool not available" in Claude Desktop | Restart Claude Desktop to refresh the MCP tool list |
 | Timeout on large operations | Try with fewer elements or a simpler filter |
 
-## Development / Sviluppo
+## Development
 
 ### MCP Server
 
@@ -443,7 +401,7 @@ dotnet test -c Debug.R25 -r win-x64 tests/commandset
 
 > **Note:** The `-r win-x64` flag is required on ARM64 machines because the Revit API assemblies are x64-only.
 
-## Project Structure / Struttura del progetto
+## Project Structure
 
 ```
 mcp-servers-for-revit/
@@ -480,45 +438,35 @@ A single `v*` tag drives the entire release. The [release workflow](.github/work
 git push origin main --tags
 ```
 
-## Acknowledgements / Ringraziamenti
+## Acknowledgements
 
 | | Credit | Link |
 |---|--------|------|
 | **Original concept** | **Roman Zarkhin** — created the first MCP server for Revit (15 tools) | [romanzarkhin/revit-mcp](https://github.com/romanzarkhin/revit-mcp) |
 | **Expansion to 80+ tools** | **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) community** — lisiting01, jmcouffin, huyan1458, bobbyg603, chuongmep and others expanded the project across three repos | [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp), [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin), [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) |
 | **Consolidated repo** | **[sparx-fire](https://sparx-fire.com)** (Bobby Galli) — merged the three repos into a single solution | [mcp-servers-for-revit/mcp-servers-for-revit](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) |
-| **This fork** | **LuDattilo** — language-independent operation, embedded Claude chat panel, PowerShell installer, bilingual docs | [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server) |
+| **Current maintainer** | **LuDattilo** — language-independent operation, embedded Claude chat panel, PowerShell installer | [mcp-servers-for-revit/mcp-servers-for-revit](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) |
 
-## License / Licenza
+## License
 
 This project is released under the **MIT License** — see [LICENSE](LICENSE) for the full text.
 
-Questo progetto e rilasciato sotto la **Licenza MIT** — vedi [LICENSE](LICENSE) per il testo completo.
+### What MIT allows
 
-### What MIT allows / Cosa permette la MIT
-
-| | Allowed / Permesso | Condition / Condizione |
+| | Allowed | Condition |
 |---|---|---|
-| Commercial use / Uso commerciale | Yes / Si | Include copyright notice / Includi la nota di copyright |
-| Modification / Modifica | Yes / Si | Include copyright notice / Includi la nota di copyright |
-| Distribution / Distribuzione | Yes / Si | Include copyright notice / Includi la nota di copyright |
-| Private use / Uso privato | Yes / Si | — |
-| Sublicensing / Sublicenza | Yes / Si | Include copyright notice / Includi la nota di copyright |
+| Commercial use | Yes | Include copyright notice |
+| Modification | Yes | Include copyright notice |
+| Distribution | Yes | Include copyright notice |
+| Private use | Yes | — |
+| Sublicensing | Yes | Include copyright notice |
 
-### Disclaimer of Liability / Esclusione di responsabilita
+### Disclaimer of Liability
 
 > **THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.** The authors and contributors are not liable for any damages, data loss, model corruption, or unintended modifications to Revit projects arising from the use of this software. Use at your own risk.
 
-> **IL SOFTWARE E FORNITO "COSI COM'E", SENZA GARANZIA DI ALCUN TIPO.** Gli autori e i contributori non sono responsabili per eventuali danni, perdita di dati, corruzione del modello o modifiche involontarie ai progetti Revit derivanti dall'uso di questo software. L'uso e a proprio rischio e pericolo.
-
-**Important / Importante:**
+**Important:**
 
 - This software executes commands on live Revit models. Always work on copies or ensure you have backups before using AI-driven automation.
 - The AI (Claude or other MCP clients) may misinterpret instructions and execute unintended operations. Review AI-generated actions before confirming batch operations on production models.
 - This project is not affiliated with, endorsed by, or supported by Autodesk, Inc. "Autodesk" and "Revit" are registered trademarks of Autodesk, Inc.
-
----
-
-- Questo software esegue comandi su modelli Revit attivi. Lavora sempre su copie o assicurati di avere backup prima di usare l'automazione guidata dall'AI.
-- L'AI (Claude o altri client MCP) potrebbe interpretare erroneamente le istruzioni ed eseguire operazioni non previste. Verifica le azioni generate dall'AI prima di confermare operazioni batch su modelli di produzione.
-- Questo progetto non e affiliato, approvato o supportato da Autodesk, Inc. "Autodesk" e "Revit" sono marchi registrati di Autodesk, Inc.
