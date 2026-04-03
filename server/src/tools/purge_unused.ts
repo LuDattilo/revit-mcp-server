@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerPurgeUnusedTool(server: McpServer) {
   server.tool(
@@ -28,26 +29,11 @@ export function registerPurgeUnusedTool(server: McpServer) {
           return await revitClient.sendCommand("purge_unused", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("purge_unused", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Purge unused failed: ${
+        return rawToolError("purge_unused", `Purge unused failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

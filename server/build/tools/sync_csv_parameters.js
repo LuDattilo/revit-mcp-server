@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSyncCsvParametersTool(server) {
     server.tool("sync_csv_parameters", "Sync element parameters with a CSV file (import/export/roundtrip).", {
         data: z
@@ -21,20 +22,10 @@ export function registerSyncCsvParametersTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("sync_csv_parameters", args);
             });
-            return {
-                content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
-            };
+            return rawToolResponse("sync_csv_parameters", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Sync CSV parameters failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("sync_csv_parameters", `Sync CSV parameters failed: ${errorMessage(error)}`);
         }
     });
 }

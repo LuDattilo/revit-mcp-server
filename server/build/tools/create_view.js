@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateViewTool(server) {
     server.tool("create_view", "Create floor plan, ceiling plan, section, elevation, or 3D views.", {
         viewType: z
@@ -36,25 +37,10 @@ export function registerCreateViewTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("create_view", args);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("create_view", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Create view failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("create_view", `Create view failed: ${errorMessage(error)}`);
         }
     });
 }

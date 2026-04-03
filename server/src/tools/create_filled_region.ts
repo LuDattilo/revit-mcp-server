@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateFilledRegionTool(server: McpServer) {
   server.tool(
@@ -31,9 +32,9 @@ export function registerCreateFilledRegionTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("create_filled_region", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("create_filled_region", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Create filled region failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("create_filled_region", `Create filled region failed: ${errorMessage(error)}`);
       }
     }
   );

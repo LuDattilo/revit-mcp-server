@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerWorkflowClashReviewTool(server: McpServer) {
   server.tool(
@@ -37,9 +38,9 @@ export function registerWorkflowClashReviewTool(server: McpServer) {
           suggestIf(clashCount === 0, "Run a full model health audit", "No clashes found — verify overall model quality"),
         ]);
 
-        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("workflow_clash_review", enriched);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Workflow clash review failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("workflow_clash_review", `Workflow clash review failed: ${errorMessage(error)}`);
       }
     }
   );

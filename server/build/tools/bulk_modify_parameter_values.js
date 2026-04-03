@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerBulkModifyParameterValuesTool(server) {
     server.tool("bulk_modify_parameter_values", "Bulk set, prefix, suffix, find/replace, or clear parameter values.", {
         elementIds: z.array(z.number()).optional().describe("Element IDs to modify. If omitted, uses categoryName to find elements."),
@@ -27,10 +28,10 @@ export function registerBulkModifyParameterValuesTool(server) {
                     dryRun: args.dryRun ?? true,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("bulk_modify_parameter_values", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Bulk modify parameter values failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("bulk_modify_parameter_values", `Bulk modify parameter values failed: ${errorMessage(error)}`);
         }
     });
 }

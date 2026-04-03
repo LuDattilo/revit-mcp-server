@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerBatchRenameTool(server) {
     server.tool("batch_rename", "Batch rename elements using find/replace, prefix, suffix, or regex.", {
         elementIds: z
@@ -45,25 +46,10 @@ export function registerBatchRenameTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("batch_rename", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("batch_rename", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Batch rename failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("batch_rename", `Batch rename failed: ${errorMessage(error)}`);
         }
     });
 }

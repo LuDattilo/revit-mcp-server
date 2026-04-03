@@ -2,7 +2,7 @@
   "mcpServers": {
     "revit-mcp": {
       "command": "node",
-      "args": ["server/build/index.js"]
+      "args": ["C:/Users/luigi.dattilo/Desktop/ClaudeCode/mcp-servers-for-revit/server/build/index.js"]
     }
   }
 }

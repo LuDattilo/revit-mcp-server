@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerGetCurrentViewElementsTool(server: McpServer) {
   server.tool(
@@ -28,10 +29,6 @@ export function registerGetCurrentViewElementsTool(server: McpServer) {
         .number()
         .optional()
         .describe("Maximum number of elements to return"),
-      fields: z
-        .array(z.string())
-        .optional()
-        .describe("Specific properties to include per element (e.g. ['Mark','Level','Family']). Omit for all. Reduces response size."),
     },
     async (args, extra) => {
       const params: Record<string, unknown> = {
@@ -40,10 +37,6 @@ export function registerGetCurrentViewElementsTool(server: McpServer) {
         includeHidden: args.includeHidden || false,
         limit: args.limit || 100,
       };
-      if (args.fields) {
-        params.fields = args.fields;
-      }
-
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand(
@@ -52,26 +45,11 @@ export function registerGetCurrentViewElementsTool(server: McpServer) {
           );
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("get_current_view_elements", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `get current view elements failed: ${
+        return rawToolError("get_current_view_elements", `get current view elements failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

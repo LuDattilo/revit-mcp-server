@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerTagAllWallsTool(server: McpServer) {
   server.tool(
@@ -25,26 +26,11 @@ export function registerTagAllWallsTool(server: McpServer) {
           return await revitClient.sendCommand("tag_walls", params);
         });
         
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("tag_all_walls", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Wall tagging failed: ${
+        return rawToolError("tag_all_walls", `Wall tagging failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

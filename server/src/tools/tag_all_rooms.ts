@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerTagAllRoomsTool(server: McpServer) {
   server.tool(
@@ -29,26 +30,11 @@ export function registerTagAllRoomsTool(server: McpServer) {
           return await revitClient.sendCommand("tag_rooms", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("tag_all_rooms", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Room tagging failed: ${
+        return rawToolError("tag_all_rooms", `Room tagging failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

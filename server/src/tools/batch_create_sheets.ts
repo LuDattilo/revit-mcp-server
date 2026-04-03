@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerBatchCreateSheetsTool(server: McpServer) {
   server.tool(
@@ -44,19 +45,9 @@ export function registerBatchCreateSheetsTool(server: McpServer) {
           suggestIf(sheetsCreated > 0, "Align viewports across the new sheets", "Consistent viewport placement improves drawing set quality"),
         ]);
 
-        return {
-          content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }],
-        };
+        return rawToolResponse("batch_create_sheets", enriched);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Batch create sheets failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return rawToolError("batch_create_sheets", `Batch create sheets failed: ${errorMessage(error)}`);
       }
     }
   );

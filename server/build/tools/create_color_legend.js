@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateColorLegendTool(server) {
     server.tool("create_color_legend", "Color-code elements by parameter and place a color legend on a sheet.", {
         parameterName: z.string().describe("Parameter to group and colorize by (e.g. 'Department', 'Area')."),
@@ -28,10 +29,10 @@ export function registerCreateColorLegendTool(server) {
                     targetViewId: args.targetViewId ?? 0,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("create_color_legend", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Create color legend failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("create_color_legend", `Create color legend failed: ${errorMessage(error)}`);
         }
     });
 }

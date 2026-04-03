@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerAlignViewportsTool(server) {
     server.tool("align_viewports", "Align viewports across sheets by placement or model coordinates.", {
         sourceViewportId: z.number().describe("ID of the reference viewport to align to."),
@@ -15,10 +16,10 @@ export function registerAlignViewportsTool(server) {
                     alignMode: args.alignMode ?? "placement",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("align_viewports", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Align viewports failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("align_viewports", `Align viewports failed: ${errorMessage(error)}`);
         }
     });
 }

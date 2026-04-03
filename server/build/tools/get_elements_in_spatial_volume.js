@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerGetElementsInSpatialVolumeTool(server) {
     server.tool("get_elements_in_spatial_volume", "Find all elements contained within spatial volumes: rooms, areas, or a custom bounding box. Returns elements grouped by volume with category, family, and type info. Use categoryFilter to narrow results.\n\nGUIDANCE:\n- Elements in a room: volumeType=\"room\", volumeIds=[roomId]\n- Elements in area: volumeType=\"area\", volumeIds=[areaId]\n- Custom bounding box: volumeType=\"custom\", provide min/max XYZ in mm\n- Filter by category: categoryFilter=[\"Furniture\",\"Doors\"] to limit results\n\nTIPS:\n- Great for room-based quantity takeoffs\n- Use export_room_data to get room IDs first\n- CategoryFilter narrows results to specific element types\n- Combine with export_elements_data for detailed parameter extraction", {
         volumeIds: z.array(z.number()).optional().describe("IDs of rooms/areas to search within. If omitted, searches all rooms/areas."),
@@ -30,10 +31,10 @@ export function registerGetElementsInSpatialVolumeTool(server) {
                     customMaxZ: args.customMaxZ ?? 0,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("get_elements_in_spatial_volume", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Get elements in spatial volume failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("get_elements_in_spatial_volume", `Get elements in spatial volume failed: ${errorMessage(error)}`);
         }
     });
 }

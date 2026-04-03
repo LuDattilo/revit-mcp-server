@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerWorkflowClashReviewTool(server) {
     server.tool("workflow_clash_review", "Detect clashes between two categories and visualize results.", {
         categoryA: z.string()
@@ -29,10 +30,10 @@ export function registerWorkflowClashReviewTool(server) {
                 suggestIf(clashCount > 0, `Color the ${clashCount} clashing elements red for visibility`, "Highlight clashes visually in the model"),
                 suggestIf(clashCount === 0, "Run a full model health audit", "No clashes found — verify overall model quality"),
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("workflow_clash_review", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Workflow clash review failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("workflow_clash_review", `Workflow clash review failed: ${errorMessage(error)}`);
         }
     });
 }

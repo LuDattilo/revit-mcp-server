@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerDuplicateSheetWithViewsTool(server) {
     server.tool("duplicate_sheet_with_views", "Duplicate a sheet and its placed views onto a new sheet.", {
         sheetId: z.number().describe("ElementId of the source sheet to duplicate."),
@@ -23,10 +24,10 @@ export function registerDuplicateSheetWithViewsTool(server) {
                     viewDuplicateOption: args.viewDuplicateOption ?? "DuplicateWithDetailing",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("duplicate_sheet_with_views", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Duplicate sheet with views failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("duplicate_sheet_with_views", `Duplicate sheet with views failed: ${errorMessage(error)}`);
         }
     });
 }

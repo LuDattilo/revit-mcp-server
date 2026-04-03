@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerDuplicateViewTool(server: McpServer) {
   server.tool(
@@ -36,9 +37,9 @@ export function registerDuplicateViewTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("duplicate_view", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("duplicate_view", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Duplicate view failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("duplicate_view", `Duplicate view failed: ${errorMessage(error)}`);
       }
     }
   );

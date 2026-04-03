@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerExportElementsDataTool(server) {
     server.tool("export_elements_data", `Export elements by category with selected parameters. Returns columns + rows in JSON or CSV.
 Default limit is 100 elements. Response includes truncated:true and totalCount when results are limited.
@@ -91,20 +92,10 @@ QUICK PROMPTS:
                 { prompt: "Update these elements with the modified data using sync_csv_parameters", reason: "Export-edit-import workflow" },
                 { prompt: "Export this data to Excel for easier editing", reason: "Excel is more convenient for bulk parameter editing" },
             ]);
-            return {
-                content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }],
-            };
+            return rawToolResponse("export_elements_data", enriched);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Export elements data failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("export_elements_data", `Export elements data failed: ${errorMessage(error)}`);
         }
     });
 }

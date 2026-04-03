@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerAddSharedParameterTool(server) {
     server.tool("add_shared_parameter", "Add a shared parameter from the shared parameter file to categories.", {
         parameterName: z
@@ -32,25 +33,10 @@ export function registerAddSharedParameterTool(server) {
                     parameterGroup: args.parameterGroup,
                 });
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("add_shared_parameter", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Add shared parameter failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("add_shared_parameter", `Add shared parameter failed: ${errorMessage(error)}`);
         }
     });
 }

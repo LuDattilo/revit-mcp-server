@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerImportFromExcelTool(server: McpServer) {
   server.tool(
@@ -22,9 +23,9 @@ export function registerImportFromExcelTool(server: McpServer) {
             dryRun: args.dryRun ?? false,
           });
         });
-        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("import_from_excel", response);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Import from Excel failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("import_from_excel", `Import from Excel failed: ${errorMessage(error)}`);
       }
     }
   );

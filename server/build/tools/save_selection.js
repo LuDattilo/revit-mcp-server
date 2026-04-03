@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSaveSelectionTool(server) {
     server.tool("save_selection", "Save the current element selection with a name for later recall.", {
         name: z
@@ -25,25 +26,10 @@ export function registerSaveSelectionTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("save_selection", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("save_selection", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `save selection failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("save_selection", `save selection failed: ${errorMessage(error)}`);
         }
     });
 }

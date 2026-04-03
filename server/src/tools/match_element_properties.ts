@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerMatchElementPropertiesTool(server: McpServer) {
   server.tool(
@@ -35,9 +36,9 @@ export function registerMatchElementPropertiesTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("match_element_properties", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("match_element_properties", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Match properties failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("match_element_properties", `Match properties failed: ${errorMessage(error)}`);
       }
     }
   );

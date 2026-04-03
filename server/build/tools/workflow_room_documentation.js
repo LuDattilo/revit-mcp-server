@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerWorkflowRoomDocumentationTool(server) {
     server.tool("workflow_room_documentation", "Auto-generate room documentation: plans, sections, schedules.", {
         levelName: z.string().optional()
@@ -27,10 +28,10 @@ export function registerWorkflowRoomDocumentationTool(server) {
                 suggestIf(roomCount > 0, "Export room data to Excel", "Save room information for external review"),
                 suggestIf(viewsCreated > 0, "Place the new room views on sheets", "Created views need to be placed on documentation sheets"),
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("workflow_room_documentation", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Workflow room documentation failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("workflow_room_documentation", `Workflow room documentation failed: ${errorMessage(error)}`);
         }
     });
 }

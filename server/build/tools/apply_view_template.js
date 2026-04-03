@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerApplyViewTemplateTool(server) {
     server.tool("apply_view_template", "Apply or remove a view template on one or more views.", {
         action: z
@@ -30,10 +31,10 @@ export function registerApplyViewTemplateTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("apply_view_template", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("apply_view_template", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `View template operation failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("apply_view_template", `View template operation failed: ${errorMessage(error)}`);
         }
     });
 }

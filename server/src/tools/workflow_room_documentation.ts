@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerWorkflowRoomDocumentationTool(server: McpServer) {
   server.tool(
@@ -35,9 +36,9 @@ export function registerWorkflowRoomDocumentationTool(server: McpServer) {
           suggestIf(viewsCreated > 0, "Place the new room views on sheets", "Created views need to be placed on documentation sheets"),
         ]);
 
-        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("workflow_room_documentation", enriched);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Workflow room documentation failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("workflow_room_documentation", `Workflow room documentation failed: ${errorMessage(error)}`);
       }
     }
   );

@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerFilterByParameterValueTool(server) {
     server.tool("filter_by_parameter_value", "Filter and select elements by parameter value conditions.", {
         categories: z
@@ -46,25 +47,10 @@ export function registerFilterByParameterValueTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("filter_by_parameter_value", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("filter_by_parameter_value", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Filter by parameter value failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("filter_by_parameter_value", `Filter by parameter value failed: ${errorMessage(error)}`);
         }
     });
 }

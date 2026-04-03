@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerRenumberElementsTool(server) {
     server.tool("renumber_elements", "Renumber rooms, doors, windows, or parking by location or name.", {
         elementIds: z
@@ -46,10 +47,10 @@ export function registerRenumberElementsTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("renumber_elements", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("renumber_elements", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Renumber elements failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("renumber_elements", `Renumber elements failed: ${errorMessage(error)}`);
         }
     });
 }

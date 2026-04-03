@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCadLinkCleanupTool(server: McpServer) {
   server.tool(
@@ -37,9 +38,9 @@ export function registerCadLinkCleanupTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("cad_link_cleanup", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("cad_link_cleanup", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `CAD cleanup failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("cad_link_cleanup", `CAD cleanup failed: ${errorMessage(error)}`);
       }
     }
   );

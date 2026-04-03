@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerWorkflowDataRoundtripTool(server) {
     server.tool("workflow_data_roundtrip", "Export parameters to CSV, edit externally, and re-import.", {
         categories: z.array(z.string()).optional()
@@ -27,10 +28,10 @@ export function registerWorkflowDataRoundtripTool(server) {
             const enriched = addSuggestions(response, [
                 { prompt: `When you're done editing, ask me to import ${filePath} back into Revit`, reason: "Excel roundtrip: edit the file then re-import using sync_csv_parameters or import_table" },
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("workflow_data_roundtrip", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Workflow data roundtrip failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("workflow_data_roundtrip", `Workflow data roundtrip failed: ${errorMessage(error)}`);
         }
     });
 }

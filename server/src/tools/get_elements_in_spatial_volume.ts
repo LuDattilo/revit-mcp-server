@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerGetElementsInSpatialVolumeTool(server: McpServer) {
   server.tool(
@@ -36,9 +37,9 @@ export function registerGetElementsInSpatialVolumeTool(server: McpServer) {
             customMaxZ: args.customMaxZ ?? 0,
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("get_elements_in_spatial_volume", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Get elements in spatial volume failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("get_elements_in_spatial_volume", `Get elements in spatial volume failed: ${errorMessage(error)}`);
       }
     }
   );

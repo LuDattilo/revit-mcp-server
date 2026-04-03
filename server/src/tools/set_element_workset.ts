@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerSetElementWorksetTool(server: McpServer) {
   server.tool(
@@ -27,26 +28,11 @@ export function registerSetElementWorksetTool(server: McpServer) {
           });
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("set_element_workset", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Set element workset failed: ${
+        return rawToolError("set_element_workset", `Set element workset failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

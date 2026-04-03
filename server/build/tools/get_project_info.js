@@ -1,7 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError } from "../utils/compactTool.js";
+import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
 export function registerGetProjectInfoTool(server) {
     server.tool("get_project_info", "Get comprehensive project information from the active Revit document, including project metadata, phases, worksets, Revit links, and levels.\n\nGUIDANCE:\n- Project overview: returns project name, address, levels, phases, worksets, links\n- Check levels before creating views or placing elements\n- Verify worksets and phases for proper element organization\n\nTIPS:\n- Call this first in a new project to understand structure\n- Level names are needed for create_view, create_level, and element placement\n- Phase information is important for renovation/phasing workflows", {
         includePhases: z
@@ -25,11 +25,8 @@ export function registerGetProjectInfoTool(server) {
             .optional()
             .default(false)
             .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
-        fields: z
-            .array(z.string())
-            .optional()
-            .describe("Return only these fields in the response (e.g. ['projectName', 'levels']). Omit to return all."),
     }, async (args, extra) => {
+        setToolName("get_project_info");
         const params = {
             includePhases: args.includePhases ?? true,
             includeWorksets: args.includeWorksets ?? true,

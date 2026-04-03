@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerColorElementsTool(server: McpServer) {
   server.tool(
@@ -49,36 +50,20 @@ export function registerColorElementsTool(server: McpServer) {
               resultText += `- "${group.parameterValue}": ${group.count} elements colored with RGB(${rgb.r}, ${rgb.g}, ${rgb.b})\n`;
             });
 
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: resultText,
-                },
-              ],
-            };
+            return rawToolResponse("color_elements", {
+              success: true,
+              totalElements: response.totalElements,
+              coloredGroups: response.coloredGroups,
+              results: coloredGroups,
+              summary: resultText,
+            });
           } else {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Color operation failed: ${response.message}`,
-                },
-              ],
-            };
+            return rawToolError("color_elements", `Color operation failed: ${response.message}`);
           }
         } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Color operation failed: ${
+          return rawToolError("color_elements", `Color operation failed: ${
                     errorMessage(error)
-                }`,
-              },
-            ],
-          isError: true,
-          };
+                }`);
         }
       }
   );

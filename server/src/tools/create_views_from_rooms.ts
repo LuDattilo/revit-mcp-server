@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateViewsFromRoomsTool(server: McpServer) {
   server.tool(
@@ -41,9 +42,9 @@ export function registerCreateViewsFromRoomsTool(server: McpServer) {
           suggestIf(viewsCreated > 0, "Create a color legend by department", "Color-coded legend helps visualize departmental layout"),
         ]);
 
-        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("create_views_from_rooms", enriched);
       } catch (error) {
-        return { content: [{ type: "text", text: `Create views from rooms failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("create_views_from_rooms", `Create views from rooms failed: ${errorMessage(error)}`);
       }
     }
   );

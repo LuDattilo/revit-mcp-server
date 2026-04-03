@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerGetLinkedElementsTool(server: McpServer) {
   server.tool(
@@ -27,9 +28,9 @@ export function registerGetLinkedElementsTool(server: McpServer) {
             maxElements: args.maxElements ?? 5000,
           });
         });
-        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("get_linked_elements", response);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Get linked elements failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("get_linked_elements", `Get linked elements failed: ${errorMessage(error)}`);
       }
     }
   );

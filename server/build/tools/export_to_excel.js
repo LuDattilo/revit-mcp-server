@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerExportToExcelTool(server) {
     server.tool("export_to_excel", `Export elements by category to an Excel (.xlsx) file with color-coded columns.
 Column colors: green=instance parameter, yellow=type parameter, red=read-only.
@@ -47,10 +48,10 @@ GUIDANCE:
             const enriched = addSuggestions(response, [
                 { prompt: `When you're done editing, ask me to import ${filePath} back into Revit`, reason: "Excel roundtrip: edit the file then re-import" },
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("export_to_excel", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Export to Excel failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("export_to_excel", `Export to Excel failed: ${errorMessage(error)}`);
         }
     });
 }

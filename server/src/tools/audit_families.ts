@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerAuditFamiliesTool(server: McpServer) {
   server.tool(
@@ -30,9 +31,9 @@ export function registerAuditFamiliesTool(server: McpServer) {
           suggestIf(issueCount > 0, "Rename families that don't follow naming conventions", `${issueCount} families have naming or health issues`),
         ]);
 
-        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("audit_families", enriched);
       } catch (error) {
-        return { content: [{ type: "text", text: `Audit families failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("audit_families", `Audit families failed: ${errorMessage(error)}`);
       }
     }
   );

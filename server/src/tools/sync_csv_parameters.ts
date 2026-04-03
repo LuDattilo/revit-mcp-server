@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerSyncCsvParametersTool(server: McpServer) {
   server.tool(
@@ -34,19 +35,9 @@ export function registerSyncCsvParametersTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("sync_csv_parameters", args);
         });
-        return {
-          content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
-        };
+        return rawToolResponse("sync_csv_parameters", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Sync CSV parameters failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return rawToolError("sync_csv_parameters", `Sync CSV parameters failed: ${errorMessage(error)}`);
       }
     }
   );

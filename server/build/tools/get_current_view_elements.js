@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerGetCurrentViewElementsTool(server) {
     server.tool("get_current_view_elements", "Get elements from the current active view in Revit. You can filter by model categories (like Walls, Floors) or annotation categories (like Dimensions, Text). Use includeHidden to show/hide invisible elements and limit to control the number of returned elements.\n\nGUIDANCE:\n- See what's in the active view: call with no parameters\n- Filter by category: use categoryFilter to narrow results (e.g. \"Walls\", \"Doors\")\n- Use before operate_element to find elements to select/hide/isolate\n\nTIPS:\n- Returns element IDs, names, categories — use these IDs with other tools\n- Large views may return many elements — use categoryFilter to limit results\n- Combine with get_element_parameters to inspect specific elements", {
         modelCategoryList: z
@@ -19,10 +20,6 @@ export function registerGetCurrentViewElementsTool(server) {
             .number()
             .optional()
             .describe("Maximum number of elements to return"),
-        fields: z
-            .array(z.string())
-            .optional()
-            .describe("Specific properties to include per element (e.g. ['Mark','Level','Family']). Omit for all. Reduces response size."),
     }, async (args, extra) => {
         const params = {
             modelCategoryList: args.modelCategoryList || [],
@@ -30,32 +27,14 @@ export function registerGetCurrentViewElementsTool(server) {
             includeHidden: args.includeHidden || false,
             limit: args.limit || 100,
         };
-        if (args.fields) {
-            params.fields = args.fields;
-        }
         try {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("get_current_view_elements", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("get_current_view_elements", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `get current view elements failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("get_current_view_elements", `get current view elements failed: ${errorMessage(error)}`);
         }
     });
 }

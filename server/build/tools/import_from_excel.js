@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerImportFromExcelTool(server) {
     server.tool("import_from_excel", "Import data from Excel into Revit element parameters.", {
         filePath: z.string().describe("Full path to the .xlsx file to import."),
@@ -16,10 +17,10 @@ export function registerImportFromExcelTool(server) {
                     dryRun: args.dryRun ?? false,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("import_from_excel", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Import from Excel failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("import_from_excel", `Import from Excel failed: ${errorMessage(error)}`);
         }
     });
 }

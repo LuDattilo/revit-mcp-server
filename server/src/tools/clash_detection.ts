@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerClashDetectionTool(server: McpServer) {
   server.tool(
@@ -57,9 +58,9 @@ export function registerClashDetectionTool(server: McpServer) {
           suggestIf(clashCount > 0, "Create a section box around the clash area", "Section box helps focus on the clash location in 3D"),
         ]);
 
-        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("clash_detection", enriched);
       } catch (error) {
-        return { content: [{ type: "text", text: `Clash detection failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("clash_detection", `Clash detection failed: ${errorMessage(error)}`);
       }
     }
   );

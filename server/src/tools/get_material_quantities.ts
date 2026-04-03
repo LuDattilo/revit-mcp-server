@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerGetMaterialQuantitiesTool(server: McpServer) {
   server.tool(
@@ -35,26 +36,11 @@ export function registerGetMaterialQuantitiesTool(server: McpServer) {
           return await revitClient.sendCommand("get_material_quantities", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("get_material_quantities", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Get material quantities failed: ${
+        return rawToolError("get_material_quantities", `Get material quantities failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

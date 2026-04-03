@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerChangeElementTypeTool(server) {
     server.tool("change_element_type", "Change the family type of one or more elements.", {
         elementIds: z
@@ -29,10 +30,10 @@ export function registerChangeElementTypeTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("change_element_type", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("change_element_type", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Change element type failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("change_element_type", `Change element type failed: ${errorMessage(error)}`);
         }
     });
 }

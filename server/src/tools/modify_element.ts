@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 const pointSchema = z.object({
   x: z.number().describe("X coordinate in mm"),
@@ -56,26 +57,11 @@ export function registerModifyElementTool(server: McpServer) {
           });
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("modify_element", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Modify element failed: ${
+        return rawToolError("modify_element", `Modify element failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

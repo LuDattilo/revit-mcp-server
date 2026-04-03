@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError } from "../utils/compactTool.js";
+import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
 
 export function registerAIElementFilterTool(server: McpServer) {
   server.tool(
@@ -77,6 +77,7 @@ export function registerAIElementFilterTool(server: McpServer) {
         .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
+      setToolName("ai_element_filter");
       const params = args;
 
       try {

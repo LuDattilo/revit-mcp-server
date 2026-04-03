@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerClashDetectionTool(server) {
     server.tool("clash_detection", "Detect geometric intersections (clashes) between two sets of elements. Specify by category names (e.g., 'Ducts' vs 'StructuralFraming') or specific element IDs. Returns pairs of clashing elements.\n\nGUIDANCE:\n- Check wall-pipe clashes: category1=\"Walls\", category2=\"Pipes\"\n- MEP coordination: category1=\"Ducts\", category2=\"Structural Framing\"\n- Full model check: provide two categories to check for intersections\n\nTIPS:\n- Returns pairs of clashing element IDs with intersection details\n- Use operate_element to highlight/isolate clashing elements\n- Focus on critical clashes (structural vs MEP) first\n- Combine with section_box_from_selection to zoom into clash locations", {
         categoryA: z
@@ -47,10 +48,10 @@ export function registerClashDetectionTool(server) {
                 suggestIf(clashCount > 0, "Isolate the clashing elements in the current view", `${clashCount} clashes detected — isolate them for review`),
                 suggestIf(clashCount > 0, "Create a section box around the clash area", "Section box helps focus on the clash location in 3D"),
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("clash_detection", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Clash detection failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("clash_detection", `Clash detection failed: ${errorMessage(error)}`);
         }
     });
 }

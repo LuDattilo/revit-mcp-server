@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreatePointBasedElementTool(server: McpServer) {
   server.tool(
@@ -66,26 +67,11 @@ export function registerCreatePointBasedElementTool(server: McpServer) {
           );
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_point_based_element", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create point-based element failed: ${
+        return rawToolError("create_point_based_element", `Create point-based element failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

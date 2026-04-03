@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerPlaceViewportTool(server) {
     server.tool("place_viewport", "Place a view on a sheet at specified coordinates.", {
         sheetId: z.number().describe("ID of the sheet to place the viewport on"),
@@ -16,25 +17,10 @@ export function registerPlaceViewportTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("place_viewport", args);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("place_viewport", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Place viewport failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("place_viewport", `Place viewport failed: ${errorMessage(error)}`);
         }
     });
 }

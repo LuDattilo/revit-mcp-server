@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerClearParameterValuesTool(server) {
     server.tool("clear_parameter_values", "Clear parameter values on elements by category, view, or selection.", {
         parameterName: z.string().describe("Parameter to clear."),
@@ -21,10 +22,10 @@ export function registerClearParameterValuesTool(server) {
                     dryRun: args.dryRun ?? true,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("clear_parameter_values", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Clear parameter values failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("clear_parameter_values", `Clear parameter values failed: ${errorMessage(error)}`);
         }
     });
 }

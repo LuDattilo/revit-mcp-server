@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerGetWarningsTool(server: McpServer) {
   server.tool(
@@ -44,26 +45,11 @@ export function registerGetWarningsTool(server: McpServer) {
           suggestIf(count > 20, "Check model health for an overall score", "Many warnings — a health audit gives the big picture"),
         ]);
 
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify(enriched, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("get_warnings", enriched);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Get warnings failed: ${
+        return rawToolError("get_warnings", `Get warnings failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

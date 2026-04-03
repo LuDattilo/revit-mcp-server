@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerOverrideGraphicsTool(server: McpServer) {
   server.tool(
@@ -54,9 +55,9 @@ export function registerOverrideGraphicsTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("override_graphics", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("override_graphics", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Override graphics failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("override_graphics", `Override graphics failed: ${errorMessage(error)}`);
       }
     }
   );

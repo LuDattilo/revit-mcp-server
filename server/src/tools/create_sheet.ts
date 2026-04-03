@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateSheetTool(server: McpServer) {
   server.tool(
@@ -34,26 +35,11 @@ export function registerCreateSheetTool(server: McpServer) {
           return await revitClient.sendCommand("create_sheet", args);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_sheet", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create sheet failed: ${
+        return rawToolError("create_sheet", `Create sheet failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

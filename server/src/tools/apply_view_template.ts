@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerApplyViewTemplateTool(server: McpServer) {
   server.tool(
@@ -37,9 +38,9 @@ export function registerApplyViewTemplateTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("apply_view_template", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("apply_view_template", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `View template operation failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("apply_view_template", `View template operation failed: ${errorMessage(error)}`);
       }
     }
   );

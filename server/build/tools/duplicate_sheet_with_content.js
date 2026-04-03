@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerDuplicateSheetWithContentTool(server) {
     server.tool("duplicate_sheet_with_content", "Duplicate a sheet including all annotations and detail items.", {
         sheetId: z.number().describe("ID of the source sheet to duplicate."),
@@ -25,10 +26,10 @@ export function registerDuplicateSheetWithContentTool(server) {
                     sheetNumberSuffix: args.sheetNumberSuffix ?? "",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("duplicate_sheet_with_content", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Duplicate sheet failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("duplicate_sheet_with_content", `Duplicate sheet failed: ${errorMessage(error)}`);
         }
     });
 }

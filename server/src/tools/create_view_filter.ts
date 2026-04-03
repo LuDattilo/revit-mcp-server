@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateViewFilterTool(server: McpServer) {
   server.tool(
@@ -76,26 +77,11 @@ export function registerCreateViewFilterTool(server: McpServer) {
           return await revitClient.sendCommand("create_view_filter", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_view_filter", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create view filter failed: ${
+        return rawToolError("create_view_filter", `Create view filter failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

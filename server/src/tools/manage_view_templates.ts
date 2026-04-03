@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerManageViewTemplatesTool(server: McpServer) {
   server.tool(
@@ -33,9 +34,9 @@ export function registerManageViewTemplatesTool(server: McpServer) {
             filterViewType: args.filterViewType ?? "",
           });
         });
-        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("manage_view_templates", response);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Manage view templates failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("manage_view_templates", `Manage view templates failed: ${errorMessage(error)}`);
       }
     }
   );

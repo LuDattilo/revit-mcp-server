@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateRevisionTool(server) {
     server.tool("create_revision", "List, create, or assign revisions to sheets.", {
         action: z
@@ -28,10 +29,10 @@ export function registerCreateRevisionTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("create_revision", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("create_revision", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Revision operation failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("create_revision", `Revision operation failed: ${errorMessage(error)}`);
         }
     });
 }

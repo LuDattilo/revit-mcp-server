@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateElevationsFromRoomsTool(server) {
     server.tool("create_elevations_from_rooms", "Create interior elevation views for rooms (N/S/E/W).", {
         roomIds: z.array(z.number()).optional().describe("Specific room IDs to create elevations for."),
@@ -23,10 +24,10 @@ export function registerCreateElevationsFromRoomsTool(server) {
                     namingPattern: args.namingPattern ?? "{RoomName} - {Direction}",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("create_elevations_from_rooms", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Create elevations from rooms failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("create_elevations_from_rooms", `Create elevations from rooms failed: ${errorMessage(error)}`);
         }
     });
 }

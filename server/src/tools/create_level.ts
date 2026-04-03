@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateLevelTool(server: McpServer) {
   server.tool(
@@ -67,26 +68,11 @@ export function registerCreateLevelTool(server: McpServer) {
           return await revitClient.sendCommand("create_level", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_level", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create level failed: ${
+        return rawToolError("create_level", `Create level failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

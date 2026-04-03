@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateViewTool(server: McpServer) {
   server.tool(
@@ -45,26 +46,11 @@ export function registerCreateViewTool(server: McpServer) {
           return await revitClient.sendCommand("create_view", args);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_view", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create view failed: ${
+        return rawToolError("create_view", `Create view failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

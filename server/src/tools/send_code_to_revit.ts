@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerSendCodeToRevitTool(server: McpServer) {
   server.tool(
@@ -36,30 +37,11 @@ export function registerSendCodeToRevitTool(server: McpServer) {
           return await revitClient.sendCommand("send_code_to_revit", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Code execution successful!\nResult: ${JSON.stringify(
-                response,
-                null,
-                2
-              )}`,
-            },
-          ],
-        };
+        return rawToolResponse("send_code_to_revit", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Code execution failed: ${
+        return rawToolError("send_code_to_revit", `Code execution failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

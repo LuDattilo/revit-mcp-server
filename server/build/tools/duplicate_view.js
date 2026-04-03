@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerDuplicateViewTool(server) {
     server.tool("duplicate_view", "Duplicate a view (independent, dependent, or with detailing).", {
         viewIds: z
@@ -29,10 +30,10 @@ export function registerDuplicateViewTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("duplicate_view", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("duplicate_view", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Duplicate view failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("duplicate_view", `Duplicate view failed: ${errorMessage(error)}`);
         }
     });
 }

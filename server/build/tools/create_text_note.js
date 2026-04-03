@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateTextNoteTool(server) {
     server.tool("create_text_note", "Create a text note in a view at specified coordinates.", {
         textNotes: z
@@ -38,25 +39,10 @@ export function registerCreateTextNoteTool(server) {
                     textNotes: args.textNotes,
                 });
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("create_text_note", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Create text note failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("create_text_note", `Create text note failed: ${errorMessage(error)}`);
         }
     });
 }

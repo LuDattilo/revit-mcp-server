@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSendCodeToRevitTool(server) {
     server.tool("send_code_to_revit", "Execute custom C# code in Revit for advanced operations.", {
         code: z
@@ -24,25 +25,10 @@ export function registerSendCodeToRevitTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("send_code_to_revit", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Code execution successful!\nResult: ${JSON.stringify(response, null, 2)}`,
-                    },
-                ],
-            };
+            return rawToolResponse("send_code_to_revit", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Code execution failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("send_code_to_revit", `Code execution failed: ${errorMessage(error)}`);
         }
     });
 }

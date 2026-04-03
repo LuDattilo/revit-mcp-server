@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateTextNoteTool(server: McpServer) {
   server.tool(
@@ -51,26 +52,11 @@ export function registerCreateTextNoteTool(server: McpServer) {
           });
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_text_note", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create text note failed: ${
+        return rawToolError("create_text_note", `Create text note failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

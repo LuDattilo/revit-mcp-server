@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateViewsFromRoomsTool(server) {
     server.tool("create_views_from_rooms", "Automatically create Callout, Section, or Elevation views from rooms. Each room gets views fitted to its boundary with configurable offset. Supports custom naming patterns with {RoomNumber}, {RoomName}, {Level} placeholders.\n\nGUIDANCE:\n- Callout views: viewType=\"callout\" — creates cropped plan views per room\n- Section views: viewType=\"section\" — creates sections through each room\n- Elevation views: viewType=\"elevation\" — creates 4 interior elevations per room\n- All rooms: set allRooms=true or provide specific roomIds\n\nTIPS:\n- Use export_room_data first to see available rooms and their IDs\n- Naming pattern supports: {RoomNumber}, {RoomName}, {Level} placeholders\n- Apply view templates after creation with apply_view_template\n- Created views can be placed on sheets with place_viewport", {
         roomIds: z.array(z.number()).optional().describe("Room IDs to create views for. If omitted, processes all placed rooms."),
@@ -32,10 +33,10 @@ export function registerCreateViewsFromRoomsTool(server) {
                 suggestIf(viewsCreated > 0, "Tag all rooms in the created views", "Room tags complete the documentation for the new views"),
                 suggestIf(viewsCreated > 0, "Create a color legend by department", "Color-coded legend helps visualize departmental layout"),
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("create_views_from_rooms", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Create views from rooms failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("create_views_from_rooms", `Create views from rooms failed: ${errorMessage(error)}`);
         }
     });
 }

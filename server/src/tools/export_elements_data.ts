@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerExportElementsDataTool(server: McpServer) {
   server.tool(
@@ -112,19 +113,9 @@ QUICK PROMPTS:
           { prompt: "Export this data to Excel for easier editing", reason: "Excel is more convenient for bulk parameter editing" },
         ]);
 
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }],
-        };
+        return rawToolResponse("export_elements_data", enriched);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `Export elements data failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return rawToolError("export_elements_data", `Export elements data failed: ${errorMessage(error)}`);
       }
     }
   );

@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateCalloutFromRoomsTool(server: McpServer) {
   server.tool(
@@ -30,9 +31,9 @@ export function registerCreateCalloutFromRoomsTool(server: McpServer) {
             scale: args.scale ?? 50,
           });
         });
-        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("create_callout_from_rooms", response);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Create callout from rooms failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("create_callout_from_rooms", `Create callout from rooms failed: ${errorMessage(error)}`);
       }
     }
   );

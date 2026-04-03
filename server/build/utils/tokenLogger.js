@@ -1,0 +1,36 @@
+import { appendFileSync, mkdirSync, writeFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+// build/utils/ -> ../../ = server/
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const LOG_DIR = join(__dirname, "..", "..", "logs");
+const LOG_FILE = join(LOG_DIR, "token-usage.jsonl");
+// Ensure log directory exists on first import
+try {
+    mkdirSync(LOG_DIR, { recursive: true });
+    // Write a debug marker to verify path resolution
+    writeFileSync(join(LOG_DIR, "_path_debug.txt"), `LOG_DIR: ${LOG_DIR}\nLOG_FILE: ${LOG_FILE}\n__dirname: ${__dirname}\n`);
+}
+catch (e) {
+    console.error("[tokenLogger] Failed to create log dir:", LOG_DIR, e);
+}
+/**
+ * Log a tool response for token usage analysis.
+ * Appends one JSON line per call to logs/token-usage.jsonl
+ */
+export function logTokenUsage(toolName, responseText, isError = false) {
+    const chars = responseText.length;
+    const entry = {
+        timestamp: new Date().toISOString(),
+        toolName,
+        responseChars: chars,
+        estimatedTokens: Math.ceil(chars / 4),
+        isError,
+    };
+    try {
+        appendFileSync(LOG_FILE, JSON.stringify(entry) + "\n");
+    }
+    catch (e) {
+        console.error("[tokenLogger] Failed to write log:", LOG_FILE, e);
+    }
+}

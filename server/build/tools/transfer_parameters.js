@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerTransferParametersTool(server) {
     server.tool("transfer_parameters", "Copy parameter values between elements of different categories.", {
         sourceElementId: z.number().describe("ID of the source element to copy parameters from."),
@@ -19,10 +20,10 @@ export function registerTransferParametersTool(server) {
                     dryRun: args.dryRun ?? true,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("transfer_parameters", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Transfer parameters failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("transfer_parameters", `Transfer parameters failed: ${errorMessage(error)}`);
         }
     });
 }

@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSetElementPhaseTool(server) {
     server.tool("set_element_phase", "Assign created/demolished phase to elements.", {
         requests: z
@@ -23,25 +24,10 @@ export function registerSetElementPhaseTool(server) {
                     requests: args.requests,
                 });
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("set_element_phase", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Set element phase failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("set_element_phase", `Set element phase failed: ${errorMessage(error)}`);
         }
     });
 }

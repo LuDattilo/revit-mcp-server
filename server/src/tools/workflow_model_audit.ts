@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerWorkflowModelAuditTool(server: McpServer) {
   server.tool(
@@ -33,9 +34,9 @@ export function registerWorkflowModelAuditTool(server: McpServer) {
           suggestIf((data?.healthScore ?? 100) < 70, "Export model warnings to review offline", "Score below 70 needs detailed attention"),
         ]);
 
-        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("workflow_model_audit", enriched);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Workflow model audit failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("workflow_model_audit", `Workflow model audit failed: ${errorMessage(error)}`);
       }
     }
   );

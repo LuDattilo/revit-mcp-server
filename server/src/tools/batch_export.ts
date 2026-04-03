@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerBatchExportTool(server: McpServer) {
   server.tool(
@@ -42,26 +43,11 @@ export function registerBatchExportTool(server: McpServer) {
           return await revitClient.sendCommand("batch_export", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("batch_export", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Batch export failed: ${
+        return rawToolError("batch_export", `Batch export failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

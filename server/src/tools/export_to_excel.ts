@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerExportToExcelTool(server: McpServer) {
   server.tool(
@@ -55,9 +56,9 @@ GUIDANCE:
           { prompt: `When you're done editing, ask me to import ${filePath} back into Revit`, reason: "Excel roundtrip: edit the file then re-import" },
         ]);
 
-        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("export_to_excel", enriched);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Export to Excel failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("export_to_excel", `Export to Excel failed: ${errorMessage(error)}`);
       }
     }
   );

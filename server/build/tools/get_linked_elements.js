@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerGetLinkedElementsTool(server) {
     server.tool("get_linked_elements", "Query elements from linked Revit models by category.", {
         linkName: z.string().optional()
@@ -21,10 +22,10 @@ export function registerGetLinkedElementsTool(server) {
                     maxElements: args.maxElements ?? 5000,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("get_linked_elements", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Get linked elements failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("get_linked_elements", `Get linked elements failed: ${errorMessage(error)}`);
         }
     });
 }

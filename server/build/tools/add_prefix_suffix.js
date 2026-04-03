@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerAddPrefixSuffixTool(server) {
     server.tool("add_prefix_suffix", "Add prefix/suffix to parameter values. Preview with dryRun=true.", {
         parameterName: z.string().describe("Name of the parameter to modify."),
@@ -27,10 +28,10 @@ export function registerAddPrefixSuffixTool(server) {
                     dryRun: args.dryRun ?? true,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("add_prefix_suffix", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Add prefix/suffix failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("add_prefix_suffix", `Add prefix/suffix failed: ${errorMessage(error)}`);
         }
     });
 }

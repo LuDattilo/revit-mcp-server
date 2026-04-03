@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerLoadSelectionTool(server: McpServer) {
   server.tool(
@@ -29,26 +30,11 @@ export function registerLoadSelectionTool(server: McpServer) {
           return await revitClient.sendCommand("load_selection", params);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("load_selection", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `load selection failed: ${
+        return rawToolError("load_selection", `load selection failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

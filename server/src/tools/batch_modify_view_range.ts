@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerBatchModifyViewRangeTool(server: McpServer) {
   server.tool(
@@ -25,9 +26,9 @@ export function registerBatchModifyViewRangeTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("batch_modify_view_range", params);
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("batch_modify_view_range", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Batch modify view range failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("batch_modify_view_range", `Batch modify view range failed: ${errorMessage(error)}`);
       }
     }
   );

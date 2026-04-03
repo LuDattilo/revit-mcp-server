@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCadLinkCleanupTool(server) {
     server.tool("cad_link_cleanup", "Analyze and clean up imported/linked CAD files in the model.", {
         action: z
@@ -30,10 +31,10 @@ export function registerCadLinkCleanupTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("cad_link_cleanup", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("cad_link_cleanup", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `CAD cleanup failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("cad_link_cleanup", `CAD cleanup failed: ${errorMessage(error)}`);
         }
     });
 }

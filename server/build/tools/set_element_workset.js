@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSetElementWorksetTool(server) {
     server.tool("set_element_workset", "Move elements to a different workset.", {
         requests: z
@@ -18,25 +19,10 @@ export function registerSetElementWorksetTool(server) {
                     requests: args.requests,
                 });
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("set_element_workset", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Set element workset failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("set_element_workset", `Set element workset failed: ${errorMessage(error)}`);
         }
     });
 }

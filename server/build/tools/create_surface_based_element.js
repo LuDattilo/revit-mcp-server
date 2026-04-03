@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateSurfaceBasedElementTool(server) {
     server.tool("create_surface_based_element", "Create surface-based elements (floors, ceilings, roofs) from points.", {
         data: z
@@ -46,25 +47,10 @@ export function registerCreateSurfaceBasedElementTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("create_surface_based_element", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("create_surface_based_element", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Create surface-based element failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("create_surface_based_element", `Create surface-based element failed: ${errorMessage(error)}`);
         }
     });
 }

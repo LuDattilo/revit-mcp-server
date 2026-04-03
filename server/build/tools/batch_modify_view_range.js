@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerBatchModifyViewRangeTool(server) {
     server.tool("batch_modify_view_range", "Batch-modify view range (cut plane, top, bottom) for plan views.", {
         viewIds: z.array(z.number()).describe("IDs of plan views to modify."),
@@ -22,10 +23,10 @@ export function registerBatchModifyViewRangeTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("batch_modify_view_range", params);
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("batch_modify_view_range", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Batch modify view range failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("batch_modify_view_range", `Batch modify view range failed: ${errorMessage(error)}`);
         }
     });
 }

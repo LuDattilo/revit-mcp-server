@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerExportSharedParameterFileTool(server) {
     server.tool("export_shared_parameter_file", "Export the shared parameter file contents as structured data.", {
         filePath: z.string().optional()
@@ -12,10 +13,10 @@ export function registerExportSharedParameterFileTool(server) {
                     filePath: args.filePath ?? "",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("export_shared_parameter_file", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Export shared parameter file failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("export_shared_parameter_file", `Export shared parameter file failed: ${errorMessage(error)}`);
         }
     });
 }

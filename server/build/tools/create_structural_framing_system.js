@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateStructuralFramingSystemTool(server) {
     server.tool("create_structural_framing_system", "Create a beam system from boundary lines on a level.", {
         levelName: z
@@ -65,25 +66,10 @@ export function registerCreateStructuralFramingSystemTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("create_structural_framing_system", params);
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("create_structural_framing_system", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Create structural framing system failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("create_structural_framing_system", `Create structural framing system failed: ${errorMessage(error)}`);
         }
     });
 }

@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateCalloutFromRoomsTool(server) {
     server.tool("create_callout_from_rooms", "Create callout views from rooms with auto-naming and crop regions.", {
         roomIds: z.array(z.number()).optional()
@@ -24,10 +25,10 @@ export function registerCreateCalloutFromRoomsTool(server) {
                     scale: args.scale ?? 50,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("create_callout_from_rooms", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Create callout from rooms failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("create_callout_from_rooms", `Create callout from rooms failed: ${errorMessage(error)}`);
         }
     });
 }

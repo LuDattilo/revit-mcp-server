@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerExportSharedParameterFileTool(server: McpServer) {
   server.tool(
@@ -18,9 +19,9 @@ export function registerExportSharedParameterFileTool(server: McpServer) {
             filePath: args.filePath ?? "",
           });
         });
-        return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("export_shared_parameter_file", response);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Export shared parameter file failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("export_shared_parameter_file", `Export shared parameter file failed: ${errorMessage(error)}`);
       }
     }
   );

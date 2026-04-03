@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerExportScheduleTool(server: McpServer) {
   server.tool(
@@ -30,26 +31,11 @@ export function registerExportScheduleTool(server: McpServer) {
           return await revitClient.sendCommand("export_schedule", args);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("export_schedule", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Export schedule failed: ${
+        return rawToolError("export_schedule", `Export schedule failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

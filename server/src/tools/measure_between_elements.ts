@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 const PointSchema = z.object({
   x: z.number().describe("X coordinate in mm"),
@@ -29,19 +30,9 @@ export function registerMeasureBetweenElementsTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("measure_between_elements", args);
         });
-        return {
-          content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
-        };
+        return rawToolResponse("measure_between_elements", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Measure failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return rawToolError("measure_between_elements", `Measure failed: ${errorMessage(error)}`);
       }
     }
   );

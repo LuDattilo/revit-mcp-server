@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreatePlaceholderSheetsTool(server) {
     server.tool("create_placeholder_sheets", "Create multiple placeholder sheets with sequential numbering.", {
         action: z
@@ -26,20 +27,10 @@ export function registerCreatePlaceholderSheetsTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("create_placeholder_sheets", args);
             });
-            return {
-                content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
-            };
+            return rawToolResponse("create_placeholder_sheets", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Create placeholder sheets failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("create_placeholder_sheets", `Create placeholder sheets failed: ${errorMessage(error)}`);
         }
     });
 }

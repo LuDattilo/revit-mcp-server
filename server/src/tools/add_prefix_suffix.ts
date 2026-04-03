@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerAddPrefixSuffixTool(server: McpServer) {
   server.tool(
@@ -33,9 +34,9 @@ export function registerAddPrefixSuffixTool(server: McpServer) {
             dryRun: args.dryRun ?? true,
           });
         });
-        return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+        return rawToolResponse("add_prefix_suffix", response);
       } catch (error) {
-        return { content: [{ type: "text", text: `Add prefix/suffix failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("add_prefix_suffix", `Add prefix/suffix failed: ${errorMessage(error)}`);
       }
     }
   );

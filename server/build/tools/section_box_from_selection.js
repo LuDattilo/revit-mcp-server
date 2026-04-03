@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSectionBoxFromSelectionTool(server) {
     server.tool("section_box_from_selection", "Set or create a 3D section box fitted around selected elements.", {
         elementIds: z
@@ -39,12 +40,10 @@ export function registerSectionBoxFromSelectionTool(server) {
                     isolateElements: args.isolateElements ?? false,
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("section_box_from_selection", response);
         }
         catch (error) {
-            return {
-                content: [{ type: "text", text: `Section box from selection failed: ${errorMessage(error)}` }],
-            };
+            return rawToolError("section_box_from_selection", `Section box from selection failed: ${errorMessage(error)}`);
         }
     });
 }

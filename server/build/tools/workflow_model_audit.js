@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerWorkflowModelAuditTool(server) {
     server.tool("workflow_model_audit", "Run a comprehensive model health audit with scoring.", {
         includeWarnings: z.boolean().optional().default(true)
@@ -25,10 +26,10 @@ export function registerWorkflowModelAuditTool(server) {
                 suggestIf((data?.cadImportCount ?? 0) > 0, "Clean up CAD imports", "Remove unnecessary CAD files"),
                 suggestIf((data?.healthScore ?? 100) < 70, "Export model warnings to review offline", "Score below 70 needs detailed attention"),
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("workflow_model_audit", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Workflow model audit failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("workflow_model_audit", `Workflow model audit failed: ${errorMessage(error)}`);
         }
     });
 }

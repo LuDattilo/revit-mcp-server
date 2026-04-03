@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerCreateScheduleTool(server: McpServer) {
   server.tool(
@@ -85,26 +86,11 @@ export function registerCreateScheduleTool(server: McpServer) {
           return await revitClient.sendCommand("create_schedule", args);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("create_schedule", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Create schedule failed: ${
+        return rawToolError("create_schedule", `Create schedule failed: ${
                 errorMessage(error)
-              }`,
-            },
-          ],
-          isError: true,
-        };
+              }`);
       }
     }
   );

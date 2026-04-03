@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerImportTableTool(server: McpServer) {
   server.tool(
@@ -47,24 +48,9 @@ export function registerImportTableTool(server: McpServer) {
           return await revitClient.sendCommand("import_table", args);
         });
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
+        return rawToolResponse("import_table", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Import table failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return rawToolError("import_table", `Import table failed: ${errorMessage(error)}`);
       }
     }
   );

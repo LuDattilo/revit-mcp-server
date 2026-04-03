@@ -3,6 +3,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerWorkflowSheetSetTool(server: McpServer) {
   server.tool(
@@ -33,9 +34,9 @@ export function registerWorkflowSheetSetTool(server: McpServer) {
           suggestIf(sheetsCreated > 0, "Export sheets to PDF", "Generate deliverable documents from the new sheet set"),
         ]);
 
-        return { content: [{ type: "text" as const, text: JSON.stringify(enriched, null, 2) }] };
+        return rawToolResponse("workflow_sheet_set", enriched);
       } catch (error) {
-        return { content: [{ type: "text" as const, text: `Workflow sheet set failed: ${errorMessage(error)}` }], isError: true };
+        return rawToolError("workflow_sheet_set", `Workflow sheet set failed: ${errorMessage(error)}`);
       }
     }
   );

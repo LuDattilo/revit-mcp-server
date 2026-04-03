@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerManageViewTemplatesTool(server) {
     server.tool("manage_view_templates", "List, create, apply, or modify view templates.", {
         action: z.enum(["list", "duplicate", "delete", "rename", "batch_rename"])
@@ -27,10 +28,10 @@ export function registerManageViewTemplatesTool(server) {
                     filterViewType: args.filterViewType ?? "",
                 });
             });
-            return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+            return rawToolResponse("manage_view_templates", response);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Manage view templates failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("manage_view_templates", `Manage view templates failed: ${errorMessage(error)}`);
         }
     });
 }

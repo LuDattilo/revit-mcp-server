@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
 import { addSuggestions, suggestIf } from "../utils/suggestions.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerWorkflowSheetSetTool(server) {
     server.tool("workflow_sheet_set", "Auto-create sheets from views with title blocks and viewports.", {
         sheets: z.array(z.object({
@@ -25,10 +26,10 @@ export function registerWorkflowSheetSetTool(server) {
                 suggestIf(sheetsCreated > 0, "Align viewports", "Ensure consistent viewport placement across sheets"),
                 suggestIf(sheetsCreated > 0, "Export sheets to PDF", "Generate deliverable documents from the new sheet set"),
             ]);
-            return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
+            return rawToolResponse("workflow_sheet_set", enriched);
         }
         catch (error) {
-            return { content: [{ type: "text", text: `Workflow sheet set failed: ${errorMessage(error)}` }], isError: true };
+            return rawToolError("workflow_sheet_set", `Workflow sheet set failed: ${errorMessage(error)}`);
         }
     });
 }

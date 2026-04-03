@@ -1,6 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerSetElementParametersTool(server) {
     server.tool("set_element_parameters", "Set a parameter value on one or more elements.", {
         requests: z
@@ -21,25 +22,10 @@ export function registerSetElementParametersTool(server) {
                     requests: args.requests,
                 });
             });
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2),
-                    },
-                ],
-            };
+            return rawToolResponse("set_element_parameters", response);
         }
         catch (error) {
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `Set element parameters failed: ${errorMessage(error)}`,
-                    },
-                ],
-                isError: true,
-            };
+            return rawToolError("set_element_parameters", `Set element parameters failed: ${errorMessage(error)}`);
         }
     });
 }

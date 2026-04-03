@@ -2,6 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
+import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 
 export function registerManageProjectParametersTool(server: McpServer) {
   server.tool(
@@ -65,19 +66,9 @@ export function registerManageProjectParametersTool(server: McpServer) {
             isShared: args.isShared ?? false,
           });
         });
-        return {
-          content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
-        };
+        return rawToolResponse("manage_project_parameters", response);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Manage project parameters failed: ${errorMessage(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return rawToolError("manage_project_parameters", `Manage project parameters failed: ${errorMessage(error)}`);
       }
     }
   );
