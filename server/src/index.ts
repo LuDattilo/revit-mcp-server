@@ -2,22 +2,26 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerTools } from "./tools/register.js";
+import { getDatabase } from "./database/db.js";
 
-// 创建服务器实例
+// Create server instance
 const server = new McpServer({
   name: "mcp-server-for-revit",
   version: "1.0.0",
 });
 
-// 启动服务器
+// Start server
 async function main() {
-  // 注册工具
+  // Initialize database (sql.js is async)
+  await getDatabase();
+
+  // Register tools
   await registerTools(server);
 
-  // 连接到传输层
+  // Connect to transport layer
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Revit MCP Server start success");
+  console.error("Revit MCP Server started successfully");
 }
 
 main().catch((error) => {
