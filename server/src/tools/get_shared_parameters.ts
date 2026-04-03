@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetSharedParametersTool(server: McpServer) {
   server.tool(
@@ -15,7 +15,6 @@ export function registerGetSharedParametersTool(server: McpServer) {
         .describe("Optional category name filter."),
     },
     async (args, extra) => {
-      setToolName("get_shared_parameters");
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_shared_parameters", {
@@ -23,9 +22,9 @@ export function registerGetSharedParametersTool(server: McpServer) {
           });
         });
 
-        return toolResponse(response);
+        return toolResponse("get_shared_parameters", response);
       } catch (error) {
-        return toolError(`Get shared parameters failed: ${errorMessage(error)}`);
+        return toolError("get_shared_parameters", `Get shared parameters failed: ${errorMessage(error)}`);
       }
     }
   );

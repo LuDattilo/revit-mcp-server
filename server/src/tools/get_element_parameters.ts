@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetElementParametersTool(server: McpServer) {
   server.tool(
@@ -25,7 +25,6 @@ export function registerGetElementParametersTool(server: McpServer) {
         .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
-      setToolName("get_element_parameters");
       const params = {
         elementIds: args.elementIds,
         includeTypeParameters: args.includeTypeParameters ?? true,
@@ -39,9 +38,9 @@ export function registerGetElementParametersTool(server: McpServer) {
           );
         });
 
-        return toolResponse(response, args);
+        return toolResponse("get_element_parameters", response, args);
       } catch (error) {
-        return toolError(`Get element parameters failed: ${errorMessage(error)}`);
+        return toolError("get_element_parameters", `Get element parameters failed: ${errorMessage(error)}`);
       }
     }
   );

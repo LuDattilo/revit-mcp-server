@@ -12,10 +12,15 @@ export function registerDeleteElementTool(server: McpServer) {
       elementIds: z
         .array(z.number().int())
         .describe("The IDs of the elements to delete"),
+      dryRun: z
+        .boolean()
+        .optional()
+        .describe("If true (default), preview which elements would be deleted without actually deleting them"),
     },
     async (args, extra) => {
       const params = {
         elementIds: args.elementIds,
+        dryRun: args.dryRun ?? true,
       };
 
       try {

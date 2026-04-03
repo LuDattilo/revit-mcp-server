@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetMaterialsTool(server: McpServer) {
   server.tool(
@@ -21,15 +21,14 @@ export function registerGetMaterialsTool(server: McpServer) {
         ),
     },
     async (args, extra) => {
-      setToolName("get_materials");
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_materials", { materialClass: args.materialClass, nameFilter: args.nameFilter });
         });
 
-        return toolResponse(response);
+        return toolResponse("get_materials", response);
       } catch (error) {
-        return toolError(`Get materials failed: ${errorMessage(error)}`);
+        return toolError("get_materials", `Get materials failed: ${errorMessage(error)}`);
       }
     }
   );

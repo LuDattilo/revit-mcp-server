@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetWorksetsTool(server: McpServer) {
   server.tool(
@@ -15,7 +15,6 @@ export function registerGetWorksetsTool(server: McpServer) {
         .describe("Include system worksets. Default: false."),
     },
     async (args, extra) => {
-      setToolName("get_worksets");
       const params = {
         includeSystemWorksets: args.includeSystemWorksets ?? false,
       };
@@ -25,9 +24,9 @@ export function registerGetWorksetsTool(server: McpServer) {
           return await revitClient.sendCommand("get_worksets", params);
         });
 
-        return toolResponse(response);
+        return toolResponse("get_worksets", response);
       } catch (error) {
-        return toolError(`Get worksets failed: ${errorMessage(error)}`);
+        return toolError("get_worksets", `Get worksets failed: ${errorMessage(error)}`);
       }
     }
   );

@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetAvailableFamilyTypesTool(server: McpServer) {
   server.tool(
@@ -30,7 +30,6 @@ export function registerGetAvailableFamilyTypesTool(server: McpServer) {
         .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     },
     async (args, extra) => {
-      setToolName("get_available_family_types");
       const params = {
         categoryList: args.categoryList || [],
         familyNameFilter: args.familyNameFilter || "",
@@ -45,9 +44,9 @@ export function registerGetAvailableFamilyTypesTool(server: McpServer) {
           );
         });
 
-        return toolResponse(response, args);
+        return toolResponse("get_available_family_types", response, args);
       } catch (error) {
-        return toolError(`get available family types failed: ${errorMessage(error)}`);
+        return toolError("get_available_family_types", `get available family types failed: ${errorMessage(error)}`);
       }
     }
   );

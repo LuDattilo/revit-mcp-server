@@ -1,19 +1,11 @@
 import { compactResponse } from "./responseCompactor.js";
 import { logTokenUsage } from "./tokenLogger.js";
 
-// Track current tool name per call (set by wrapToolResponse)
-let _currentToolName = "unknown";
-
-/** Set the tool name for logging. Call at the start of each tool handler. */
-export function setToolName(name: string) {
-  _currentToolName = name;
-}
-
 /**
  * Standard tool response wrapper with compaction and token logging.
  * Use in place of the raw JSON.stringify return in every tool.
  */
-export function toolResponse(response: any, args?: { compact?: boolean }) {
+export function toolResponse(toolName: string, response: any, args?: { compact?: boolean }) {
   let result = response;
 
   const compacted = compactResponse(result, {
@@ -22,14 +14,14 @@ export function toolResponse(response: any, args?: { compact?: boolean }) {
     maxArrayItems: 100,
   });
   const text = JSON.stringify(compacted, null, 2);
-  logTokenUsage(_currentToolName, text, false);
+  logTokenUsage(toolName, text, false);
   return {
     content: [{ type: "text" as const, text }],
   };
 }
 
-export function toolError(message: string) {
-  logTokenUsage(_currentToolName, message, true);
+export function toolError(toolName: string, message: string) {
+  logTokenUsage(toolName, message, true);
   return {
     content: [{ type: "text" as const, text: message }],
     isError: true,

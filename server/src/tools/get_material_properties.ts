@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerGetMaterialPropertiesTool(server: McpServer) {
   server.tool(
@@ -19,7 +19,6 @@ export function registerGetMaterialPropertiesTool(server: McpServer) {
         .describe("Material name (case-insensitive). Used if materialId not provided."),
     },
     async (args, extra) => {
-      setToolName("get_material_properties");
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_material_properties", {
@@ -28,9 +27,9 @@ export function registerGetMaterialPropertiesTool(server: McpServer) {
           });
         });
 
-        return toolResponse(response);
+        return toolResponse("get_material_properties", response);
       } catch (error) {
-        return toolError(`Get material properties failed: ${errorMessage(error)}`);
+        return toolError("get_material_properties", `Get material properties failed: ${errorMessage(error)}`);
       }
     }
   );
