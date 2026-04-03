@@ -1,7 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 export function registerGetAvailableFamilyTypesTool(server) {
     server.tool("get_available_family_types", "Get available family types in the current Revit project. You can filter by category and family name, and limit the number of returned types.\n\nGUIDANCE:\n- Find wall types: categoryFilter=\"Walls\" — returns all available wall families and types\n- Find door types: categoryFilter=\"Doors\" — needed before create_point_based_element\n- Search all families: omit filter to see every loaded family type\n\nTIPS:\n- Always call this before creating elements to get exact family/type names\n- Use load_family to load additional families from .rfa files\n- Family names are case-sensitive — copy exact names from results", {
         categoryList: z
@@ -22,7 +22,6 @@ export function registerGetAvailableFamilyTypesTool(server) {
             .default(false)
             .describe("Return summary counts only, without full data arrays. Saves tokens for large results."),
     }, async (args, extra) => {
-        setToolName("get_available_family_types");
         const params = {
             categoryList: args.categoryList || [],
             familyNameFilter: args.familyNameFilter || "",
@@ -32,10 +31,10 @@ export function registerGetAvailableFamilyTypesTool(server) {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("get_available_family_types", params);
             });
-            return toolResponse(response, args);
+            return toolResponse("get_available_family_types", response, args);
         }
         catch (error) {
-            return toolError(`get available family types failed: ${errorMessage(error)}`);
+            return toolError("get_available_family_types", `get available family types failed: ${errorMessage(error)}`);
         }
     });
 }

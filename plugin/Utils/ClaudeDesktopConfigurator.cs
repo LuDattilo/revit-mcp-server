@@ -108,11 +108,11 @@ namespace revit_mcp_plugin.Utils
                 {
                     var td = new TaskDialog("Revit MCP Plugin")
                     {
-                        MainInstruction = "Claude Desktop configurato automaticamente",
+                        MainInstruction = "Claude Desktop configured automatically",
                         MainContent =
-                            "Il server MCP per Revit è stato registrato in Claude Desktop.\n\n" +
-                            "Riavvia Claude Desktop per attivare i tool.\n\n" +
-                            "(Questo messaggio appare solo quando la configurazione viene aggiornata)",
+                            "The Revit MCP server has been registered in Claude Desktop.\n\n" +
+                            "Restart Claude Desktop to activate the tools.\n\n" +
+                            "(This message only appears when the configuration is updated)",
                         CommonButtons = TaskDialogCommonButtons.Ok
                     };
                     td.Show();

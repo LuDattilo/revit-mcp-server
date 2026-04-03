@@ -26,20 +26,20 @@ namespace revit_mcp_plugin.UI
             _cts?.Cancel();
         }
 
-        private const string SYSTEM_PROMPT = @"Sei Claude, un assistente AI integrato direttamente in Autodesk Revit. Hai accesso a tool che eseguono comandi sul modello Revit attivo in tempo reale.
+        private const string SYSTEM_PROMPT = @"You are Claude, an AI assistant integrated directly into Autodesk Revit. You have access to tools that execute commands on the active Revit model in real time.
 
-COMPORTAMENTO:
-- Gestisci il modello direttamente. Quando l'utente chiede qualcosa, ESEGUI l'azione con i tool disponibili. Non chiedere conferme inutili.
-- Per task semplici (info, lettura, singola operazione): esegui subito.
-- Per task complessi (multi-step, creazione di più elementi, workflow): pianifica mentalmente i passi, poi eseguili uno dopo l'altro.
-- Usa i tool di lettura (get_project_info, get_available_family_types, ai_element_filter, get_selected_elements) per scoprire cosa c'è nel modello prima di agire.
-- Se l'utente dice 'gli elementi selezionati', usa get_selected_elements. Se vuoto, chiedi di selezionare.
-- Dopo ogni operazione, descrivi brevemente il risultato.
+BEHAVIOR:
+- Manage the model directly. When the user asks for something, EXECUTE the action with the available tools. Do not ask for unnecessary confirmations.
+- For simple tasks (info, reading, single operation): execute immediately.
+- For complex tasks (multi-step, creating multiple elements, workflows): mentally plan the steps, then execute them one after another.
+- Use reading tools (get_project_info, get_available_family_types, ai_element_filter, get_selected_elements) to discover what is in the model before acting.
+- If the user says 'selected elements', use get_selected_elements. If empty, ask them to select.
+- After each operation, briefly describe the result.
 
-REGOLE:
-- I nomi dei parametri e delle categorie Revit sono localizzati (es. 'Muri' in italiano, 'Walls' in inglese). Usa BuiltInCategory (OST_Walls, OST_Doors, ecc.) per le categorie quando possibile.
-- Coordinate in millimetri (mm).
-- Rispondi nella lingua dell'utente, sii conciso.";
+RULES:
+- Revit parameter and category names are localized (e.g. 'Muri' in Italian, 'Walls' in English). Use BuiltInCategory (OST_Walls, OST_Doors, etc.) for categories when possible.
+- Coordinates in millimeters (mm).
+- Reply in the user's language, be concise.";
 
         public string Model
         {
@@ -99,11 +99,11 @@ REGOLE:
             }
             catch (OperationCanceledException)
             {
-                return "Operazione annullata.";
+                return "Operation cancelled.";
             }
             catch (Exception ex)
             {
-                return $"Errore: {ex.Message}";
+                return $"Error: {ex.Message}";
             }
         }
 
@@ -116,10 +116,10 @@ REGOLE:
                 var response = await CallClaudeApi();
 
                 if (response == null)
-                    return "Nessuna risposta dall'API.";
+                    return "No response from API.";
 
                 var content = response["content"] as JArray;
-                if (content == null) return "Risposta vuota.";
+                if (content == null) return "Empty response.";
 
                 // Check stop reason
                 string stopReason = response["stop_reason"]?.ToString() ?? "end_turn";
@@ -190,7 +190,7 @@ REGOLE:
                 return string.Join("\n", textParts);
             }
 
-            return "Troppe iterazioni di tool. Riprova con una richiesta più semplice.";
+            return "Too many tool iterations. Try again with a simpler request.";
         }
 
         private async Task<JObject> CallClaudeApi()

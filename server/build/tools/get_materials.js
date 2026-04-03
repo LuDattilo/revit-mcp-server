@@ -1,7 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 export function registerGetMaterialsTool(server) {
     server.tool("get_materials", "List materials in the project, optionally filtered by class.", {
         materialClass: z
@@ -13,15 +13,14 @@ export function registerGetMaterialsTool(server) {
             .optional()
             .describe("Filter materials whose name contains this substring (case-insensitive)"),
     }, async (args, extra) => {
-        setToolName("get_materials");
         try {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("get_materials", { materialClass: args.materialClass, nameFilter: args.nameFilter });
             });
-            return toolResponse(response);
+            return toolResponse("get_materials", response);
         }
         catch (error) {
-            return toolError(`Get materials failed: ${errorMessage(error)}`);
+            return toolError("get_materials", `Get materials failed: ${errorMessage(error)}`);
         }
     });
 }

@@ -2,7 +2,7 @@
 
 # mcp-servers-for-revit
 
-**Connect AI assistants to Autodesk Revit via the Model Context Protocol.** | [Italiano](README_IT.md)
+**Connect AI assistants to Autodesk Revit via the Model Context Protocol.**
 
 ---
 

@@ -6,7 +6,7 @@ export function registerImportFromExcelTool(server) {
     server.tool("import_from_excel", "Import data from Excel into Revit element parameters.", {
         filePath: z.string().describe("Full path to the .xlsx file to import."),
         sheetName: z.string().optional().describe("Worksheet name. Default: first sheet."),
-        dryRun: z.boolean().optional().default(false)
+        dryRun: z.boolean().optional().default(true)
             .describe("Preview changes without modifying the model. Always try this first."),
     }, async (args) => {
         try {
@@ -14,7 +14,7 @@ export function registerImportFromExcelTool(server) {
                 return await revitClient.sendCommand("import_from_excel", {
                     filePath: args.filePath,
                     sheetName: args.sheetName ?? "",
-                    dryRun: args.dryRun ?? false,
+                    dryRun: args.dryRun ?? true,
                 });
             });
             return rawToolResponse("import_from_excel", response);

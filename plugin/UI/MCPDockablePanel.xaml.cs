@@ -50,9 +50,9 @@ namespace revit_mcp_plugin.UI
             };
 
             AddMessage("assistant",
-                "Ciao! Sono Claude, il tuo assistente per Revit.\n\n" +
-                "Ho accesso diretto al modello aperto e posso eseguire operazioni in tempo reale. " +
-                "Chiedimi qualsiasi cosa sul progetto o dimmi cosa creare.");
+                "Hi! I'm Claude, your assistant for Revit.\n\n" +
+                "I have direct access to the open model and can perform operations in real time. " +
+                "Ask me anything about the project or tell me what to create.");
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -98,14 +98,14 @@ namespace revit_mcp_plugin.UI
             _isProcessing = true;
             SendButton.IsEnabled = false;
             TypingIndicator.Visibility = Visibility.Visible;
-            TypingText.Text = "Claude sta pensando...";
+            TypingText.Text = "Claude is thinking...";
 
             try
             {
                 if (!Core.SocketService.Instance.IsRunning)
                 {
                     AddMessage("assistant",
-                        "Il server MCP non e' attivo. Clicca \"Revit MCP Switch\" nel ribbon per avviarlo.");
+                        "The MCP server is not running. Click \"Revit MCP Switch\" in the ribbon to start it.");
                     return;
                 }
 
@@ -116,7 +116,7 @@ namespace revit_mcp_plugin.UI
             }
             catch (Exception ex)
             {
-                AddMessage("assistant", $"Si e' verificato un errore: {ex.Message}");
+                AddMessage("assistant", $"An error occurred: {ex.Message}");
             }
             finally
             {
@@ -256,7 +256,7 @@ namespace revit_mcp_plugin.UI
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                TypingText.Text = $"Eseguo {toolName}...";
+                TypingText.Text = $"Running {toolName}...";
                 _messages.Add(new ChatMessage("tool", $"⚡ {toolName}"));
                 ChatScrollViewer.ScrollToEnd();
             }));
@@ -267,7 +267,7 @@ namespace revit_mcp_plugin.UI
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 string preview = result.Length > 200 ? result.Substring(0, 200) + "..." : result;
-                string status = isError ? $"✗ {toolName} — errore:\n{preview}" : $"✓ {toolName} completato";
+                string status = isError ? $"✗ {toolName} — error:\n{preview}" : $"✓ {toolName} completed";
                 _messages.Add(new ChatMessage(isError ? "tool_error" : "tool_ok", status));
                 ChatScrollViewer.ScrollToEnd();
             }));
@@ -286,7 +286,7 @@ namespace revit_mcp_plugin.UI
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                TypingText.Text = $"Claude sta elaborando... (step {current}/{max})";
+                TypingText.Text = $"Claude is processing... (step {current}/{max})";
             }));
         }
 
@@ -297,7 +297,7 @@ namespace revit_mcp_plugin.UI
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                TypingText.Text = $"Rate limit — riprovo tra {seconds}s...";
+                TypingText.Text = $"Rate limit — retrying in {seconds}s...";
             }));
         }
 
@@ -310,7 +310,7 @@ namespace revit_mcp_plugin.UI
                 string firstLine = thinkingText.Split('\n')[0];
                 if (firstLine.Length > 120)
                     firstLine = firstLine.Substring(0, 120) + "...";
-                string summary = $"{firstLine}\n[{charCount:N0} caratteri di ragionamento]";
+                string summary = $"{firstLine}\n[{charCount:N0} chars of reasoning]";
                 _messages.Add(new ChatMessage("thinking", summary));
                 ChatScrollViewer.ScrollToEnd();
             }));
@@ -319,14 +319,14 @@ namespace revit_mcp_plugin.UI
         private void StopButton_Click(object sender, MouseButtonEventArgs e)
         {
             _client?.Cancel();
-            TypingText.Text = "Annullamento...";
+            TypingText.Text = "Cancelling...";
         }
 
         private void ClearChat_Click(object sender, MouseButtonEventArgs e)
         {
             _messages.Clear();
             _client?.ClearHistory();
-            AddMessage("assistant", "Chat azzerata. Come posso aiutarti?");
+            AddMessage("assistant", "Chat cleared. How can I help you?");
         }
 
         private void ExportChat_Click(object sender, MouseButtonEventArgs e)
@@ -335,10 +335,10 @@ namespace revit_mcp_plugin.UI
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Title = "Esporta chat",
+                    Title = "Export chat",
                     FileName = $"chat_{DateTime.Now:yyyyMMdd_HHmmss}",
                     DefaultExt = ".txt",
-                    Filter = "Testo (*.txt)|*.txt|Markdown (*.md)|*.md|JSON (*.json)|*.json",
+                    Filter = "Text (*.txt)|*.txt|Markdown (*.md)|*.md|JSON (*.json)|*.json",
                     InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
                 };
 
@@ -353,11 +353,11 @@ namespace revit_mcp_plugin.UI
                 }
 
                 File.WriteAllText(dialog.FileName, content, Encoding.UTF8);
-                AddMessage("assistant", $"Chat esportata in:\n{dialog.FileName}");
+                AddMessage("assistant", $"Chat exported to:\n{dialog.FileName}");
             }
             catch (Exception ex)
             {
-                AddMessage("assistant", $"Errore esportazione: {ex.Message}");
+                AddMessage("assistant", $"Export error: {ex.Message}");
             }
         }
 
@@ -447,7 +447,7 @@ namespace revit_mcp_plugin.UI
             switch (role)
             {
                 case "user":
-                    RoleLabel = "Tu";
+                    RoleLabel = "You";
                     AvatarLetter = "L";
                     AvatarBackground = UserBlue;
                     RoleLabelColor = new SolidColorBrush(Color.FromRgb(26, 26, 26));

@@ -1,7 +1,7 @@
 import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { toolResponse, toolError, setToolName } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 export function registerGetSharedParametersTool(server) {
     server.tool("get_shared_parameters", "List shared parameters and their category bindings.", {
         categoryFilter: z
@@ -9,17 +9,16 @@ export function registerGetSharedParametersTool(server) {
             .optional()
             .describe("Optional category name filter."),
     }, async (args, extra) => {
-        setToolName("get_shared_parameters");
         try {
             const response = await withRevitConnection(async (revitClient) => {
                 return await revitClient.sendCommand("get_shared_parameters", {
                     categoryFilter: args.categoryFilter,
                 });
             });
-            return toolResponse(response);
+            return toolResponse("get_shared_parameters", response);
         }
         catch (error) {
-            return toolError(`Get shared parameters failed: ${errorMessage(error)}`);
+            return toolError("get_shared_parameters", `Get shared parameters failed: ${errorMessage(error)}`);
         }
     });
 }

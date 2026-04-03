@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Installer for revit-mcp-server  --  Revit plugin + MCP server.
+    Installer for mcp-servers-for-revit  --  Revit plugin + MCP server.
 
 .DESCRIPTION
     Designed to work on a clean machine with only Revit and PowerShell installed.
@@ -190,7 +190,7 @@ function Write-Info { param([string]$m) Write-Host "      $m" -ForegroundColor G
 # -- Banner --------------------------------------------------------------------
 Write-Host ""
 Write-Host "  ================================================================" -ForegroundColor Cyan
-Write-Host "      revit-mcp-server   --   Installer"                               -ForegroundColor Cyan
+Write-Host "      mcp-servers-for-revit   --   Installer"                           -ForegroundColor Cyan
 Write-Host "      https://github.com/$REPO"                                     -ForegroundColor DarkCyan
 Write-Host "  ================================================================" -ForegroundColor Cyan
 Write-Host ""

@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Shared constants and helper functions for revit-mcp-server scripts.
+    Shared constants and helper functions for mcp-servers-for-revit scripts.
 
 .DESCRIPTION
     Dot-source this file from install.ps1, diagnose.ps1, and fix-mcp.ps1.

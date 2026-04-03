@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Check and auto-fix all prerequisites for revit-mcp-server + Claude Desktop.
+    Check and auto-fix all prerequisites for mcp-servers-for-revit + Claude Desktop.
 
 .DESCRIPTION
     Run this once on any machine where "Revit MCP" does not appear in Claude.

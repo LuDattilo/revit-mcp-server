@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Deep diagnostic for revit-mcp-server -- checks every file, path, and connection.
+    Deep diagnostic for mcp-servers-for-revit -- checks every file, path, and connection.
 
 .DESCRIPTION
     Prints a detailed PASS/FAIL/WARN for every component in the chain.
@@ -141,7 +141,7 @@ function FileMiss{ param([string]$p) Write-Host "         [MISSING]  $p" -Foregr
 
 Write-Host ""
 Write-Host "  ================================================================" -ForegroundColor Cyan
-Write-Host "      revit-mcp-server  --  Deep Diagnostic"                        -ForegroundColor Cyan
+Write-Host "      mcp-servers-for-revit  --  Deep Diagnostic"                    -ForegroundColor Cyan
 Write-Host "      Machine : $env:COMPUTERNAME"                                  -ForegroundColor DarkCyan
 Write-Host "      User    : $env:USERDOMAIN\$env:USERNAME"                      -ForegroundColor DarkCyan
 Write-Host "      Date    : $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"          -ForegroundColor DarkCyan

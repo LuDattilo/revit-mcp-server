@@ -29,10 +29,10 @@
                     <Ellipse x:Name="StatusIndicator" Width="7" Height="7" Margin="0,0,5,0"/>
                     <TextBlock x:Name="StatusText" FontSize="11" VerticalAlignment="Center"/>
                     <TextBlock Text="  |  " Foreground="#DDD" FontSize="11"/>
-                    <TextBlock Text="Nuova chat" Foreground="#D97757" FontSize="11"
+                    <TextBlock Text="New chat" Foreground="#D97757" FontSize="11"
                                Cursor="Hand" MouseLeftButtonDown="ClearChat_Click"/>
                     <TextBlock Text="  |  " Foreground="#DDD" FontSize="11"/>
-                    <TextBlock Text="Esporta" Foreground="#D97757" FontSize="11"
+                    <TextBlock Text="Export" Foreground="#D97757" FontSize="11"
                                Cursor="Hand" MouseLeftButtonDown="ExportChat_Click"/>
                 </StackPanel>
             </Grid>
@@ -94,7 +94,7 @@
                     <TextBlock Text="C" Foreground="White" FontSize="11" FontWeight="SemiBold"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <TextBlock Grid.Column="1" x:Name="TypingText" Text="Claude sta pensando..."
+                <TextBlock Grid.Column="1" x:Name="TypingText" Text="Claude is thinking..."
                            Foreground="#999" FontSize="14" FontStyle="Italic" VerticalAlignment="Center"/>
                 <Border Grid.Column="2" CornerRadius="10" Padding="8,3" Margin="8,0,0,0"
                         Background="#F0EEEB" BorderBrush="#D4D1CC" BorderThickness="1"
@@ -159,7 +159,7 @@
                                  VerticalContentAlignment="Top"
                                  FontFamily="Segoe UI"/>
                         <!-- Placeholder -->
-                        <TextBlock x:Name="Placeholder" Text="Rispondi... (Ctrl+Invio per inviare)" IsHitTestVisible="False"
+                        <TextBlock x:Name="Placeholder" Text="Reply... (Ctrl+Enter to send)" IsHitTestVisible="False"
                                    Foreground="#AAA" FontSize="14" Padding="18,14,0,0"
                                    FontFamily="Segoe UI"/>
                     </Grid>

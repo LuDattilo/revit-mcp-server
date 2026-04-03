@@ -1,4 +1,4 @@
-# Stress Test Report — revit-mcp-server
+# Stress Test Report — mcp-servers-for-revit
 
 **Date:** 2026-04-01  
 **Revit version:** 2025  
