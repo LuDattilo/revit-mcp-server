@@ -28,6 +28,7 @@ Go to the [Releases page](https://github.com/mcp-servers-for-revit/mcp-servers-f
 - `mcp-servers-for-revit-vX.Y.Z-Revit2024.zip`
 - `mcp-servers-for-revit-vX.Y.Z-Revit2025.zip`
 - `mcp-servers-for-revit-vX.Y.Z-Revit2026.zip`
+- `mcp-servers-for-revit-vX.Y.Z-Revit2027.zip`
 
 ### Step 2 — Extract to the Revit Addins folder
 
@@ -127,6 +128,15 @@ Show me all warnings.
 ```
 ```
 Check for clashes between walls and pipes.
+```
+```
+Which elements in this view are missing tags?
+```
+```
+Show me the largest families by instance count.
+```
+```
+Are there any empty tags to clean up?
 ```
 
 > **Tip:** For the full list of available commands with example prompts, see [COMMANDS.md](COMMANDS.md).

@@ -6,14 +6,14 @@
 
 ---
 
-mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 80+ tools covering project info, model analysis, element creation, batch operations, data export, and more.
+mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 112 tools covering project info, model analysis, element creation, batch operations, data export, and more.
 
 > [!NOTE]
 > This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
 
 ## Key Features
 
-- **80+ MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
+- **112 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
 - **Revit 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
@@ -60,6 +60,7 @@ flowchart LR
 | **Visual Studio 2022** | With .NET desktop development workload |
 | **.NET Framework 4.8 SDK** | For Revit 2023-2024 builds |
 | **.NET 8 SDK** | For Revit 2025-2026 builds |
+| **.NET 10 SDK** (preview) | For Revit 2027 builds |
 | **Node.js 18+** | For the MCP server |
 | **Revit API assemblies** | Installed with Revit (referenced automatically via NuGet) |
 
@@ -180,11 +181,11 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 | **Revit 2024** | .NET Framework 4.8 | Built & compatible | Same codebase as R23 |
 | **Revit 2025** | .NET 8 | Fully tested | Structural model (Snowdon Towers) |
 | **Revit 2026** | .NET 8 | Fully tested | Primary development target |
-| **Revit 2027** | .NET 10 | Build ready | Awaiting SDK stabilization |
+| **Revit 2027** | .NET 10 | Fully tested | .NET 10 SDK (preview) required |
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 
-## Supported Tools (80+)
+## Supported Tools (112)
 
 ### Project & Model Info
 
@@ -377,7 +378,7 @@ The server compiles TypeScript to `server/build/`. During development you can ru
 
 ### Revit Plugin + Command Set
 
-Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both the plugin and command set projects. Build configurations target Revit 2023-2026:
+Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both the plugin and command set projects. Build configurations target Revit 2023-2027:
 
 | Configuration | Target | .NET |
 |---------------|--------|------|
@@ -385,6 +386,7 @@ Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both th
 | `Debug R24` / `Release R24` | Revit 2024 | .NET Framework 4.8 |
 | `Debug R25` / `Release R25` | Revit 2025 | .NET 8 |
 | `Debug R26` / `Release R26` | Revit 2026 | .NET 8 |
+| `Debug R27` / `Release R27` | Revit 2027 | .NET 10 |
 
 Building the solution automatically assembles the complete deployable layout in `plugin/bin/AddIn <year> <config>/` — the command set is copied into the plugin's `Commands/` folder as part of the build.
 
@@ -409,7 +411,7 @@ mcp-servers-for-revit/
 ├── mcp-servers-for-revit.sln    # Combined solution (plugin + commandset + tests)
 ├── command.json                 # Command set manifest
 ├── server/                      # MCP server (TypeScript) - tools exposed to AI clients
-│   └── src/tools/               # One .ts file per tool (80+ tools)
+│   └── src/tools/               # One .ts file per tool (112 tools)
 ├── plugin/                      # Revit add-in (C#) - TCP bridge + chat panel
 │   └── UI/                      # Dockable chat panel (XAML + code-behind)
 ├── commandset/                  # Command implementations (C#) - Revit API operations
@@ -427,7 +429,7 @@ mcp-servers-for-revit/
 
 A single `v*` tag drives the entire release. The [release workflow](.github/workflows/release.yml) automatically:
 
-- Builds the Revit plugin + command set for Revit 2023-2026
+- Builds the Revit plugin + command set for Revit 2023-2027
 - Creates a GitHub release with `mcp-servers-for-revit-vX.Y.Z-Revit<year>.zip` assets
 - Publishes the MCP server to npm as [`mcp-server-for-revit`](https://www.npmjs.com/package/mcp-server-for-revit)
 
