@@ -11,7 +11,7 @@
 
 ---
 
-## Available Tools (78 commands)
+## Available Tools (83 commands)
 
 ### Model Information & Data Extraction
 
@@ -118,6 +118,11 @@
 | `clash_detection` | Geometric intersection detection | "Check for clashes between walls and pipes" |
 | `cad_link_cleanup` | Audit/remove CAD imports | "Are there any CAD imports to clean up?" |
 | `measure_between_elements` | Distance measurements | "Measure the distance between elements A and B" |
+| `find_undimensioned_elements` | Find elements without dimensions in a view | "Which elements in this view are not dimensioned?" |
+| `find_untagged_elements` | Find elements without tags in a view | "Find all untagged walls in this view" |
+| `lines_per_view_count` | Count detail/model lines per view | "Which views have the most line work?" |
+| `list_family_sizes` | List families with instance/type counts | "Show me the largest families by instance count" |
+| `wipe_empty_tags` | Find/remove tags with empty text | "Are there any empty tags to clean up?" |
 
 ### Organization & Collaboration
 
@@ -148,9 +153,13 @@
 1. "Check the health of this model"                    -> check_model_health
 2. "Show me all warnings"                              -> get_warnings
 3. "Audit all families"                                -> audit_families
-4. "What can be purged?"                               -> purge_unused (dryRun)
-5. "Clean up CAD imports"                              -> cad_link_cleanup
-6. "Purge unused items"                                -> purge_unused
+4. "Show me the largest families"                      -> list_family_sizes
+5. "Which views have excessive line work?"             -> lines_per_view_count
+6. "Find untagged elements in this view"               -> find_untagged_elements
+7. "Find undimensioned elements"                       -> find_undimensioned_elements
+8. "Are there any empty tags?"                         -> wipe_empty_tags (dryRun)
+9. "What can be purged?"                               -> purge_unused (dryRun)
+10. "Clean up CAD imports"                             -> cad_link_cleanup
 ```
 
 ### 2. Room Data & Views

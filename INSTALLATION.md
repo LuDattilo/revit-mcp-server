@@ -1,6 +1,6 @@
 # Installation Guide
 
-Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Revit 2023-2026.
+Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Revit 2023-2027.
 
 ---
 
@@ -44,6 +44,7 @@ Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Re
 | **npm** | Included with Node.js | To install dependencies |
 | **.NET Framework 4.8 SDK** | 4.8+ | Revit 2023-2024 |
 | **.NET 8.0 SDK** | 8.0+ | Revit 2025-2026 |
+| **.NET 10.0 SDK** | 10.0+ (preview) | Revit 2027 |
 | **Visual Studio 2022** | 17.x (optional) | Build and debug |
 | **MSBuild** | Included with VS or .NET SDK | CLI build |
 
@@ -75,6 +76,7 @@ dotnet --list-sdks
    - `mcp-servers-for-revit-vX.Y.Z-Revit2024.zip`
    - `mcp-servers-for-revit-vX.Y.Z-Revit2025.zip`
    - `mcp-servers-for-revit-vX.Y.Z-Revit2026.zip`
+   - `mcp-servers-for-revit-vX.Y.Z-Revit2027.zip`
 
 ### Step 2: Extract to the Revit Addins Folder
 
@@ -157,9 +159,12 @@ dotnet build mcp-servers-for-revit.sln -c "Release R25"
 
 # Revit 2026 (.NET 8)
 dotnet build mcp-servers-for-revit.sln -c "Release R26"
+
+# Revit 2027 (.NET 10)
+dotnet build mcp-servers-for-revit.sln -c "Release R27"
 ```
 
-> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient. For Revit 2027, the .NET 10 SDK is required.
+> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient. For Revit 2027, the .NET 10 SDK (preview) is required.
 
 ### Step 4: Automatic Deploy (Debug)
 

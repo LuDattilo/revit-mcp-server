@@ -1,6 +1,6 @@
 # Revit MCP Server - Complete Reference
 
-> **80+ MCP tools** | **140 unit tests** | **Revit 2023–2026** | Coordinates in **millimeters (mm)**
+> **112 MCP tools** | **140 unit tests** | **Revit 2023–2027** | Coordinates in **millimeters (mm)**
 
 ---
 
@@ -25,8 +25,8 @@
 
 ### Requirements
 - Autodesk Revit 2023, 2024, 2025, 2026, or 2027
-- Node.js 18+
-- .NET 10 SDK (for Revit 2027), .NET 8.0 SDK (for Revit 2025/2026), or .NET Framework 4.8 (for Revit 2023/2024)
+- Node.js 18+ (for building the MCP server from source)
+- .NET Framework 4.8 SDK (for Revit 2023/2024), .NET 8.0 SDK (for Revit 2025/2026), or .NET 10+ SDK preview (for Revit 2027)
 
 ### Quick Start
 1. Build the plugin: `dotnet build plugin/RevitMCPPlugin.csproj -c "Debug R25"`
@@ -520,11 +520,45 @@ Audit and clean up CAD imports/links.
 { "action": "delete", "deleteImports": true, "deleteLinks": false }
 ```
 
+### `find_undimensioned_elements`
+Find elements in a view not referenced by any dimension. Useful for QA/QC audits.
+```json
+{ "categories": ["OST_Walls", "OST_Grids", "OST_Columns"], "limit": 100 }
+```
+
+### `find_untagged_elements`
+Find elements in a view that have no tags.
+```json
+{ "categories": ["OST_Walls", "OST_Doors", "OST_Rooms"], "limit": 100 }
+```
+
+### `lines_per_view_count`
+Count detail and model lines per view. Helps identify views with excessive line work.
+```json
+{ "threshold": 50, "includeDetailLines": true, "includeModelLines": true, "limit": 200 }
+```
+
+### `list_family_sizes`
+List families with instance count, type count, and metadata. Identifies bloated or unused families.
+```json
+{ "limit": 20, "sortBy": "instanceCount", "categories": ["OST_StructuralFraming"] }
+```
+
+### `wipe_empty_tags`
+Find and remove tags with empty text or invalid references. **Defaults to dryRun=true** (preview only).
+```json
+// Preview empty tags
+{ "dryRun": true }
+
+// Actually delete empty tags
+{ "dryRun": false, "categories": ["OST_WallTags"] }
+```
+
 ---
 
-## Advanced Automation (New)
+## Advanced Automation
 
-These 10 tools were added based on research of the most commonly automated BIM tasks:
+These 15 tools were added based on research of the most commonly automated BIM tasks:
 
 | Tool | Description |
 |------|-------------|
@@ -538,6 +572,11 @@ These 10 tools were added based on research of the most commonly automated BIM t
 | `match_element_properties` | Copy parameters from source to targets |
 | `clash_detection` | Geometric intersection detection |
 | `cad_link_cleanup` | Audit and delete CAD imports/links |
+| `find_undimensioned_elements` | QA/QC: find elements without dimensions |
+| `find_untagged_elements` | QA/QC: find elements without tags |
+| `lines_per_view_count` | Performance: count lines per view |
+| `list_family_sizes` | Audit: families by instance/type count |
+| `wipe_empty_tags` | Cleanup: remove empty/invalid tags |
 
 ---
 
@@ -602,11 +641,11 @@ mcp-servers-for-revit/
 │   ├── Core/                  # Application, SocketService, CommandManager
 │   └── UI/                    # Dockable Panel, Chat UI
 ├── commandset/                # MCP Command Set (C#)
-│   ├── Commands/              # 62 command classes
-│   ├── Services/              # 62 event handlers
+│   ├── Commands/              # 67 command classes
+│   ├── Services/              # 67 event handlers
 │   └── Models/                # Data models
 ├── server/                    # MCP Server (TypeScript)
-│   └── src/tools/             # 62 tool definitions
+│   └── src/tools/             # 112 tool definitions
 ├── tests/                     # Unit tests (140 tests, TUnit)
 ├── command.json               # Command registry
 └── COMMANDS.md                # This file
@@ -621,4 +660,4 @@ mcp-servers-for-revit/
 - Tools marked *(new)* were added in the latest update
 - Use `dryRun: true` on destructive operations to preview changes
 - Element IDs can be found using `ai_element_filter`, `get_current_view_elements`, or `get_selected_elements`
-- The plugin supports **Revit 2023–2026** (.NET Framework 4.8 and .NET 8.0)
+- The plugin supports **Revit 2023–2027** (.NET Framework 4.8, .NET 8.0, and .NET 10)
