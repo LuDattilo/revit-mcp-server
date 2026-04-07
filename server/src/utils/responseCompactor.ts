@@ -9,7 +9,7 @@
  * Reduces JSON size significantly for sparse Revit data.
  * Does not strip 0 or false (they are valid values).
  */
-export function stripEmpty(obj: any): any {
+function stripEmpty(obj: any): any {
   if (obj === null || obj === undefined) return undefined;
   if (Array.isArray(obj)) {
     const cleaned = obj
@@ -52,7 +52,7 @@ function isPrimitiveArray(arr: any[]): boolean {
  * Works recursively on nested objects.
  * Skips arrays of primitives under 20 items (usually parameter lists, not data).
  */
-export function truncateArrays(obj: any, maxItems: number = 100): any {
+function truncateArrays(obj: any, maxItems: number = 100): any {
   if (obj === null || obj === undefined) return obj;
   if (Array.isArray(obj)) {
     // Process each item recursively first
@@ -98,7 +98,7 @@ export function truncateArrays(obj: any, maxItems: number = 100): any {
  * e.g., { elements: [{...}, {...}] } -> { elements: "50 items", elementCount: 50 }
  * Keeps primitive arrays and small arrays (< 5 items) intact.
  */
-export function compactSummary(obj: any): any {
+function compactSummary(obj: any): any {
   if (obj === null || obj === undefined) return obj;
   if (Array.isArray(obj)) {
     return obj.map((item) => compactSummary(item));
@@ -123,33 +123,6 @@ export function compactSummary(obj: any): any {
     return result;
   }
   return obj;
-}
-
-/**
- * Filter an object or array of objects to only include the specified fields.
- * If fields is empty or undefined, returns the original object unchanged.
- * Works on both single objects and arrays of objects.
- */
-export function filterFields(data: any, fields?: string[]): any {
-  if (!fields || fields.length === 0) return data;
-
-  const fieldSet = new Set(fields.map(f => f.toLowerCase()));
-
-  function pick(obj: any): any {
-    if (obj === null || obj === undefined) return obj;
-    if (Array.isArray(obj)) return obj.map(item => pick(item));
-    if (typeof obj !== "object") return obj;
-
-    const result: Record<string, any> = {};
-    for (const key of Object.keys(obj)) {
-      if (fieldSet.has(key.toLowerCase())) {
-        result[key] = obj[key];
-      }
-    }
-    return result;
-  }
-
-  return pick(data);
 }
 
 /**

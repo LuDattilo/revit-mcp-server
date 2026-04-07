@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { storeRoomsBatch, getProjectByName, getRoomsByProjectId } from "../database/service.js";
@@ -24,10 +25,10 @@ export function registerStoreRoomDataTool(server: McpServer) {
       project_name: z.string().describe("The name of the Revit project this room belongs to"),
       rooms: z.array(RoomSchema).describe("Array of room data to store")
     },
-    async (args: any) => {
+    async (args) => {
       try {
         // Get or create project
-        let project = getProjectByName(args.project_name);
+        const project = getProjectByName(args.project_name);
 
         if (!project) {
           return rawToolError("store_room_data", `Project "${args.project_name}" not found. Please store project data first using store_project_data tool.`);
@@ -45,8 +46,8 @@ export function registerStoreRoomDataTool(server: McpServer) {
           total_rooms: rooms.length,
           rooms_stored: count
         });
-      } catch (error: any) {
-        return rawToolError("store_room_data", `Store room data failed: ${error.message}`);
+      } catch (error) {
+        return rawToolError("store_room_data", `Store room data failed: ${errorMessage(error)}`);
       }
     }
   );

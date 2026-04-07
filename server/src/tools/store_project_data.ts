@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { storeProject, getProjectByName } from "../database/service.js";
@@ -17,7 +18,7 @@ export function registerStoreProjectDataTool(server: McpServer) {
       author: z.string().optional().describe("Project author or creator"),
       metadata: z.record(z.string()).optional().describe("Additional project metadata as key-value pairs")
     },
-    async (args: any) => {
+    async (args) => {
       try {
         const projectId = storeProject(args);
         const project = getProjectByName(args.project_name);
@@ -28,8 +29,8 @@ export function registerStoreProjectDataTool(server: McpServer) {
           project_id: projectId,
           project
         });
-      } catch (error: any) {
-        return rawToolError("store_project_data", `Store project data failed: ${error.message}`);
+      } catch (error) {
+        return rawToolError("store_project_data", `Store project data failed: ${errorMessage(error)}`);
       }
     }
   );

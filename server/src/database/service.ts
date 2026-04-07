@@ -1,7 +1,7 @@
 import { dbRun, dbGet, dbAll, dbLastInsertRowid } from './db.js';
 
 // Project data interface
-export interface ProjectData {
+interface ProjectData {
   project_name: string;
   project_path?: string;
   project_number?: string;
@@ -13,7 +13,7 @@ export interface ProjectData {
 }
 
 // Room data interface
-export interface RoomData {
+interface RoomData {
   room_id: string;
   room_name?: string;
   room_number?: string;
@@ -86,7 +86,7 @@ export function storeProject(data: ProjectData): number {
 }
 
 // Store or update room data
-export function storeRoom(projectId: number, data: RoomData): number {
+function storeRoom(projectId: number, data: RoomData): number {
   const timestamp = Date.now();
   const metadata = data.metadata ? JSON.stringify(data.metadata) : null;
 
@@ -152,12 +152,10 @@ export function storeRoom(projectId: number, data: RoomData): number {
 
 // Store multiple rooms at once
 export function storeRoomsBatch(projectId: number, rooms: RoomData[]): number {
-  let count = 0;
   for (const room of rooms) {
     storeRoom(projectId, room);
-    count++;
   }
-  return count;
+  return rooms.length;
 }
 
 // Get all projects
@@ -254,14 +252,6 @@ export function getAllRoomsWithProject() {
     metadata: r.metadata ? JSON.parse(r.metadata) : null,
     timestamp: new Date(r.timestamp).toISOString()
   }));
-}
-
-// Delete project (and all its rooms due to CASCADE)
-export function deleteProject(projectId: number): boolean {
-  const before = dbGet('SELECT COUNT(*) as count FROM projects WHERE id = ?', [projectId]) as { count: number };
-  if (!before?.count) return false;
-  dbRun('DELETE FROM projects WHERE id = ?', [projectId]);
-  return true;
 }
 
 // Get database statistics

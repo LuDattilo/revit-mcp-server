@@ -1,3 +1,4 @@
+import { errorMessage } from "../utils/errorUtils.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
@@ -27,9 +28,9 @@ export function registerQueryStoredDataTool(server: McpServer) {
       project_id: z.number().optional().describe("Project ID (required for 'project_by_id' and 'rooms_by_project_id')"),
       project_name: z.string().optional().describe("Project name (required for 'project_by_name' and 'rooms_by_project_name')")
     },
-    async (args: any) => {
+    async (args) => {
       try {
-        let result: any;
+        let result: unknown;
 
         switch (args.query_type) {
           case "all_projects":
@@ -100,8 +101,8 @@ export function registerQueryStoredDataTool(server: McpServer) {
           query_type: args.query_type,
           data: result
         });
-      } catch (error: any) {
-        return rawToolError("query_stored_data", `Query failed: ${error.message}`);
+      } catch (error) {
+        return rawToolError("query_stored_data", `Query failed: ${errorMessage(error)}`);
       }
     }
   );

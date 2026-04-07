@@ -2,7 +2,17 @@
 # Node.js / TypeScript (server/)
 # =============================================================================
 server/node_modules/
+server/build/
 server/revit-data.db
+
+# Environment variables
+.env
+.env.*
+
+# Temp/report files
+review_diff.txt
+*_REPORT.md
+*_report.md
 
 # =============================================================================
 # Revit deployment output (version-specific DLL folders, local only)
@@ -384,3 +394,4 @@ FodyWeavers.xsd
 .claude/
 .DS_Store
 .mcp.json
+docs/internal/

@@ -1,4 +1,4 @@
-export interface NextStep {
+interface NextStep {
   prompt: string;
   reason: string;
 }
