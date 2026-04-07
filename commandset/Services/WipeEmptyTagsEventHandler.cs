@@ -59,15 +59,33 @@ namespace RevitMCPCommandSet.Services
                     .Cast<IndependentTag>()
                     .ToList();
 
-                // Filter by categories if specified
+                // Filter by categories if specified (language-independent via BuiltInCategory)
                 if (Categories != null && Categories.Count > 0)
                 {
-                    var catSet = new HashSet<string>(Categories, StringComparer.OrdinalIgnoreCase);
-                    tags = tags.Where(t =>
+                    var catIds = new HashSet<long>();
+                    foreach (var cat in Categories)
                     {
-                        var ownerCat = t.Category?.Name;
-                        return ownerCat != null && catSet.Contains(ownerCat);
-                    }).ToList();
+                        if (Enum.TryParse(cat, out BuiltInCategory bic))
+                        {
+#if REVIT2024_OR_GREATER
+                            catIds.Add(new ElementId(bic).Value);
+#else
+                            catIds.Add((long)new ElementId(bic).IntegerValue);
+#endif
+                        }
+                    }
+                    if (catIds.Count > 0)
+                    {
+                        tags = tags.Where(t =>
+                        {
+                            if (t.Category == null) return false;
+#if REVIT2024_OR_GREATER
+                            return catIds.Contains(t.Category.Id.Value);
+#else
+                            return catIds.Contains(t.Category.Id.IntegerValue);
+#endif
+                        }).ToList();
+                    }
                 }
 
                 // Find empty tags: tags whose TagText is empty or whose host element is deleted

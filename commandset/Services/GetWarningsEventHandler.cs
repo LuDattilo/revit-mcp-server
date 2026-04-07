@@ -53,7 +53,7 @@ namespace RevitMCPCommandSet.Services
                     var description = warning.GetDescriptionText();
 
                     if (!string.IsNullOrEmpty(CategoryFilter) &&
-                        !description.Contains(CategoryFilter, StringComparison.OrdinalIgnoreCase))
+                        description.IndexOf(CategoryFilter, StringComparison.OrdinalIgnoreCase) < 0)
                         continue;
 
                     if (severityCounts.ContainsKey(severity))

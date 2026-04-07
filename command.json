@@ -527,6 +527,31 @@
       "commandName": "workflow_sheet_set",
       "description": "Create a set of sheets with title blocks in one call",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "find_undimensioned_elements",
+      "description": "Find elements in the active view not referenced by any dimension",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "find_untagged_elements",
+      "description": "Find elements in the active view that do not have any tags",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "lines_per_view_count",
+      "description": "Count detail lines and model lines per view across the project",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "list_family_sizes",
+      "description": "List all families with instance count, type count, and metadata",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "wipe_empty_tags",
+      "description": "Find and remove tags with empty text or invalid references",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }

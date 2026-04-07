@@ -10,7 +10,7 @@
     "scripts": {
         "clean": "rimraf build",
         "prebuild": "npm run clean",
-        "build": "node esbuild.config.mjs",
+        "build": "node esbuild.config.mjs && node generate-tool-schemas.mjs",
         "build:check": "tsc --noEmit",
         "prepublishOnly": "npm run build"
     },
@@ -52,7 +52,6 @@
         "@types/sql.js": "^1.4.11",
         "esbuild": "^0.28.0",
         "rimraf": "^5.0.10",
-        "typescript": "^5.8.2",
-        "zod-to-json-schema": "^3.25.2"
+        "typescript": "^5.8.2"
     }
 }

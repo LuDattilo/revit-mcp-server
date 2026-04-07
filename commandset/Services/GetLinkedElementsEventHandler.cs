@@ -48,7 +48,7 @@ namespace RevitMCPCommandSet.Services
                 if (!string.IsNullOrEmpty(LinkName))
                 {
                     linkInstances = linkInstances
-                        .Where(li => li.Name.Contains(LinkName, StringComparison.OrdinalIgnoreCase))
+                        .Where(li => li.Name.IndexOf(LinkName, StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToList();
                 }
 
