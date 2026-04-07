@@ -1,7 +1,11 @@
 import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { homedir } from 'os';
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
+
+// Resolve WASM path relative to this file (works in bundled builds)
+const __bundledir = dirname(fileURLToPath(import.meta.url));
 
 // Database path (stored in user home directory)
 const DB_DIR = join(homedir(), '.mcp-revit');
@@ -35,7 +39,9 @@ function flushDatabase() {
 export async function getDatabase(): Promise<SqlJsDatabase> {
   if (db) return db;
 
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({
+    locateFile: (file: string) => join(__bundledir, file),
+  });
 
   try {
     const fileBuffer = readFileSync(DB_PATH);
