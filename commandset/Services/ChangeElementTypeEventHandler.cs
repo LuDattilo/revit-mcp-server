@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 
@@ -40,6 +41,17 @@ namespace RevitMCPCommandSet.Services
                 if (targetTypeElemId == null || targetTypeElemId == ElementId.InvalidElementId)
                 {
                     Result = new AIResult<object> { Success = false, Message = "Target type not found" };
+                    return;
+                }
+
+                if (!ConfirmationHelper.Confirm("change type for", ElementIds.Count))
+                {
+                    Result = new AIResult<object>
+                    {
+                        Success = false,
+                        Message = "Operation cancelled by user",
+                        Response = new { cancelled = true }
+                    };
                     return;
                 }
 

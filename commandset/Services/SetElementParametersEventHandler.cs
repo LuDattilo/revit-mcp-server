@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPSDK.API.Interfaces;
 using Newtonsoft.Json.Linq;
 
@@ -30,6 +31,17 @@ namespace RevitMCPCommandSet.Services
             {
                 var doc = app.ActiveUIDocument.Document;
                 var results = new List<SetParameterResult>();
+
+                if (!ConfirmationHelper.Confirm("modify parameters for", Requests.Count))
+                {
+                    Result = new AIResult<List<SetParameterResult>>
+                    {
+                        Success = false,
+                        Message = "Operation cancelled by user",
+                        Response = new List<SetParameterResult>()
+                    };
+                    return;
+                }
 
                 using (var transaction = new Transaction(doc, "Set Element Parameters"))
                 {

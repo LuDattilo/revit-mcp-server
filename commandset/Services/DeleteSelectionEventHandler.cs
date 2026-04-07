@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 using System;
@@ -39,6 +40,17 @@ namespace RevitMCPCommandSet.Services
                     {
                         Success = false,
                         Message = $"Selection '{SelectionName}' not found"
+                    };
+                    return;
+                }
+
+                if (!ConfirmationHelper.Confirm("delete", 1))
+                {
+                    Result = new AIResult<object>
+                    {
+                        Success = false,
+                        Message = "Operation cancelled by user",
+                        Response = new { cancelled = true }
                     };
                     return;
                 }

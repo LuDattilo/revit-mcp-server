@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 
@@ -57,6 +58,17 @@ namespace RevitMCPCommandSet.Services
                 if (view == null)
                 {
                     Result = new AIResult<object> { Success = false, Message = "View not found" };
+                    return;
+                }
+
+                if (!ConfirmationHelper.Confirm("modify graphics for", ElementIds.Count))
+                {
+                    Result = new AIResult<object>
+                    {
+                        Success = false,
+                        Message = "Operation cancelled by user",
+                        Response = new { cancelled = true }
+                    };
                     return;
                 }
 

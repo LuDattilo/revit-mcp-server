@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 
@@ -29,6 +30,17 @@ namespace RevitMCPCommandSet.Services
             {
                 var doc = app.ActiveUIDocument.Document;
                 var results = new List<SetElementPhaseResult>();
+
+                if (!ConfirmationHelper.Confirm("change phase for", Requests.Count))
+                {
+                    Result = new AIResult<List<SetElementPhaseResult>>
+                    {
+                        Success = false,
+                        Message = "Operation cancelled by user",
+                        Response = new List<SetElementPhaseResult>()
+                    };
+                    return;
+                }
 
                 using (var transaction = new Transaction(doc, "Set Element Phase"))
                 {

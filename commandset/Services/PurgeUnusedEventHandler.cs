@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 
@@ -85,6 +86,17 @@ namespace RevitMCPCommandSet.Services
                 int deletedCount = 0;
                 if (!DryRun && purgeableList.Count > 0)
                 {
+                    if (!ConfirmationHelper.Confirm("purge", Math.Min(purgeableList.Count, MaxElements)))
+                    {
+                        Result = new AIResult<object>
+                        {
+                            Success = false,
+                            Message = "Operation cancelled by user",
+                            Response = new { cancelled = true, dryRun = false }
+                        };
+                        return;
+                    }
+
                     var idsToDelete = purgeableList.Take(MaxElements).ToList();
                     using (var transaction = new Transaction(doc, "Purge Unused Elements"))
                     {
@@ -153,8 +165,8 @@ namespace RevitMCPCommandSet.Services
             {
                 var name = adviser.GetRuleName(ruleId);
                 // "Project contains unused families and types" rule
-                if (name.Contains("unused", StringComparison.OrdinalIgnoreCase) ||
-                    name.Contains("purg", StringComparison.OrdinalIgnoreCase))
+                if (name.IndexOf("unused", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("purg", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     var failures = adviser.ExecuteRules(doc, new List<PerformanceAdviserRuleId> { ruleId });
                     foreach (var failure in failures)

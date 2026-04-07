@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 
@@ -74,6 +75,17 @@ namespace RevitMCPCommandSet.Services
             if (!System.IO.File.Exists(FamilyPath))
                 throw new System.IO.FileNotFoundException($"Family file not found: {FamilyPath}");
 
+            if (!ConfirmationHelper.Confirm("load family into", 1))
+            {
+                Result = new AIResult<object>
+                {
+                    Success = false,
+                    Message = "Operation cancelled by user",
+                    Response = new { cancelled = true }
+                };
+                return;
+            }
+
             Family family;
             using (var transaction = new Transaction(doc, "Load Family"))
             {
@@ -143,7 +155,7 @@ namespace RevitMCPCommandSet.Services
                 .OfClass(typeof(Family))
                 .Cast<Family>()
                 .Where(f => string.IsNullOrEmpty(CategoryFilter) ||
-                       (f.FamilyCategory?.Name ?? "").Contains(CategoryFilter, StringComparison.OrdinalIgnoreCase))
+                       (f.FamilyCategory?.Name ?? "").IndexOf(CategoryFilter, StringComparison.OrdinalIgnoreCase) >= 0)
                 .OrderBy(f => f.FamilyCategory?.Name ?? "")
                 .ThenBy(f => f.Name)
                 .ToList();
@@ -185,6 +197,17 @@ namespace RevitMCPCommandSet.Services
             var sourceType = doc.GetElement(sourceId) as FamilySymbol;
             if (sourceType == null)
                 throw new ArgumentException($"Family type with ID {SourceTypeId} not found");
+
+            if (!ConfirmationHelper.Confirm("duplicate type in", 1))
+            {
+                Result = new AIResult<object>
+                {
+                    Success = false,
+                    Message = "Operation cancelled by user",
+                    Response = new { cancelled = true }
+                };
+                return;
+            }
 
             ElementType newType;
             using (var transaction = new Transaction(doc, "Duplicate Family Type"))

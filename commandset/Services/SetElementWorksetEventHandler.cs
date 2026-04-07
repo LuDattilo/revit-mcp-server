@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitMCPCommandSet.Helpers;
 using RevitMCPCommandSet.Models.Common;
 using RevitMCPSDK.API.Interfaces;
 
@@ -35,6 +36,17 @@ namespace RevitMCPCommandSet.Services
                     {
                         Success = false,
                         Message = "Project is not workshared. Worksets are not available.",
+                        Response = new List<SetWorksetResult>()
+                    };
+                    return;
+                }
+
+                if (!ConfirmationHelper.Confirm("change workset for", Requests.Count))
+                {
+                    Result = new AIResult<List<SetWorksetResult>>
+                    {
+                        Success = false,
+                        Message = "Operation cancelled by user",
                         Response = new List<SetWorksetResult>()
                     };
                     return;
