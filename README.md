@@ -14,7 +14,7 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 ## Key Features
 
 - **80+ MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
-- **Revit 2023, 2024, 2025, 2026** — fully tested on all four versions
+- **Revit 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
 - **Real-time execution** — AI requests are executed immediately on the active model via TCP/JSON-RPC 2.0
@@ -49,7 +49,7 @@ flowchart LR
 | Requirement | Details |
 |-------------|---------|
 | **Node.js** | 18+ (for the MCP server) |
-| **Autodesk Revit** | 2023, 2024, 2025, or 2026 |
+| **Autodesk Revit** | 2023, 2024, 2025, 2026, or 2027 |
 | **OS** | Windows 10/11 (Revit is Windows-only) |
 | **Anthropic API key** (optional) | Required only for the built-in chat panel. Set via `%USERPROFILE%\.claude\api_key.txt` or env `ANTHROPIC_API_KEY` |
 
@@ -180,6 +180,7 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 | **Revit 2024** | .NET Framework 4.8 | Built & compatible | Same codebase as R23 |
 | **Revit 2025** | .NET 8 | Fully tested | Structural model (Snowdon Towers) |
 | **Revit 2026** | .NET 8 | Fully tested | Primary development target |
+| **Revit 2027** | .NET 10 | Build ready | Awaiting SDK stabilization |
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 

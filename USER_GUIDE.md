@@ -3,7 +3,7 @@
 ## Quick Start
 
 1. **Install the plugin** from the [Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) page (do NOT copy source code from the repository)
-2. Open **Revit 2023/2024/2025/2026** with a project
+2. Open **Revit 2023/2024/2025/2026/2027** with a project
 3. In the **Add-Ins** tab, verify you see **three buttons**: Revit MCP Switch, MCP Panel, Settings
 4. Click **Revit MCP Switch** to start the TCP server (indicator turns green)
 5. Open **Claude Desktop** (or Claude Code / Claude.ai with MCP enabled)
@@ -249,7 +249,7 @@ If you see `.cs` or `.csproj` files instead of `.dll` files, you copied the sour
 
 ## Requirements
 
-- **Revit**: 2023, 2024, 2025, or 2026
+- **Revit**: 2023, 2024, 2025, 2026, or 2027
 - **Plugin**: Pre-built Release ZIP installed (see [README](README.md#1-install-the-revit-plugin))
 - **Server**: Node.js MCP server running (auto-started by Claude Desktop)
 - **Connection**: localhost:8080 (Revit plugin listens, MCP server connects)

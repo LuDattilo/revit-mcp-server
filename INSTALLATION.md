@@ -24,7 +24,7 @@ Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Re
 
 | Component | Version | Notes |
 |-----------|---------|-------|
-| **Autodesk Revit** | 2023, 2024, 2025 or 2026 | Installed with an active license |
+| **Autodesk Revit** | 2023, 2024, 2025, 2026, or 2027 | Installed with an active license |
 | **Claude Desktop** | Any | Download from [claude.ai/download](https://claude.ai/download) |
 
 > **Node.js not required.** The Node.js runtime is included in the installation package (portable, not installed system-wide).
@@ -159,7 +159,7 @@ dotnet build mcp-servers-for-revit.sln -c "Release R25"
 dotnet build mcp-servers-for-revit.sln -c "Release R26"
 ```
 
-> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient.
+> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient. For Revit 2027, the .NET 10 SDK is required.
 
 ### Step 4: Automatic Deploy (Debug)
 

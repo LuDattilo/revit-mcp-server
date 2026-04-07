@@ -24,9 +24,9 @@
 ## Setup
 
 ### Requirements
-- Autodesk Revit 2023, 2024, 2025, or 2026
+- Autodesk Revit 2023, 2024, 2025, 2026, or 2027
 - Node.js 18+
-- .NET 8.0 SDK (for Revit 2025/2026) or .NET Framework 4.8 (for Revit 2023/2024)
+- .NET 10 SDK (for Revit 2027), .NET 8.0 SDK (for Revit 2025/2026), or .NET Framework 4.8 (for Revit 2023/2024)
 
 ### Quick Start
 1. Build the plugin: `dotnet build plugin/RevitMCPPlugin.csproj -c "Debug R25"`

@@ -26,6 +26,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
@@ -73,6 +78,9 @@ jobs:
       - name: Build Revit 2026 (.NET 8)
         run: dotnet build mcp-servers-for-revit.sln -c "Release R26"
 
+      - name: Build Revit 2027 (.NET 10)
+        run: dotnet build mcp-servers-for-revit.sln -c "Release R27"
+
       # ---------------------------------------------------------------
       # Create Release Assets
       # ---------------------------------------------------------------
@@ -86,7 +94,8 @@ jobs:
             @{ Config = "Release R23"; Year = "2023" },
             @{ Config = "Release R24"; Year = "2024" },
             @{ Config = "Release R25"; Year = "2025" },
-            @{ Config = "Release R26"; Year = "2026" }
+            @{ Config = "Release R26"; Year = "2026" },
+            @{ Config = "Release R27"; Year = "2027" }
           )
 
           foreach ($rv in $revitVersions) {
@@ -114,8 +123,8 @@ jobs:
           }
 
           $zips = Get-ChildItem "$outputDir/*.zip"
-          if ($zips.Count -ne 4) {
-              Write-Error "Expected 4 ZIP files, found $($zips.Count). Build may have failed."
+          if ($zips.Count -ne 5) {
+              Write-Error "Expected 5 ZIP files, found $($zips.Count). Build may have failed."
               exit 1
           }
         shell: pwsh

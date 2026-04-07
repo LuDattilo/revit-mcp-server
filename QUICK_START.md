@@ -9,7 +9,7 @@ No programming or technical knowledge required.
 
 | # | What | Where to get it |
 |---|------|-----------------|
-| 1 | **Autodesk Revit** (2023, 2024, 2025, or 2026) | Already installed on your PC |
+| 1 | **Autodesk Revit** (2023, 2024, 2025, 2026, or 2027) | Already installed on your PC |
 | 2 | **Claude Desktop** | [claude.ai/download](https://claude.ai/download) — install and sign in |
 | 3 | **Revit MCP Plugin** (ZIP file) | [Download from GitHub Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) |
 
