@@ -33,7 +33,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     _handler.IncludeModelLines = includeModelLines;
                     _handler.Limit = limit;
 
-                    if (RaiseAndWaitForCompletion(60000))
+                    if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for scanning all views
                     {
                         if (_handler.ErrorMessage != null)
                             throw new Exception(_handler.ErrorMessage);
@@ -41,7 +41,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     }
                     else
                     {
-                        throw new TimeoutException("Lines per view count timed out");
+                        throw new TimeoutException("Lines per view count timed out — try reducing limit or increasing threshold");
                     }
                 }
                 catch (Exception ex)

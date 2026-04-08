@@ -37,14 +37,10 @@ namespace RevitMCPCommandSet.Commands
 
                     _handler.SetParameters();
 
-                    if (RaiseAndWaitForCompletion(30000))
-                    {
+                    if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for large model scans
                         return _handler.Result;
-                    }
-                    else
-                    {
-                        throw new TimeoutException("Rename families timed out");
-                    }
+
+                    throw new TimeoutException("Rename families timed out — try narrowing scope with categories");
                 }
                 catch (Exception ex)
                 {

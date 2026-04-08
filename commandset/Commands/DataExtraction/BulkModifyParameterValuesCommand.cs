@@ -35,10 +35,10 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
 
                     _handler.SetParameters();
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for large model scans
                         return _handler.Result;
 
-                    throw new TimeoutException("Bulk modify parameter values timed out");
+                    throw new TimeoutException("Bulk modify parameter values timed out — try narrowing scope with elementIds or categoryName");
                 }
                 catch (Exception ex)
                 {

@@ -35,10 +35,10 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
 
                     _handler.SetParameters();
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for large model scans
                         return _handler.Result;
 
-                    throw new TimeoutException("Add prefix/suffix timed out");
+                    throw new TimeoutException("Add prefix/suffix timed out — try narrowing scope with categories or elementIds");
                 }
                 catch (Exception ex)
                 {

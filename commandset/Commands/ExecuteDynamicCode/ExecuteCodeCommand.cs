@@ -38,7 +38,7 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                 _handler.SetExecutionParameters(code, executionParameters, transactionMode);
 
                 // Raise external event and wait for completion
-                if (RaiseAndWaitForCompletion(60000)) // 1 minute timeout
+                if (RaiseAndWaitForCompletion(300000)) // 5 minute timeout for complex queries
                 {
                     return _handler.ResultInfo;
                 }

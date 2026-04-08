@@ -31,7 +31,7 @@ namespace RevitMCPCommandSet.Commands.Access
                 _handler.ViewId = viewId;
                 _handler.Limit = limit;
 
-                if (RaiseAndWaitForCompletion(30000))
+                if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for scanning view elements
                 {
                     if (_handler.ErrorMessage != null)
                         throw new Exception(_handler.ErrorMessage);
@@ -39,7 +39,7 @@ namespace RevitMCPCommandSet.Commands.Access
                 }
                 else
                 {
-                    throw new TimeoutException("Find undimensioned elements timed out");
+                    throw new TimeoutException("Find undimensioned elements timed out — try specifying categories to narrow scope");
                 }
             }
                 catch (Exception ex)

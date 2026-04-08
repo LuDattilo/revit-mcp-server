@@ -134,6 +134,16 @@
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
+      "commandName": "get_room_openings",
+      "description": "Find doors and/or windows in rooms with full parameter extraction",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_material_properties",
+      "description": "Set identity and product information on materials (Comments, Description, Manufacturer, Model, URL, Cost, Mark, Keynote, Name)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
       "commandName": "modify_element",
       "description": "Move, rotate, mirror, or copy Revit elements",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"

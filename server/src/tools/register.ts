@@ -63,6 +63,7 @@ import * as GetElementParameters from "./get_element_parameters.js";
 import * as GetElementsInSpatialVolume from "./get_elements_in_spatial_volume.js";
 import * as GetLinkedElements from "./get_linked_elements.js";
 import * as GetMaterialProperties from "./get_material_properties.js";
+import * as GetRoomOpenings from "./get_room_openings.js";
 import * as GetMaterialQuantities from "./get_material_quantities.js";
 import * as GetMaterials from "./get_materials.js";
 import * as GetPhases from "./get_phases.js";
@@ -98,6 +99,7 @@ import * as SayHello from "./say_hello.js";
 import * as SectionBoxFromSelection from "./section_box_from_selection.js";
 import * as SendCodeToRevit from "./send_code_to_revit.js";
 import * as SetElementParameters from "./set_element_parameters.js";
+import * as SetMaterialProperties from "./set_material_properties.js";
 import * as SetElementPhase from "./set_element_phase.js";
 import * as SetElementWorkset from "./set_element_workset.js";
 import * as StoreProjectData from "./store_project_data.js";
@@ -178,6 +180,7 @@ export async function registerTools(server: McpServer) {
     { name: "get_elements_in_spatial_volume", module: GetElementsInSpatialVolume },
     { name: "get_linked_elements", module: GetLinkedElements },
     { name: "get_material_properties", module: GetMaterialProperties },
+    { name: "get_room_openings", module: GetRoomOpenings },
     { name: "get_material_quantities", module: GetMaterialQuantities },
     { name: "get_materials", module: GetMaterials },
     { name: "get_phases", module: GetPhases },
@@ -213,6 +216,7 @@ export async function registerTools(server: McpServer) {
     { name: "section_box_from_selection", module: SectionBoxFromSelection },
     { name: "send_code_to_revit", module: SendCodeToRevit },
     { name: "set_element_parameters", module: SetElementParameters },
+    { name: "set_material_properties", module: SetMaterialProperties },
     { name: "set_element_phase", module: SetElementPhase },
     { name: "set_element_workset", module: SetElementWorkset },
     { name: "store_project_data", module: StoreProjectData },

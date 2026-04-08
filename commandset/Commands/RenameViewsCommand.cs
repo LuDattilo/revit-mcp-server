@@ -34,14 +34,10 @@ namespace RevitMCPCommandSet.Commands
                         parameters?["dryRun"]?.Value<bool>() ?? false
                     );
 
-                    if (RaiseAndWaitForCompletion(30000))
-                    {
+                    if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for large model scans
                         return _handler.Result;
-                    }
-                    else
-                    {
-                        throw new TimeoutException("Rename views timed out");
-                    }
+
+                    throw new TimeoutException("Rename views timed out — try narrowing scope with viewTypes or filterName");
                 }
                 catch (Exception ex)
                 {
