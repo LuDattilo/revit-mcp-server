@@ -115,6 +115,13 @@ jobs:
               Copy-Item -Path 'server/runtime'      -Destination "$serverDest/runtime"      -Recurse -Force
               Copy-Item -Path 'server/package.json' -Destination "$serverDest/package.json" -Force
 
+              # Include installer scripts for one-click install/uninstall
+              Copy-Item -Path 'INSTALLA.bat' -Destination "$addinDir/INSTALLA.bat" -Force
+              Copy-Item -Path 'DISINSTALLA.bat' -Destination "$addinDir/DISINSTALLA.bat" -Force
+              if (Test-Path 'scripts') {
+                Copy-Item -Path 'scripts' -Destination "$addinDir/scripts" -Recurse -Force
+              }
+
               $zipName = "$outputDir/mcp-servers-for-revit-$version-Revit$($rv.Year).zip"
               Compress-Archive -Path "$addinDir/*" -DestinationPath $zipName
               Write-Host "Created $zipName"

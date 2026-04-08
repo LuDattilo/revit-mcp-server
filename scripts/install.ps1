@@ -57,7 +57,8 @@ param(
     [switch]$Uninstall,
     [switch]$Force,
     [switch]$SkipNodeCheck,
-    [switch]$SkipMcpConfig
+    [switch]$SkipMcpConfig,
+    [string]$LocalZip
 )
 
 $ErrorActionPreference = 'Stop'
@@ -419,41 +420,53 @@ if (-not $SkipNodeCheck) {
 }
 
 # =============================================================================
-# STEP 5  --  FETCH RELEASE INFO FROM GITHUB
+# STEP 5 & 6  --  FETCH RELEASE / INSTALL
 # =============================================================================
-Write-Host "  STEP 5  --  Fetching release information" -ForegroundColor White
+if ($LocalZip) {
+    Write-Host "  STEP 5  --  Using local files (skipping download)" -ForegroundColor White
+    Write-Ok "Local installation from: $LocalZip"
+    Write-Host ""
 
-$apiHeaders = @{ 'User-Agent' = 'mcp-revit-installer'; 'Accept' = 'application/vnd.github+json' }
-$releaseUrl = if ($Tag -eq 'latest') {
-    "https://api.github.com/repos/$REPO/releases/latest"
+    # Go directly to install
+    Write-Host "  STEP 6  --  Installing plugin" -ForegroundColor White
 } else {
-    "https://api.github.com/repos/$REPO/releases/tags/$Tag"
-}
+    # =============================================================================
+    # STEP 5  --  FETCH RELEASE INFO FROM GITHUB
+    # =============================================================================
+    Write-Host "  STEP 5  --  Fetching release information" -ForegroundColor White
 
-try {
-    $release = Invoke-RestMethod -Uri $releaseUrl -Headers $apiHeaders -ErrorAction Stop
-} catch {
-    if ($_.Exception.Response.StatusCode.value__ -eq 404) {
-        Write-Err "Release '$Tag' not found."
-        Write-Info "Available: https://github.com/$REPO/releases"
+    $apiHeaders = @{ 'User-Agent' = 'mcp-revit-installer'; 'Accept' = 'application/vnd.github+json' }
+    $releaseUrl = if ($Tag -eq 'latest') {
+        "https://api.github.com/repos/$REPO/releases/latest"
     } else {
-        Write-Err "Could not fetch release: $_"
+        "https://api.github.com/repos/$REPO/releases/tags/$Tag"
     }
-    exit 1
-}
 
-$releaseTag  = $release.tag_name
-$releaseDate = $release.published_at.Substring(0,10)
-Write-Ok "Release: $releaseTag  ($releaseDate)"
-if ($release.body) {
-    ($release.body -split "`n" | Select-Object -First 3) | ForEach-Object { Write-Info "  $_" }
-}
-Write-Host ""
+    try {
+        $release = Invoke-RestMethod -Uri $releaseUrl -Headers $apiHeaders -ErrorAction Stop
+    } catch {
+        if ($_.Exception.Response.StatusCode.value__ -eq 404) {
+            Write-Err "Release '$Tag' not found."
+            Write-Info "Available: https://github.com/$REPO/releases"
+        } else {
+            Write-Err "Could not fetch release: $_"
+        }
+        exit 1
+    }
 
-# =============================================================================
-# STEP 6  --  DOWNLOAD & INSTALL
-# =============================================================================
-Write-Host "  STEP 6  --  Installing plugin" -ForegroundColor White
+    $releaseTag  = $release.tag_name
+    $releaseDate = $release.published_at.Substring(0,10)
+    Write-Ok "Release: $releaseTag  ($releaseDate)"
+    if ($release.body) {
+        ($release.body -split "`n" | Select-Object -First 3) | ForEach-Object { Write-Info "  $_" }
+    }
+    Write-Host ""
+
+    # =============================================================================
+    # STEP 6  --  DOWNLOAD & INSTALL
+    # =============================================================================
+    Write-Host "  STEP 6  --  Installing plugin" -ForegroundColor White
+}
 
 function Test-PluginInstall {
     param([string]$AddinsDir, [string]$Year, [string]$Tag)
@@ -517,6 +530,52 @@ function Install-ForVersion {
     param([PSCustomObject]$Rv, [object]$Release)
     $year      = $Rv.Year
     $addinsDir = $Rv.AddinsDir
+
+    # -- LOCAL INSTALL (from extracted ZIP / bat launcher) ---------------------
+    if ($LocalZip) {
+        $localAddin = Join-Path $LocalZip "$ADDIN_FILE"
+        $localPlugin = Join-Path $LocalZip $PLUGIN_FOLDER
+
+        if (-not (Test-Path $localAddin)) {
+            Write-Err "Local install: $ADDIN_FILE not found in $LocalZip"
+            return $false
+        }
+
+        # Check for running Revit (same check as remote install)
+        $allRevitProcs = Get-Process -Name "Revit" -ErrorAction SilentlyContinue
+        $thisRunning = $allRevitProcs | Where-Object {
+            $_.Path -match [regex]::Escape("Revit $year") -or
+            $_.MainWindowTitle -match $year
+        }
+        if ($thisRunning) {
+            Write-Warn "Revit $year is currently running -- close it first."
+            $wait = (Read-Host "  [Enter / skip]").Trim().ToLower()
+            if ($wait -eq 'skip') { Write-Warn "Skipped Revit $year."; return $false }
+        }
+
+        # Remove old installation
+        Remove-Item "$addinsDir\$ADDIN_FILE" -Force -ErrorAction SilentlyContinue
+        Remove-Item "$addinsDir\$PLUGIN_FOLDER" -Recurse -Force -ErrorAction SilentlyContinue
+
+        # Ensure Addins directory exists
+        if (-not (Test-Path $addinsDir)) {
+            New-Item -ItemType Directory -Path $addinsDir -Force | Out-Null
+        }
+
+        # Copy from local
+        Write-Step "Revit $year -- installing from local files..."
+        Copy-Item $localAddin "$addinsDir\" -Force
+        Copy-Item $localPlugin "$addinsDir\" -Recurse -Force
+
+        # Unblock all files
+        Write-Step "Revit $year -- unblocking files..."
+        Get-ChildItem -Path "$addinsDir\$PLUGIN_FOLDER" -Recurse -File -ErrorAction SilentlyContinue |
+            ForEach-Object { Unblock-File -Path $_.FullName -ErrorAction SilentlyContinue }
+
+        return Test-PluginInstall -AddinsDir $addinsDir -Year $year -Tag "local"
+    }
+    # -- END LOCAL INSTALL ----------------------------------------------------
+
     $tag       = $Release.tag_name
     $assetName = "$PLUGIN_NAME-$tag-Revit$year.zip"
     $asset     = $Release.assets | Where-Object { $_.name -eq $assetName }
