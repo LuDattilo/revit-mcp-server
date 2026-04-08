@@ -350,7 +350,7 @@ if (-not $SkipNodeCheck) {
     if ($nodeStatus.Available) {
         if ($nodeStatus.MeetsMinimum) {
             if ($nodeStatus.IsBundled) {
-                Write-Ok "Node.js $($nodeStatus.Version) (bundled portable runtime — no system install needed)"
+                Write-Ok "Node.js $($nodeStatus.Version) (bundled portable runtime -- no system install needed)"
             } else {
                 Write-Ok "Node.js $($nodeStatus.Version)"
             }
