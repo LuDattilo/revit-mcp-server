@@ -34,6 +34,9 @@
                     <TextBlock Text="  |  " Foreground="#DDD" FontSize="11"/>
                     <TextBlock Text="Export" Foreground="#D97757" FontSize="11"
                                Cursor="Hand" MouseLeftButtonDown="ExportChat_Click"/>
+                    <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                               Cursor="Hand" Foreground="#888" ToolTip="Verify Connection"
+                               MouseDown="VerifyConnection_Click" Margin="8,0,0,0"/>
                 </StackPanel>
             </Grid>
         </Border>

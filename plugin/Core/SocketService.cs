@@ -128,6 +128,29 @@ namespace revit_mcp_plugin.Core
         {
             if (_isRunning) return;
 
+            // Run pre-start health checks
+            var pluginDir = Path.GetDirectoryName(typeof(SocketService).Assembly.Location);
+            var healthResults = HealthChecker.RunAll(pluginDir, 0);
+            foreach (var r in healthResults)
+            {
+                if (r.Name == "Port Connectivity") continue;
+                if (r.AutoFixed)
+                    McpLogger.Info("SocketService", $"Auto-fixed: {r.Name} — {r.Message}");
+                if (!r.Passed)
+                    McpLogger.Warn("SocketService", $"Health check [{r.Name}]: {r.Message}");
+            }
+
+            // Block start only if server files are missing
+            var serverCheck = healthResults.Find(r => r.Name == "Server Files");
+            if (serverCheck != null && !serverCheck.Passed)
+            {
+                McpLogger.Error("SocketService", $"Cannot start: {serverCheck.Message}");
+                System.Windows.MessageBox.Show(
+                    serverCheck.Message,
+                    "Revit MCP", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                return;
+            }
+
             try
             {
                 int port = FindAvailablePort(8080, 8089);
@@ -278,6 +301,7 @@ namespace revit_mcp_plugin.Core
             }
             catch (Exception ex)
             {
+                McpLogger.Error("SocketService", "Client communication error", ex);
                 _logger?.Error($"Error in client communication: {ex.Message}");
             }
             finally
@@ -331,6 +355,8 @@ namespace revit_mcp_plugin.Core
                 }
                 catch (Exception ex)
                 {
+                    McpLogger.Error("SocketService", $"Command '{request.Method}' failed", ex);
+
                     // Log error to dockable panel
                     try
                     {
@@ -339,7 +365,8 @@ namespace revit_mcp_plugin.Core
                     }
                     catch { }
 
-                    return CreateErrorResponse(request.Id, JsonRPCErrorCodes.InternalError, ex.Message);
+                    return CreateErrorResponse(request.Id, JsonRPCErrorCodes.InternalError,
+                        $"Command '{request.Method}' failed: {ex.Message}. Check the MCP log for details.");
                 }
             }
             catch (JsonException)
@@ -354,10 +381,11 @@ namespace revit_mcp_plugin.Core
             catch (Exception ex)
             {
                 // Catch other errors produced when processing requests.
+                McpLogger.Error("SocketService", "Request processing failed", ex);
                 return CreateErrorResponse(
                     null,
                     JsonRPCErrorCodes.InternalError,
-                    $"Internal error: {ex.Message}"
+                    $"Request processing failed: {ex.Message}. Check the MCP log for details."
                 );
             }
         }

@@ -10,6 +10,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Newtonsoft.Json.Linq;
+using revit_mcp_plugin.Core;
+using revit_mcp_plugin.Helpers;
 
 namespace revit_mcp_plugin.UI
 {
@@ -358,6 +360,42 @@ namespace revit_mcp_plugin.UI
             catch (Exception ex)
             {
                 AddMessage("assistant", $"Export error: {ex.Message}");
+            }
+        }
+
+        public void AddSystemMessage(string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _messages.Add(new ChatMessage("tool", message));
+                ChatScrollViewer.ScrollToEnd();
+            });
+        }
+
+        private void VerifyConnection_Click(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                var pluginDir = Path.GetDirectoryName(typeof(MCPDockablePanel).Assembly.Location);
+                int port = SocketService.Instance?.Port ?? 0;
+                var results = HealthChecker.RunAll(pluginDir, port);
+
+                var sb = new StringBuilder();
+                sb.AppendLine("--- Connection Diagnostic ---");
+                foreach (var r in results)
+                {
+                    string icon = r.Passed ? "[OK]" : "[FAIL]";
+                    if (r.AutoFixed) icon = "[FIXED]";
+                    sb.AppendLine($"{icon} {r.Name}: {r.Message}");
+                }
+                sb.AppendLine($"Log folder: {McpLogger.LogDirectory ?? "N/A"}");
+                sb.Append("-----------------------------");
+
+                AddSystemMessage(sb.ToString());
+            }
+            catch (Exception ex)
+            {
+                AddSystemMessage($"[ERROR] Diagnostic failed: {ex.Message}");
             }
         }
 
