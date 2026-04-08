@@ -6,14 +6,14 @@
 
 ---
 
-mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 112 tools covering project info, model analysis, element creation, batch operations, data export, and more.
+mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 124 tools covering project info, model analysis, element creation, batch operations, data export, and more.
 
 > [!NOTE]
 > This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
 
 ## Key Features
 
-- **112 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
+- **124 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
 - **Revit 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
@@ -185,7 +185,7 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 
-## Supported Tools (112)
+## Supported Tools (124)
 
 ### Project & Model Info
 
@@ -411,7 +411,7 @@ mcp-servers-for-revit/
 ├── mcp-servers-for-revit.sln    # Combined solution (plugin + commandset + tests)
 ├── command.json                 # Command set manifest
 ├── server/                      # MCP server (TypeScript) - tools exposed to AI clients
-│   └── src/tools/               # One .ts file per tool (112 tools)
+│   └── src/tools/               # One .ts file per tool (124 tools)
 ├── plugin/                      # Revit add-in (C#) - TCP bridge + chat panel
 │   └── UI/                      # Dockable chat panel (XAML + code-behind)
 ├── commandset/                  # Command implementations (C#) - Revit API operations

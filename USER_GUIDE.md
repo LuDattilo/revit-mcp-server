@@ -11,7 +11,7 @@
 
 ---
 
-## Available Tools (112 commands)
+## Available Tools (124 commands)
 
 ### Model Information & Data Extraction
 
