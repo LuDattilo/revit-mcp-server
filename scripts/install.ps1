@@ -6,7 +6,7 @@
 .DESCRIPTION
     Designed to work on a clean machine with only Revit and PowerShell installed.
     - Forces TLS 1.2 (required for GitHub API on older Windows)
-    - Detects installed Revit versions (2023-2026) via registry and filesystem
+    - Detects installed Revit versions (2023-2027) via registry and filesystem
     - Detects any previous installation and asks: Replace / Skip / Abort
     - Checks that target Revit is not running before installing (files would be locked)
     - Downloads the latest (or specified) pre-built Release from GitHub
@@ -47,11 +47,11 @@
     .\install.ps1 -Uninstall
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/mcp-servers-for-revit/mcp-servers-for-revit/main/scripts/install.ps1 | iex"
+    powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/install.ps1 | iex"
     # One-liner install directly from GitHub
 #>
 param(
-    [ValidateSet('2023','2024','2025','2026')]
+    [ValidateSet('2023','2024','2025','2026','2027')]
     [string]$RevitVersion,
     [string]$Tag = 'latest',
     [switch]$Uninstall,
@@ -78,13 +78,13 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     . $_commonPath
 } else {
     # Inline fallback: constants
-    $REPO          = 'mcp-servers-for-revit/mcp-servers-for-revit'
+    $REPO          = 'LuDattilo/revit-mcp-server'
     $PLUGIN_NAME   = 'mcp-servers-for-revit'
     $PLUGIN_FOLDER = 'revit_mcp_plugin'
     $NPM_PACKAGE   = 'mcp-server-for-revit'
     $ADDIN_FILE    = "$PLUGIN_NAME.addin"
     $MIN_NODE      = 18
-    $REVIT_YEARS   = 2023..2026
+    $REVIT_YEARS   = 2023..2027
 
     # Inline fallback: shared functions
     function Get-RevitVersions {
@@ -240,7 +240,7 @@ if ($revitInstalls.Count -eq 0) {
     if ($RevitVersion) {
         Write-Err "Revit $RevitVersion was not detected on this machine."
     } else {
-        Write-Err "No Revit installation found (checked 2023-2026)."
+        Write-Err "No Revit installation found (checked 2023-2027)."
     }
     Write-Info "Use -RevitVersion to override: .\install.ps1 -RevitVersion 2025"
     exit 1
