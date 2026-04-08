@@ -159,8 +159,12 @@ export function registerCreateScheduleTool(server: McpServer) {
     },
     async (args, extra) => {
       try {
+        // Map scheduleType → type for C# ScheduleCreationInfo model
+        const { scheduleType, ...rest } = args as any;
+        const payload = { ...rest, type: scheduleType ?? "Regular" };
+
         const response = await withRevitConnection(async (revitClient) => {
-          return await revitClient.sendCommand("create_schedule", args);
+          return await revitClient.sendCommand("create_schedule", payload);
         });
 
         return rawToolResponse("create_schedule", response);

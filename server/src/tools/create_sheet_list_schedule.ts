@@ -19,7 +19,7 @@ export function registerCreateSheetListScheduleTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("create_schedule", {
             preset: "sheet_index",
-            scheduleType: "sheet_list",
+            type: "sheet_list",
             name: args.name ?? "Sheet List",
           });
         });

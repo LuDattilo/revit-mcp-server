@@ -22,7 +22,7 @@ export function registerCreateMaterialTakeoffScheduleTool(server: McpServer) {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("create_schedule", {
             preset: "material_quantities",
-            scheduleType: "material_takeoff",
+            type: "material_takeoff",
             categoryName: args.categoryName,
             name: args.name ?? "Material Takeoff",
           });
