@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using RevitMCPSDK.API.Models.JsonRPC;
 using RevitMCPSDK.API.Interfaces;
 using revit_mcp_plugin.Configuration;
+using revit_mcp_plugin.Helpers;
 using revit_mcp_plugin.Utils;
 
 namespace revit_mcp_plugin.Core
@@ -52,11 +53,7 @@ namespace revit_mcp_plugin.Core
 
         public UIApplication UiApplication => _uiApp;
 
-        public int Port
-        {
-            get => _port;
-            set => _port = value;
-        }
+        public int Port => _port;
 
         // Initialization.
         public void Initialize(UIApplication uiApp)
@@ -93,27 +90,85 @@ namespace revit_mcp_plugin.Core
             _logger.Info($"Socket service initialized on port {_port}");
         }
 
+        private int FindAvailablePort(int startPort, int endPort)
+        {
+            for (int port = startPort; port <= endPort; port++)
+            {
+                try
+                {
+                    var testListener = new TcpListener(IPAddress.Loopback, port);
+                    testListener.Start();
+                    testListener.Stop();
+                    return port;
+                }
+                catch (SocketException)
+                {
+                    McpLogger.Warn("SocketService", $"Port {port} is not available, trying next...");
+                }
+            }
+            return -1;
+        }
+
+        private void WritePortFile(int port)
+        {
+            try
+            {
+                string pluginDir = Path.GetDirectoryName(typeof(SocketService).Assembly.Location);
+                string portFilePath = Path.Combine(pluginDir, "mcp-port.txt");
+                File.WriteAllText(portFilePath, port.ToString());
+                McpLogger.Info("SocketService", $"Port file written to {portFilePath} with port {port}");
+            }
+            catch (Exception ex)
+            {
+                McpLogger.Error("SocketService", "Failed to write port file", ex);
+            }
+        }
+
         public void Start()
         {
             if (_isRunning) return;
 
             try
             {
-                _isRunning = true;
-                _listener = new TcpListener(IPAddress.Loopback, _port);
+                int port = FindAvailablePort(8080, 8089);
+                if (port == -1)
+                {
+                    McpLogger.Error("SocketService", "No available port found in range 8080-8089");
+                    System.Windows.Forms.MessageBox.Show(
+                        "No available port (8080-8089). Please close other applications using these ports and try again.",
+                        "MCP Server - Port Error",
+                        System.Windows.Forms.MessageBoxButtons.OK,
+                        System.Windows.Forms.MessageBoxIcon.Error);
+                    return;
+                }
+
+                _port = port;
+
+                if (port != 8080)
+                {
+                    McpLogger.Warn("SocketService", $"Port 8080 was not available, falling back to port {port}");
+                }
+
+                WritePortFile(port);
+
+                _listener = new TcpListener(IPAddress.Loopback, port);
                 _listener.Start();
 
                 _listenerThread = new Thread(ListenForClients)
                 {
                     IsBackground = true
                 };
-                _listenerThread.Start();              
+                _listenerThread.Start();
+
+                _isRunning = true;
+                McpLogger.Info("SocketService", $"Server started on port {port}");
             }
             catch (Exception ex)
             {
                 _isRunning = false;
                 _listener?.Stop();
                 _listener = null;
+                McpLogger.Error("SocketService", "Failed to start socket service", ex);
                 _logger?.Error($"Failed to start socket service on port {_port}: {ex.Message}");
             }
         }
@@ -121,6 +176,8 @@ namespace revit_mcp_plugin.Core
         public void Stop()
         {
             if (!_isRunning) return;
+
+            McpLogger.Info("SocketService", "Server stopping");
 
             try
             {
@@ -155,13 +212,15 @@ namespace revit_mcp_plugin.Core
                     clientThread.Start(client);
                 }
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
-                
+                if (_isRunning)
+                    McpLogger.Error("SocketService", "Socket error in listener", ex);
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-                // log
+                if (_isRunning)
+                    McpLogger.Error("SocketService", "Unexpected error in listener", ex);
             }
         }
 
