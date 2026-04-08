@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                         {
                             try
                             {
-                                var eid = new ElementId(req.MaterialId);
+                                var eid = RevitMCPCommandSet.Utils.ElementIdExtensions.FromLong(req.MaterialId);
                                 var mat = doc.GetElement(eid) as Material;
                                 if (mat == null)
                                 {

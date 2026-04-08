@@ -39,7 +39,8 @@ namespace RevitMCPCommandSet.Services
             {
                 var doc = app.ActiveUIDocument.Document;
 
-                switch (Action?.ToLower())
+                var action = (Action ?? "list").Trim().ToLower();
+                switch (action)
                 {
                     case "create":
                         CreateRevision(doc);
@@ -47,9 +48,11 @@ namespace RevitMCPCommandSet.Services
                     case "add_to_sheets":
                         AddRevisionToSheets(doc);
                         break;
-                    default:
+                    case "list":
                         ListRevisions(doc);
                         break;
+                    default:
+                        throw new ArgumentException($"Unknown revision action: '{Action}'. Use 'list', 'create', or 'add_to_sheets'.");
                 }
             }
             catch (Exception ex)

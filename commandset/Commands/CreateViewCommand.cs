@@ -28,7 +28,7 @@ namespace RevitMCPCommandSet.Commands
                     if (viewInfo == null)
                         throw new ArgumentException("View creation info is required");
 
-                    _handler.ViewInfo = viewInfo;
+                    _handler.SetParameters(viewInfo);
 
                     if (RaiseAndWaitForCompletion(15000))
                     {

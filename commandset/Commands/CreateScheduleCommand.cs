@@ -30,7 +30,7 @@ namespace RevitMCPCommandSet.Commands
 
                     _handler.ScheduleInfo = scheduleInfo;
 
-                    if (RaiseAndWaitForCompletion(15000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

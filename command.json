@@ -189,6 +189,11 @@
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
+      "commandName": "list_schedulable_fields",
+      "description": "List all available schedule fields for a category",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
       "commandName": "get_shared_parameters",
       "description": "List all project parameters (shared and non-shared) bound to categories in the current Revit project",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
@@ -561,6 +566,21 @@
     {
       "commandName": "wipe_empty_tags",
       "description": "Find and remove tags with empty text or invalid references",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "modify_schedule",
+      "description": "Modify an existing schedule: add/remove fields, set/clear filters, set/clear sorting, rename, or change display options",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "delete_schedule",
+      "description": "Delete a schedule by ID or name with confirmation",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "duplicate_schedule",
+      "description": "Duplicate a schedule by ID or name with a new name",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]

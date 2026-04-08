@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     targetRooms = new List<Room>();
                     foreach (var id in RoomIds)
                     {
-                        var elem = doc.GetElement(new ElementId(id)) as Room;
+                        var elem = doc.GetElement(RevitMCPCommandSet.Utils.ElementIdExtensions.FromLong(id)) as Room;
                         if (elem != null && elem.Area > 0) targetRooms.Add(elem);
                     }
                 }
@@ -82,7 +83,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     return;
                 }
 
-                var roomIdSet = new HashSet<long>(targetRooms.Select(r => r.Id.Value));
+                var roomIdSet = new HashSet<long>(targetRooms.Select(r => r.Id.GetValue()));
 
                 // ── Collect and map doors/windows ────────────────────────
                 bool includeDoors = ElementType == "doors" || ElementType == "both";
@@ -92,8 +93,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                 var roomWindows = new Dictionary<long, List<FamilyInstance>>();
                 foreach (var r in targetRooms)
                 {
-                    roomDoors[r.Id.Value] = new List<FamilyInstance>();
-                    roomWindows[r.Id.Value] = new List<FamilyInstance>();
+                    roomDoors[r.Id.GetValue()] = new List<FamilyInstance>();
+                    roomWindows[r.Id.GetValue()] = new List<FamilyInstance>();
                 }
 
                 if (includeDoors)
@@ -105,8 +106,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
                     foreach (FamilyInstance door in collector)
                     {
-                        long fromId = door.get_FromRoom(phase)?.Id.Value ?? -1;
-                        long toId = door.get_ToRoom(phase)?.Id.Value ?? -1;
+                        long fromId = door.get_FromRoom(phase)?.Id.GetValue() ?? -1;
+                        long toId = door.get_ToRoom(phase)?.Id.GetValue() ?? -1;
 
                         if (fromId > 0 && roomIdSet.Contains(fromId))
                             roomDoors[fromId].Add(door);
@@ -124,8 +125,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
                     foreach (FamilyInstance win in collector)
                     {
-                        long fromId = win.get_FromRoom(phase)?.Id.Value ?? -1;
-                        long toId = win.get_ToRoom(phase)?.Id.Value ?? -1;
+                        long fromId = win.get_FromRoom(phase)?.Id.GetValue() ?? -1;
+                        long toId = win.get_ToRoom(phase)?.Id.GetValue() ?? -1;
 
                         if (fromId > 0 && roomIdSet.Contains(fromId))
                             roomWindows[fromId].Add(win);
@@ -143,7 +144,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
                 foreach (var room in targetRooms)
                 {
-                    var rid = room.Id.Value;
+                    var rid = room.Id.GetValue();
                     var doors = roomDoors[rid];
                     var windows = roomWindows[rid];
 
@@ -198,7 +199,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             Dictionary<long, (string familyName, string typeName, string width, string height)> typeCache)
         {
             // Type-level info (cached)
-            var typeId = fi.GetTypeId().Value;
+            var typeId = fi.GetTypeId().GetValue();
             if (!typeCache.ContainsKey(typeId))
             {
                 var sym = fi.Symbol;
@@ -229,7 +230,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
             return new
             {
-                elementId = fi.Id.Value,
+                elementId = fi.Id.GetValue(),
                 familyName = cached.familyName,
                 typeName = cached.typeName,
                 width = cached.width,
@@ -278,7 +279,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                 case StorageType.String: return param.AsString() ?? "";
                 case StorageType.Integer: return param.AsValueString() ?? param.AsInteger().ToString();
                 case StorageType.Double: return param.AsValueString() ?? param.AsDouble().ToString("F4");
-                case StorageType.ElementId: return param.AsValueString() ?? param.AsElementId().Value.ToString();
+                case StorageType.ElementId: return param.AsValueString() ?? param.AsElementId().GetValue().ToString();
                 default: return null;
             }
         }

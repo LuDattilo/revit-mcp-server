@@ -7,16 +7,45 @@ import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
 export function registerCreateScheduleTool(server: McpServer) {
   server.tool(
     "create_schedule",
-    "Create a schedule view for a category with fields and filters.",
+    "Create native Revit schedule with all types (regular, key, material takeoff, sheet/view list, etc.), presets, fields, filters, sorting, grouping, and display options.",
     {
       categoryName: z
         .string()
         .describe("BuiltInCategory name like 'OST_Walls', 'OST_Doors', 'OST_Rooms'."),
       name: z.string().optional().describe("Schedule name"),
-      type: z
-        .enum(["Regular", "KeySchedule", "MaterialTakeoff"])
+      preset: z
+        .enum([
+          "room_finish",
+          "door_by_room",
+          "window_by_room",
+          "wall_summary",
+          "material_quantities",
+          "family_inventory",
+          "sheet_index",
+          "view_index",
+        ])
         .optional()
-        .describe("Schedule type. Default: Regular"),
+        .describe(
+          "Preset template that auto-configures fields, filters, sorting, and grouping for common schedule types"
+        ),
+      scheduleType: z
+        .enum([
+          "regular",
+          "key_schedule",
+          "material_takeoff",
+          "note_block",
+          "sheet_list",
+          "view_list",
+          "revision_schedule",
+          "keynote_legend",
+        ])
+        .optional()
+        .default("regular")
+        .describe("Schedule type. Default: regular"),
+      familyId: z
+        .number()
+        .optional()
+        .describe("Family ElementId required for note_block schedule type"),
       fields: z
         .array(
           z.object({
@@ -39,6 +68,10 @@ export function registerCreateScheduleTool(server: McpServer) {
               .enum(["Left", "Center", "Right"])
               .optional()
               .describe("Horizontal alignment. Default: Left"),
+            gridColumnWidth: z
+              .number()
+              .optional()
+              .describe("Column width in the schedule grid (in sheet units)"),
           })
         )
         .optional()
@@ -67,6 +100,50 @@ export function registerCreateScheduleTool(server: McpServer) {
         )
         .optional()
         .describe("Sort/group fields for the schedule"),
+      groupFields: z
+        .array(
+          z.object({
+            fieldName: z.string().describe("Field name to group by"),
+            sortOrder: z
+              .enum(["Ascending", "Descending"])
+              .optional()
+              .describe("Sort order within the group. Default: Ascending"),
+            showHeader: z
+              .boolean()
+              .optional()
+              .describe("Show group header row. Default: true"),
+            showFooter: z
+              .boolean()
+              .optional()
+              .describe("Show group footer row with totals. Default: false"),
+            showBlankLine: z
+              .boolean()
+              .optional()
+              .describe("Show blank line between groups. Default: false"),
+          })
+        )
+        .optional()
+        .describe("Group fields to organize schedule rows into collapsible groups"),
+      isItemized: z
+        .boolean()
+        .optional()
+        .describe("If true, show every instance as a separate row; if false, collapse identical rows. Default: true"),
+      showGrandTotal: z
+        .boolean()
+        .optional()
+        .describe("Show grand total row at bottom of schedule. Default: false"),
+      showGrandTotalCount: z
+        .boolean()
+        .optional()
+        .describe("Show count in the grand total row. Default: false"),
+      grandTotalTitle: z
+        .string()
+        .optional()
+        .describe("Custom title for the grand total row (e.g. 'Grand Total')"),
+      includeLinkedFiles: z
+        .boolean()
+        .optional()
+        .describe("Include elements from linked Revit files. Default: false"),
       showTitle: z
         .boolean()
         .optional()

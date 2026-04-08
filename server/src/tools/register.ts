@@ -24,26 +24,34 @@ import * as CreateArray from "./create_array.js";
 import * as CreateCalloutFromRooms from "./create_callout_from_rooms.js";
 import * as CreateColorLegend from "./create_color_legend.js";
 import * as CreateDimensions from "./create_dimensions.js";
+import * as CreateDoorScheduleByRoom from "./create_door_schedule_by_room.js";
 import * as CreateElevationsFromRooms from "./create_elevations_from_rooms.js";
 import * as CreateFilledRegion from "./create_filled_region.js";
 import * as CreateFloor from "./create_floor.js";
 import * as CreateGrid from "./create_grid.js";
 import * as CreateLevel from "./create_level.js";
 import * as CreateLineBasedElement from "./create_line_based_element.js";
+import * as CreateMaterialTakeoffSchedule from "./create_material_takeoff_schedule.js";
 import * as CreatePlaceholderSheets from "./create_placeholder_sheets.js";
 import * as CreatePointBasedElement from "./create_point_based_element.js";
 import * as CreateRevision from "./create_revision.js";
 import * as CreateRoom from "./create_room.js";
+import * as CreateRoomFinishSchedule from "./create_room_finish_schedule.js";
 import * as CreateSchedule from "./create_schedule.js";
 import * as CreateSheet from "./create_sheet.js";
+import * as CreateSheetListSchedule from "./create_sheet_list_schedule.js";
 import * as CreateStructuralFramingSystem from "./create_structural_framing_system.js";
 import * as CreateSurfaceBasedElement from "./create_surface_based_element.js";
 import * as CreateTextNote from "./create_text_note.js";
 import * as CreateView from "./create_view.js";
 import * as CreateViewFilter from "./create_view_filter.js";
+import * as CreateViewListSchedule from "./create_view_list_schedule.js";
 import * as CreateViewsFromRooms from "./create_views_from_rooms.js";
+import * as CreateWindowScheduleByRoom from "./create_window_schedule_by_room.js";
 import * as DeleteElement from "./delete_element.js";
+import * as DeleteSchedule from "./delete_schedule.js";
 import * as DeleteSelection from "./delete_selection.js";
+import * as DuplicateSchedule from "./duplicate_schedule.js";
 import * as DuplicateSheetWithContent from "./duplicate_sheet_with_content.js";
 import * as DuplicateSheetWithViews from "./duplicate_sheet_with_views.js";
 import * as DuplicateView from "./duplicate_view.js";
@@ -77,6 +85,7 @@ import * as ImportFromExcel from "./import_from_excel.js";
 import * as ImportTable from "./import_table.js";
 import * as LinesPerViewCount from "./lines_per_view_count.js";
 import * as ListFamilySizes from "./list_family_sizes.js";
+import * as ListSchedulableFields from "./list_schedulable_fields.js";
 import * as LoadFamily from "./load_family.js";
 import * as LoadSelection from "./load_selection.js";
 import * as ManageLinks from "./manage_links.js";
@@ -86,6 +95,7 @@ import * as ManageViewTemplates from "./manage_view_templates.js";
 import * as MatchElementProperties from "./match_element_properties.js";
 import * as MeasureBetweenElements from "./measure_between_elements.js";
 import * as ModifyElement from "./modify_element.js";
+import * as ModifySchedule from "./modify_schedule.js";
 import * as OperateElement from "./operate_element.js";
 import * as OverrideGraphics from "./override_graphics.js";
 import * as PlaceViewport from "./place_viewport.js";
@@ -141,26 +151,34 @@ export async function registerTools(server: McpServer) {
     { name: "create_callout_from_rooms", module: CreateCalloutFromRooms },
     { name: "create_color_legend", module: CreateColorLegend },
     { name: "create_dimensions", module: CreateDimensions },
+    { name: "create_door_schedule_by_room", module: CreateDoorScheduleByRoom },
     { name: "create_elevations_from_rooms", module: CreateElevationsFromRooms },
     { name: "create_filled_region", module: CreateFilledRegion },
     { name: "create_floor", module: CreateFloor },
     { name: "create_grid", module: CreateGrid },
     { name: "create_level", module: CreateLevel },
     { name: "create_line_based_element", module: CreateLineBasedElement },
+    { name: "create_material_takeoff_schedule", module: CreateMaterialTakeoffSchedule },
     { name: "create_placeholder_sheets", module: CreatePlaceholderSheets },
     { name: "create_point_based_element", module: CreatePointBasedElement },
     { name: "create_revision", module: CreateRevision },
     { name: "create_room", module: CreateRoom },
+    { name: "create_room_finish_schedule", module: CreateRoomFinishSchedule },
     { name: "create_schedule", module: CreateSchedule },
     { name: "create_sheet", module: CreateSheet },
+    { name: "create_sheet_list_schedule", module: CreateSheetListSchedule },
     { name: "create_structural_framing_system", module: CreateStructuralFramingSystem },
     { name: "create_surface_based_element", module: CreateSurfaceBasedElement },
     { name: "create_text_note", module: CreateTextNote },
     { name: "create_view", module: CreateView },
     { name: "create_view_filter", module: CreateViewFilter },
+    { name: "create_view_list_schedule", module: CreateViewListSchedule },
     { name: "create_views_from_rooms", module: CreateViewsFromRooms },
+    { name: "create_window_schedule_by_room", module: CreateWindowScheduleByRoom },
     { name: "delete_element", module: DeleteElement },
+    { name: "delete_schedule", module: DeleteSchedule },
     { name: "delete_selection", module: DeleteSelection },
+    { name: "duplicate_schedule", module: DuplicateSchedule },
     { name: "duplicate_sheet_with_content", module: DuplicateSheetWithContent },
     { name: "duplicate_sheet_with_views", module: DuplicateSheetWithViews },
     { name: "duplicate_view", module: DuplicateView },
@@ -194,6 +212,7 @@ export async function registerTools(server: McpServer) {
     { name: "import_table", module: ImportTable },
     { name: "lines_per_view_count", module: LinesPerViewCount },
     { name: "list_family_sizes", module: ListFamilySizes },
+    { name: "list_schedulable_fields", module: ListSchedulableFields },
     { name: "load_family", module: LoadFamily },
     { name: "load_selection", module: LoadSelection },
     { name: "manage_links", module: ManageLinks },
@@ -203,6 +222,7 @@ export async function registerTools(server: McpServer) {
     { name: "match_element_properties", module: MatchElementProperties },
     { name: "measure_between_elements", module: MeasureBetweenElements },
     { name: "modify_element", module: ModifyElement },
+    { name: "modify_schedule", module: ModifySchedule },
     { name: "operate_element", module: OperateElement },
     { name: "override_graphics", module: OverrideGraphics },
     { name: "place_viewport", module: PlaceViewport },

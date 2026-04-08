@@ -30,15 +30,19 @@ namespace RevitMCPCommandSet.Commands.Delete
                         throw new ArgumentException("Element ID list cannot be empty");
                     }
 
-                    // Set element IDs to delete
+                    // Parse dryRun parameter (default: true for safety)
+                    bool dryRun = parameters?["dryRun"]?.Value<bool>() ?? true;
+
+                    // Set element IDs and dryRun flag
                     _handler.ElementIds = elementIds;
+                    _handler.DryRun = dryRun;
 
                     // Raise external event and wait for completion
                     if (RaiseAndWaitForCompletion(15000))
                     {
                         if (_handler.IsSuccess)
                         {
-                            return new { deleted = true, count = _handler.DeletedCount };
+                            return new { deleted = !dryRun, dryRun = dryRun, count = _handler.DeletedCount };
                         }
                         else
                         {

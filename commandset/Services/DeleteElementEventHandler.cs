@@ -25,6 +25,8 @@ namespace RevitMCPCommandSet.Services
         private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
         // Element ID array to delete
         public string[] ElementIds { get; set; }
+        // If true, only preview what would be deleted without actually deleting
+        public bool DryRun { get; set; } = true;
         // Implement IWaitableExternalEventHandler interface
         public void SetDeleteParameters(string[] elementIds)
         {
@@ -71,6 +73,14 @@ namespace RevitMCPCommandSet.Services
                 {
                     ErrorMessage = $"The following IDs are invalid or elements do not exist: {string.Join(", ", invalidIds)}";
                 }
+                // Dry run: only report what would be deleted
+                if (DryRun)
+                {
+                    DeletedCount = elementIdsToDelete.Count;
+                    IsSuccess = true;
+                    return;
+                }
+
                 // Confirm deletion with user before proceeding
                 if (elementIdsToDelete.Count > 0 && !ConfirmationHelper.Confirm("delete", elementIdsToDelete.Count))
                 {
