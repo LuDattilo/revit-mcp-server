@@ -22,7 +22,7 @@ export function registerGetWorksetsTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_worksets", params);
-        });
+        }, 30000);
 
         return toolResponse("get_worksets", response);
       } catch (error) {

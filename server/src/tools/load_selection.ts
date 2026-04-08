@@ -28,7 +28,7 @@ export function registerLoadSelectionTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("load_selection", params);
-        });
+        }, 30000);
 
         return rawToolResponse("load_selection", response);
       } catch (error) {

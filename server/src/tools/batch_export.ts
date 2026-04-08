@@ -41,7 +41,7 @@ export function registerBatchExportTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("batch_export", params);
-        });
+        }, 300000);
 
         return rawToolResponse("batch_export", response);
       } catch (error) {

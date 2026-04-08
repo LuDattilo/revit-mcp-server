@@ -28,7 +28,7 @@ export function registerAnalyzeModelStatisticsTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("analyze_model_statistics", params);
-        });
+        }, 300000);
 
         return toolResponse("analyze_model_statistics", response, args);
       } catch (error) {

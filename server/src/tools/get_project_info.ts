@@ -42,7 +42,7 @@ export function registerGetProjectInfoTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_project_info", params);
-        });
+        }, 30000);
 
         return toolResponse("get_project_info", response, args);
       } catch (error) {

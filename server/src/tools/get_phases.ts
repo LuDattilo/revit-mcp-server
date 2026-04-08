@@ -24,7 +24,7 @@ export function registerGetPhasesTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_phases", params);
-        });
+        }, 30000);
 
         return rawToolResponse("get_phases", response);
       } catch (error) {

@@ -9,6 +9,7 @@ export class RevitClientConnection {
   responseCallbacks: Map<string, (response: string) => void> = new Map();
   private timeoutHandles: Map<string, ReturnType<typeof setTimeout>> = new Map();
   buffer: string = "";
+  public defaultTimeout: number = 120000;
 
   constructor(host: string, port: number) {
     this.host = host;
@@ -113,7 +114,8 @@ export class RevitClientConnection {
     }
   }
 
-  public sendCommand(command: string, params: any = {}): Promise<any> {
+  public sendCommand(command: string, params: any = {}, timeoutMs?: number): Promise<any> {
+    const timeout = timeoutMs ?? this.defaultTimeout;
     return new Promise((resolve, reject) => {
       try {
         if (!this.isConnected) {
@@ -153,15 +155,15 @@ export class RevitClientConnection {
         const commandString = JSON.stringify(commandObj) + "\n";
         this.socket.write(commandString);
 
-        // Set timeout (5 minutes) with cleanup.
+        // Set timeout with cleanup.
         const timeoutHandle = setTimeout(() => {
           if (this.responseCallbacks.has(requestId)) {
             this.responseCallbacks.delete(requestId);
             this.timeoutHandles.delete(requestId);
-            reject(new Error(`Command timed out after 5 minutes: ${command}. For large models, use category filters (e.g., filterCategory: "OST_Walls") to narrow the scope.`));
+            reject(new Error(`Command '${command}' timed out after ${Math.round(timeout / 1000)}s. For large models, try filtering by category or reducing scope.`));
             this.socket.destroy();
           }
-        }, 300000);
+        }, timeout);
         this.timeoutHandles.set(requestId, timeoutHandle);
       } catch (error) {
         reject(error);

@@ -25,7 +25,7 @@ export function registerWorkflowModelAuditTool(server: McpServer) {
             includeFamilies: args.includeFamilies ?? true,
             maxWarnings: args.maxWarnings ?? 50,
           });
-        });
+        }, 300000);
 
         const data = typeof response === 'object' ? (response as any)?.data ?? response : response;
         const enriched = addSuggestions(response, [

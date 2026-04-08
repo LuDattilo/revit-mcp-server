@@ -33,7 +33,7 @@ export function registerBulkModifyParameterValuesTool(server: McpServer) {
             onlyEmpty: args.onlyEmpty ?? false,
             dryRun: args.dryRun ?? true,
           });
-        });
+        }, 300000);
         return rawToolResponse("bulk_modify_parameter_values", response);
       } catch (error) {
         return rawToolError("bulk_modify_parameter_values", `Bulk modify parameter values failed: ${errorMessage(error)}`);

@@ -21,7 +21,7 @@ export function registerDeleteSelectionTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("delete_selection", params);
-        });
+        }, 30000);
 
         return rawToolResponse("delete_selection", response);
       } catch (error) {

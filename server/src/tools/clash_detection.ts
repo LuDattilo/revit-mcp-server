@@ -48,7 +48,7 @@ export function registerClashDetectionTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("clash_detection", params);
-        });
+        }, 300000);
 
         const data = typeof response === 'object' ? response : {};
         const clashCount = data.clashCount ?? data.clashes?.length ?? 0;

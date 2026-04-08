@@ -19,7 +19,7 @@ export function registerSayHelloTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("say_hello", params);
-        });
+        }, 30000);
 
         return rawToolResponse("say_hello", response);
       } catch (error) {

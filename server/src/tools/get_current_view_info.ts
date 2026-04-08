@@ -12,7 +12,7 @@ export function registerGetCurrentViewInfoTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_current_view_info", {});
-        });
+        }, 30000);
 
         return rawToolResponse("get_current_view_info", response);
       } catch (error) {

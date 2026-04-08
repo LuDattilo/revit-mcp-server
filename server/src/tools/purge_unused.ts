@@ -27,7 +27,7 @@ export function registerPurgeUnusedTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("purge_unused", params);
-        });
+        }, 300000);
 
         return rawToolResponse("purge_unused", response);
       } catch (error) {

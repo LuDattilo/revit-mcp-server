@@ -20,7 +20,7 @@ export function registerGetSharedParametersTool(server: McpServer) {
           return await revitClient.sendCommand("get_shared_parameters", {
             categoryFilter: args.categoryFilter,
           });
-        });
+        }, 30000);
 
         return toolResponse("get_shared_parameters", response);
       } catch (error) {

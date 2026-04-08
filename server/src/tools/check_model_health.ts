@@ -13,7 +13,7 @@ export function registerCheckModelHealthTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("check_model_health", {});
-        });
+        }, 300000);
         const data = typeof response === 'object' ? response : {};
         const score = data.healthScore ?? data.score ?? 100;
         const warningCount = data.warningCount ?? data.warnings?.length ?? 0;

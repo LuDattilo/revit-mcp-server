@@ -35,7 +35,7 @@ export function registerSendCodeToRevitTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("send_code_to_revit", params);
-        });
+        }, 300000);
 
         return rawToolResponse("send_code_to_revit", response);
       } catch (error) {

@@ -32,7 +32,7 @@ export function registerSaveSelectionTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("save_selection", params);
-        });
+        }, 30000);
 
         return rawToolResponse("save_selection", response);
       } catch (error) {

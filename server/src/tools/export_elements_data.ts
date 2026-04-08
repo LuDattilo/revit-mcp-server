@@ -107,7 +107,7 @@ QUICK PROMPTS:
             filterValue: args.filterValue ?? "",
             filterOperator: args.filterOperator ?? "equals",
           });
-        });
+        }, 300000);
         const enriched = addSuggestions(response, [
           { prompt: "Update these elements with the modified data using sync_csv_parameters", reason: "Export-edit-import workflow" },
           { prompt: "Export this data to Excel for easier editing", reason: "Excel is more convenient for bulk parameter editing" },

@@ -48,7 +48,7 @@ GUIDANCE:
             colorCodeColumns: args.colorCodeColumns ?? true,
             maxElements: args.maxElements ?? 10000,
           });
-        });
+        }, 300000);
         const data = typeof response === 'object' ? response : {};
         const filePath = data.filePath ?? "";
 

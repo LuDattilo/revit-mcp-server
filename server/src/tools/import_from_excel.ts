@@ -22,7 +22,7 @@ export function registerImportFromExcelTool(server: McpServer) {
             sheetName: args.sheetName ?? "",
             dryRun: args.dryRun ?? true,
           });
-        });
+        }, 300000);
         return rawToolResponse("import_from_excel", response);
       } catch (error) {
         return rawToolError("import_from_excel", `Import from Excel failed: ${errorMessage(error)}`);

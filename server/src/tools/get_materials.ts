@@ -24,7 +24,7 @@ export function registerGetMaterialsTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_materials", { materialClass: args.materialClass, nameFilter: args.nameFilter });
-        });
+        }, 30000);
 
         return toolResponse("get_materials", response);
       } catch (error) {

@@ -35,7 +35,7 @@ export function registerGetWarningsTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_warnings", params);
-        });
+        }, 30000);
 
         const data = typeof response === 'object' ? response : {};
         const count = data.warningCount ?? data.warnings?.length ?? 0;

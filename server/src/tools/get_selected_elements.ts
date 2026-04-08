@@ -22,7 +22,7 @@ export function registerGetSelectedElementsTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("get_selected_elements", params);
-        });
+        }, 30000);
 
         return rawToolResponse("get_selected_elements", response);
       } catch (error) {

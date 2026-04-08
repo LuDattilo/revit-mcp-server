@@ -54,7 +54,7 @@ export function registerBatchRenameTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("batch_rename", params);
-        });
+        }, 300000);
 
         return rawToolResponse("batch_rename", response);
       } catch (error) {
