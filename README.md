@@ -302,7 +302,7 @@ All tools work across all versions. The command set uses compile-time constants 
 
 | Tool | Description |
 | ---- | ----------- |
-| `send_code_to_revit` | Execute arbitrary C# code inside Revit |
+| `send_code_to_revit` | Execute C# code inside Revit. Variables: `document` (Document), `parameters` (object[]). Auto-imports: System, System.Linq, Autodesk.Revit.DB/UI, System.Collections.Generic. Use `return` to send results. Mode `auto` wraps in Transaction, `none` for manual |
 | `store_project_data` | Store project metadata in local database |
 | `store_room_data` | Store room metadata in local database |
 | `query_stored_data` | Query stored project and room data |
