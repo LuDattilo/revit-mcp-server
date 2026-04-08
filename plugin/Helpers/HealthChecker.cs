@@ -136,10 +136,34 @@ namespace revit_mcp_plugin.Helpers
 
                 if (!File.Exists(nodePath))
                 {
-                    result.Passed = false;
-                    result.Message = $"node.exe not found at {nodePath}";
-                    McpLogger.Warn(Tag, result.Message);
-                    return result;
+                    // Bundled node.exe not found — check if Node.js is installed system-wide
+                    bool systemNodeFound = false;
+                    try
+                    {
+                        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
+                        foreach (var dir in pathEnv.Split(';'))
+                        {
+                            if (!string.IsNullOrWhiteSpace(dir))
+                            {
+                                var candidate = Path.Combine(dir.Trim(), "node.exe");
+                                if (File.Exists(candidate))
+                                {
+                                    systemNodeFound = true;
+                                    McpLogger.Info(Tag, $"Bundled node.exe not found, using system Node.js: {candidate}");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch { /* best-effort PATH scan */ }
+
+                    if (!systemNodeFound)
+                    {
+                        result.Passed = false;
+                        result.Message = $"node.exe not found (bundled or system). Install Node.js or reinstall the plugin.";
+                        McpLogger.Warn(Tag, result.Message);
+                        return result;
+                    }
                 }
 
                 if (!File.Exists(indexPath))
