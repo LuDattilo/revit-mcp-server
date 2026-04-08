@@ -1,6 +1,6 @@
 {
     "name": "mcp-server-for-revit",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "MCP server for interacting with Autodesk Revit through AI assistants like Claude",
     "main": "./build/index.js",
     "type": "module",
