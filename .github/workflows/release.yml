@@ -79,6 +79,7 @@ jobs:
         run: dotnet build mcp-servers-for-revit.sln -c "Release R26"
 
       - name: Build Revit 2027 (.NET 10)
+        continue-on-error: true
         run: dotnet build mcp-servers-for-revit.sln -c "Release R27"
 
       # ---------------------------------------------------------------
@@ -123,9 +124,12 @@ jobs:
           }
 
           $zips = Get-ChildItem "$outputDir/*.zip"
-          if ($zips.Count -ne 5) {
-              Write-Error "Expected 5 ZIP files, found $($zips.Count). Build may have failed."
+          if ($zips.Count -lt 4) {
+              Write-Error "Expected at least 4 ZIP files (2023-2026), found $($zips.Count). Build may have failed."
               exit 1
+          }
+          if ($zips.Count -lt 5) {
+              Write-Host "Note: $($zips.Count) ZIP files created (Revit 2027 SDK may not be available yet)"
           }
         shell: pwsh
 
