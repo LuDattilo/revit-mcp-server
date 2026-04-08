@@ -72,7 +72,25 @@ namespace RevitMCPCommandSet.Services
                         }
 
                         if (!string.IsNullOrEmpty(ScheduleInfo.Name))
-                            schedule.Name = ScheduleInfo.Name;
+                        {
+                            try
+                            {
+                                schedule.Name = ScheduleInfo.Name;
+                            }
+                            catch
+                            {
+                                // Name conflict — append number suffix
+                                for (int i = 2; i <= 99; i++)
+                                {
+                                    try
+                                    {
+                                        schedule.Name = $"{ScheduleInfo.Name} ({i})";
+                                        break;
+                                    }
+                                    catch { }
+                                }
+                            }
+                        }
 
                         // Apply preset if specified
                         ApplyPreset(schedule);
