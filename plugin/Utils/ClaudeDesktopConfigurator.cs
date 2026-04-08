@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using revit_mcp_plugin.Helpers;
 
 namespace revit_mcp_plugin.Utils
 {
@@ -20,53 +21,83 @@ namespace revit_mcp_plugin.Utils
         /// <summary>
         /// Ensures that Claude Desktop is configured to connect to the Revit MCP server.
         /// Safe to call every startup — only writes when the config is missing or stale.
+        /// Creates timestamped backups before any modification and validates after write.
         /// </summary>
         public static void EnsureConfigured()
         {
+            const string Tag = "ClaudeDesktopConfigurator";
             try
             {
-                // 1. Locate the MCP server and a Node.js runtime
+                // 1. Log start
+                McpLogger.Info(Tag, "Checking Claude Desktop configuration");
+
+                // 2. Find Claude Desktop directory
+                string claudeDir = GetClaudeDesktopDir();
+                if (claudeDir == null)
+                {
+                    McpLogger.Warn(Tag, "Claude Desktop directory not found — skipping auto-config");
+                    return;
+                }
+
+                // 3. Resolve server and node paths
                 string serverPath = GetServerPath();
                 string nodePath = GetNodePath();
 
                 if (serverPath == null || nodePath == null)
                 {
-                    System.Diagnostics.Trace.WriteLine(
-                        $"[RevitMCP] Auto-config skipped: server={serverPath ?? "null"}, node={nodePath ?? "null"}");
+                    McpLogger.Warn(Tag,
+                        $"Auto-config skipped: server={serverPath ?? "null"}, node={nodePath ?? "null"}");
                     return;
                 }
 
-                // 2. Find the Claude Desktop config directory
-                string claudeDir = GetClaudeDesktopDir();
-                if (claudeDir == null)
-                {
-                    System.Diagnostics.Trace.WriteLine("[RevitMCP] Auto-config skipped: Claude Desktop not found");
-                    return;
-                }
-
-                // 3. Read (or bootstrap) the config file
+                // 4. Read existing config file (if present)
                 string configPath = Path.Combine(claudeDir, ConfigFileName);
-                JObject config;
+                string existingJson = null;
 
                 if (File.Exists(configPath))
                 {
                     try
                     {
-                        config = JObject.Parse(File.ReadAllText(configPath));
+                        existingJson = File.ReadAllText(configPath);
                     }
-                    catch
+                    catch (Exception readEx)
                     {
-                        // Corrupt JSON — back up and start fresh
-                        File.Copy(configPath, configPath + ".bak", overwrite: true);
-                        config = new JObject();
+                        McpLogger.Warn(Tag, $"Could not read config file: {readEx.Message}");
                     }
                 }
-                else
+
+                // 5. Parse JSON — if corrupt, backup as .corrupted and start fresh
+                JObject config = null;
+                if (existingJson != null)
+                {
+                    try
+                    {
+                        config = JObject.Parse(existingJson);
+                    }
+                    catch (Exception parseEx)
+                    {
+                        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                        string corruptedPath = configPath + $".corrupted.{timestamp}.bak";
+                        try
+                        {
+                            File.Copy(configPath, corruptedPath, overwrite: true);
+                            McpLogger.Warn(Tag,
+                                $"Config JSON was corrupted — backed up to {corruptedPath} ({parseEx.Message})");
+                        }
+                        catch (Exception backupEx)
+                        {
+                            McpLogger.Error(Tag, "Failed to backup corrupted config", backupEx);
+                        }
+                        config = null;
+                    }
+                }
+
+                if (config == null)
                 {
                     config = new JObject();
                 }
 
-                // 4. Ensure mcpServers object exists
+                // 6. Ensure mcpServers object exists
                 var mcpServers = config["mcpServers"] as JObject;
                 if (mcpServers == null)
                 {
@@ -74,7 +105,14 @@ namespace revit_mcp_plugin.Utils
                     config["mcpServers"] = mcpServers;
                 }
 
-                // 5. Check whether the entry already points to the correct paths
+                // 7. Build the correct entry
+                var correctEntry = new JObject
+                {
+                    ["command"] = nodePath,
+                    ["args"] = new JArray(serverPath)
+                };
+
+                // 8. Check if existing entry already matches
                 var existing = mcpServers[McpServerName] as JObject;
                 if (existing != null)
                 {
@@ -85,25 +123,52 @@ namespace revit_mcp_plugin.Utils
                         existingArgs != null && existingArgs.Length > 0 &&
                         existingArgs[0] == serverPath)
                     {
-                        // Already correct — nothing to do
+                        McpLogger.Info(Tag, "Configuration already correct — no changes needed");
                         return;
                     }
                 }
 
-                // 6. Write / update the revit-mcp entry (preserves all other servers)
-                mcpServers[McpServerName] = new JObject
+                // 9. Backup existing file before modification
+                if (File.Exists(configPath))
                 {
-                    ["command"] = nodePath,
-                    ["args"] = new JArray(serverPath)
-                };
+                    string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    string backupPath = configPath + $".{timestamp}.bak";
+                    try
+                    {
+                        File.Copy(configPath, backupPath, overwrite: true);
+                        McpLogger.Info(Tag, $"Backed up existing config to {backupPath}");
+                    }
+                    catch (Exception backupEx)
+                    {
+                        McpLogger.Error(Tag, "Failed to backup config before write", backupEx);
+                        // Continue anyway — the update is more important than the backup
+                    }
+                }
 
+                // 10. Update the revit-mcp entry (preserves all other servers)
+                mcpServers[McpServerName] = correctEntry;
+
+                // 11. Write with UTF-8 no BOM
                 Directory.CreateDirectory(claudeDir);
-                File.WriteAllText(configPath, config.ToString(Formatting.Indented));
+                string outputJson = config.ToString(Formatting.Indented);
+                var utf8NoBom = new System.Text.UTF8Encoding(false);
+                File.WriteAllText(configPath, outputJson, utf8NoBom);
 
-                System.Diagnostics.Trace.WriteLine(
-                    $"[RevitMCP] Claude Desktop auto-configured: {nodePath} {serverPath}");
+                // 12. Validate by re-reading and parsing
+                try
+                {
+                    string verification = File.ReadAllText(configPath);
+                    JObject.Parse(verification);
+                    McpLogger.Info(Tag,
+                        $"Claude Desktop configured successfully: {nodePath} {serverPath}");
+                }
+                catch (Exception valEx)
+                {
+                    McpLogger.Error(Tag,
+                        "Post-write validation failed — config file may be corrupt", valEx);
+                }
 
-                // 7. Notify the user (only when we actually changed something)
+                // 13. Notify the user (only when we actually changed something)
                 try
                 {
                     var td = new TaskDialog("Revit MCP Plugin")
@@ -125,8 +190,7 @@ namespace revit_mcp_plugin.Utils
             catch (Exception ex)
             {
                 // Never crash Revit because of auto-config
-                System.Diagnostics.Trace.WriteLine(
-                    $"[RevitMCP] Claude Desktop auto-config failed (non-fatal): {ex.Message}");
+                McpLogger.Error(Tag, "Claude Desktop auto-config failed (non-fatal)", ex);
             }
         }
 
