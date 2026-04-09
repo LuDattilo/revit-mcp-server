@@ -29,7 +29,7 @@ namespace RevitMCPCommandSet.Commands.Access
 
                     _handler.WorksetName = name;
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

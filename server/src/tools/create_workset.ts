@@ -21,7 +21,7 @@ export function registerCreateWorksetTool(server: McpServer) {
           return await revitClient.sendCommand("create_workset", {
             name: args.name,
           });
-        });
+        }, 120000);
 
         return toolResponse("create_workset", response);
       } catch (error) {

@@ -35,7 +35,7 @@ export function registerSetViewCropTool(server: McpServer) {
             maxYMm: args.maxYMm,
             reset: args.reset ?? false,
           });
-        });
+        }, 120000);
         return toolResponse("set_view_crop", response);
       } catch (error) {
         return toolError("set_view_crop", `Set view crop failed: ${errorMessage(error)}`);

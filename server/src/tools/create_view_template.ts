@@ -21,7 +21,7 @@ export function registerCreateViewTemplateTool(server: McpServer) {
             sourceViewId: args.sourceViewId,
             sourceViewName: args.sourceViewName,
           });
-        });
+        }, 120000);
         return toolResponse("create_view_template", response);
       } catch (error) {
         return toolError("create_view_template", `Create view template failed: ${errorMessage(error)}`);

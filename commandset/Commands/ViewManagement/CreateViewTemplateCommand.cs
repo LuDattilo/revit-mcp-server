@@ -29,7 +29,7 @@ namespace RevitMCPCommandSet.Commands.ViewManagement
                         throw new ArgumentException("templateName is required");
 
                     _handler.SetParameters();
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                         return _handler.Result;
                     throw new TimeoutException("Create view template timed out");
                 }

@@ -47,7 +47,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     if (_handler.MaterialId == null && string.IsNullOrEmpty(_handler.MaterialName))
                         throw new ArgumentException("materialId or materialName is required");
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

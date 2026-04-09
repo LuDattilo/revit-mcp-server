@@ -26,7 +26,7 @@ export function registerNavigateViewTool(server: McpServer) {
             elementIds: args.elementIds ?? [],
             zoomFactor: args.zoomFactor,
           });
-        });
+        }, 30000);
         return toolResponse("navigate_view", response);
       } catch (error) {
         return toolError("navigate_view", `Navigate view failed: ${errorMessage(error)}`);

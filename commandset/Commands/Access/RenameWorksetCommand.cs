@@ -34,7 +34,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     _handler.CurrentName = currentName;
                     _handler.NewName = newName;
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

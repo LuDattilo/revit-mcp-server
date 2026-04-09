@@ -60,7 +60,7 @@ export function registerSetCompoundStructureTool(server: McpServer) {
             duplicateAsName: args.duplicateAsName,
             layers: args.layers,
           });
-        }, 60000);
+        }, 120000);
 
         return toolResponse("set_compound_structure", response);
       } catch (error) {

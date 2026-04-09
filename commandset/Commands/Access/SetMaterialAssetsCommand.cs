@@ -47,7 +47,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     _handler.Permeability = parameters?["permeability"]?.Value<double>();
                     _handler.Porosity = parameters?["porosity"]?.Value<double>();
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

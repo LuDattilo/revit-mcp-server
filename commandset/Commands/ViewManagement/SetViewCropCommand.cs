@@ -34,7 +34,7 @@ namespace RevitMCPCommandSet.Commands.ViewManagement
                     _handler.Reset = parameters?["reset"]?.Value<bool>() ?? false;
 
                     _handler.SetParameters();
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                         return _handler.Result;
                     throw new TimeoutException("Set view crop timed out");
                 }

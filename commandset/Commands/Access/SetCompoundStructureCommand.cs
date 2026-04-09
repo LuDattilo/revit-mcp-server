@@ -30,7 +30,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     if (_handler.Layers == null || _handler.Layers.Count == 0)
                         throw new ArgumentException("layers is required and cannot be empty");
 
-                    if (RaiseAndWaitForCompletion(60000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

@@ -34,7 +34,7 @@ namespace RevitMCPCommandSet.Commands.Access
                     _handler.Smoothness = parameters?["smoothness"]?.Value<int>();
                     _handler.MaterialClassName = parameters?["materialClass"]?.Value<string>();
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

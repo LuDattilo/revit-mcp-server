@@ -30,7 +30,7 @@ export function registerGetCompoundStructureTool(server: McpServer) {
             typeName: args.typeName,
             category: args.category,
           });
-        });
+        }, 120000);
 
         return toolResponse("get_compound_structure", response);
       } catch (error) {

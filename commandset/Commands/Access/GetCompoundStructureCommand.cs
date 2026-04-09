@@ -31,7 +31,7 @@ namespace RevitMCPCommandSet.Commands.Access
                         && string.IsNullOrEmpty(_handler.TypeName))
                         throw new ArgumentException("Either typeId or typeName (with category) must be provided");
 
-                    if (RaiseAndWaitForCompletion(30000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

@@ -26,7 +26,7 @@ export function registerSetElementWorksetTool(server: McpServer) {
           return await revitClient.sendCommand("set_element_workset", {
             requests: args.requests,
           });
-        });
+        }, 120000);
 
         return rawToolResponse("set_element_workset", response);
       } catch (error) {

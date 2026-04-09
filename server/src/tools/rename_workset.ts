@@ -23,7 +23,7 @@ export function registerRenameWorksetTool(server: McpServer) {
             currentName: args.currentName,
             newName: args.newName,
           });
-        });
+        }, 120000);
 
         return toolResponse("rename_workset", response);
       } catch (error) {

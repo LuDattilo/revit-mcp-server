@@ -71,7 +71,7 @@ export function registerCreateMaterialTool(server: McpServer) {
             smoothness: args.smoothness,
             materialClass: args.materialClass,
           });
-        });
+        }, 120000);
         return toolResponse("create_material", response);
       } catch (error) {
         return toolError(

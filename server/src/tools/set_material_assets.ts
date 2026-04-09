@@ -84,7 +84,7 @@ export function registerSetMaterialAssetsTool(server: McpServer) {
       try {
         const response = await withRevitConnection(async (revitClient) => {
           return await revitClient.sendCommand("set_material_assets", args);
-        });
+        }, 120000);
 
         return toolResponse("set_material_assets", response);
       } catch (error) {

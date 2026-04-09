@@ -16,6 +16,7 @@ namespace RevitMCPCommandSet.Services
 
         public bool WaitForCompletion(int timeoutMilliseconds = 10000)
         {
+            _resetEvent.Reset();
             return _resetEvent.WaitOne(timeoutMilliseconds);
         }
 
@@ -75,7 +76,6 @@ namespace RevitMCPCommandSet.Services
                 // Count elements in workset for confirmation
                 var elementCount = new FilteredElementCollector(doc)
                     .WherePasses(new ElementWorksetFilter(targetWorkset.Id, false))
-                    .WhereElementIsNotElementType()
                     .GetElementCount();
 
                 // Check if deletion is possible

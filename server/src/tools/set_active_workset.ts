@@ -19,7 +19,7 @@ export function registerSetActiveWorksetTool(server: McpServer) {
           return await revitClient.sendCommand("set_active_workset", {
             worksetName: args.worksetName,
           });
-        });
+        }, 120000);
 
         return toolResponse("set_active_workset", response);
       } catch (error) {

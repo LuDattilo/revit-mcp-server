@@ -136,7 +136,7 @@ export function registerSetMaterialAppearanceTool(server: McpServer) {
             "set_material_appearance",
             args
           );
-        });
+        }, 120000);
         return toolResponse("set_material_appearance", response);
       } catch (error) {
         return toolError(
