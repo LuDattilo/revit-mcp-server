@@ -11,6 +11,7 @@ batch_modify_view_range(viewIds:array!, topOffsetMm:number, cutPlaneOffsetMm:num
 batch_rename(elementIds:array, targetCategory:Views|Sheets|Levels|Grids|Rooms, findText:string, replaceText:string, prefix:string, suffix:string, dryRun:boolean)
 bulk_modify_parameter_values(elementIds:array, categoryName:string, parameterName:string!, operation:set|prefix|suffix|find_replace|clear!, value:string, findText:string, replaceText:string, onlyEmpty:boolean, dryRun:boolean)
 cad_link_cleanup(action:list|delete, deleteImports:boolean, deleteLinks:boolean, elementIds:array)
+calculate_rai(roomIds:array, roomNumbers:array, levelName:string, minRatio:number, includeServiceRooms:boolean)
 change_element_type(elementIds:array!, targetTypeId:number, targetTypeName:string, targetFamilyName:string)
 check_family_health(categories:array, includeSystemFamilies:boolean, includeFileSize:boolean, sortBy:name|size|instance_count)
 check_model_health()

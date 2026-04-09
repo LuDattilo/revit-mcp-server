@@ -12,6 +12,7 @@ import * as BatchExport from "./batch_export.js";
 import * as BatchModifyViewRange from "./batch_modify_view_range.js";
 import * as BatchRename from "./batch_rename.js";
 import * as BulkModifyParameterValues from "./bulk_modify_parameter_values.js";
+import * as CalculateRai from "./calculate_rai.js";
 import * as CadLinkCleanup from "./cad_link_cleanup.js";
 import * as ChangeElementType from "./change_element_type.js";
 import * as CheckFamilyHealth from "./check_family_health.js";
@@ -149,6 +150,7 @@ export async function registerTools(server: McpServer) {
     { name: "batch_modify_view_range", module: BatchModifyViewRange },
     { name: "batch_rename", module: BatchRename },
     { name: "bulk_modify_parameter_values", module: BulkModifyParameterValues },
+    { name: "calculate_rai", module: CalculateRai },
     { name: "cad_link_cleanup", module: CadLinkCleanup },
     { name: "change_element_type", module: ChangeElementType },
     { name: "check_family_health", module: CheckFamilyHealth },

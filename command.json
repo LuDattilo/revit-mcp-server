@@ -134,6 +134,11 @@
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
+      "commandName": "calculate_rai",
+      "description": "Calculate Rapporto Aeroilluminante (window-to-floor ratio) per Italian building code DM 5/7/1975",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
       "commandName": "get_room_openings",
       "description": "Find doors and/or windows in rooms with full parameter extraction",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
