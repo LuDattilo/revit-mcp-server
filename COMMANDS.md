@@ -277,6 +277,26 @@ Get detailed structural, thermal, and appearance properties.
 { "materialId": 12345 }
 ```
 
+### `create_material`
+Create a new material or duplicate an existing one.
+```json
+{ "name": "Concrete C30", "colorR": 180, "colorG": 180, "colorB": 180, "transparency": 0, "materialClass": "Concrete" }
+// Or duplicate:
+{ "name": "Brick Red Custom", "duplicateFrom": "Brick, Common" }
+```
+
+### `set_material_appearance`
+Modify visual properties: shading color, transparency, shininess, smoothness, pattern colors, and rendering asset (diffuse, glossiness).
+```json
+{ "materialName": "Concrete", "colorR": 200, "colorG": 200, "colorB": 200, "transparency": 10, "renderGlossiness": 0.3 }
+```
+
+### `set_material_assets`
+Modify structural and/or thermal asset properties.
+```json
+{ "materialName": "Concrete", "density": 2400, "youngModulus": 30000000000, "thermalConductivity": 1.7 }
+```
+
 ---
 
 ## View & Sheet Management
@@ -397,8 +417,63 @@ Set created/demolished phase on elements.
 ### `get_worksets`
 List worksets with properties.
 
+### `create_workset`
+Create a new user workset.
+```json
+{ "name": "Structural" }
+```
+
+### `rename_workset`
+Rename an existing workset.
+```json
+{ "currentName": "Workset1", "newName": "Architecture" }
+```
+
+### `delete_workset`
+Delete a workset and move its elements to another.
+```json
+{ "worksetName": "Old Workset", "moveToWorksetName": "Default" }
+```
+
+### `set_active_workset`
+Set the active workset for new elements.
+```json
+{ "worksetName": "Structural" }
+```
+
+### `get_elements_by_workset`
+Get all elements in a workset with category summary.
+```json
+{ "worksetName": "Structural", "categoryFilter": ["Walls", "Columns"], "maxElements": 200 }
+```
+
 ### `set_element_workset`
 Move elements to a different workset.
+
+### `get_compound_structure`
+Get the layer stratigraphy of a system family type (wall, floor, roof, ceiling).
+```json
+{ "typeName": "Generic - 200mm", "category": "Walls" }
+```
+
+### `set_compound_structure`
+Set or replace layers of a system family type. Optionally duplicate the type first.
+```json
+{
+  "typeName": "Generic - 200mm", "category": "Walls", "duplicateAsName": "Custom Wall 300mm",
+  "layers": [
+    { "function": "Finish1", "widthMm": 15, "materialName": "Plaster" },
+    { "function": "Structure", "widthMm": 250, "materialName": "Concrete, Cast-in-Place" },
+    { "function": "Finish2", "widthMm": 15, "materialName": "Plaster" }
+  ]
+}
+```
+
+### `calculate_rai`
+Calculate Rapporto Aeroilluminante (window-to-floor ratio) per Italian building code DM 5/7/1975.
+```json
+{ "levelName": "Piano 1", "minRatio": 0.125, "ratioOverrides": { "ufficio": 0.1, "cucina": 0.125 } }
+```
 
 ### `manage_links`
 List, reload, or unload Revit links.
