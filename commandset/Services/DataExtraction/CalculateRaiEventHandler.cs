@@ -18,11 +18,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         public string LevelName { get; set; } = "";
         public double MinRatio { get; set; } = 0.125;
         public bool IncludeServiceRooms { get; set; } = false;
-        /// <summary>
-        /// Per-room ratio overrides. Key = keyword in room name (case-insensitive),
-        /// Value = minimum ratio for that room type. First match wins.
-        /// Example: { "cucina": 0.125, "ufficio": 0.1, "camera": 0.125 }
-        /// </summary>
+        public string PhaseName { get; set; } = "";
         public Dictionary<string, double> RatioOverrides { get; set; } = new Dictionary<string, double>();
 
         public AIResult<object> Result { get; private set; }
@@ -40,9 +36,33 @@ namespace RevitMCPCommandSet.Services.DataExtraction
             try
             {
                 var doc = app.ActiveUIDocument.Document;
-                Phase phase = doc.Phases.Cast<Phase>().Last();
 
-                // ── Resolve target rooms ─────────────────────────────────
+                // ── 1. RESOLVE PHASE ────────────────────────────────────
+                // User-specified > active view phase > last phase
+                Phase phase = null;
+                if (!string.IsNullOrEmpty(PhaseName))
+                {
+                    phase = doc.Phases.Cast<Phase>()
+                        .FirstOrDefault(p => p.Name.IndexOf(PhaseName, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+                if (phase == null)
+                {
+                    // Try active view's phase
+                    var activeView = app.ActiveUIDocument.ActiveView;
+                    var phaseParam = activeView?.get_Parameter(BuiltInParameter.VIEW_PHASE);
+                    if (phaseParam != null)
+                    {
+                        var phaseId = phaseParam.AsElementId();
+                        if (phaseId != ElementId.InvalidElementId)
+                            phase = doc.GetElement(phaseId) as Phase;
+                    }
+                }
+                if (phase == null)
+                    phase = doc.Phases.Cast<Phase>().Last();
+
+                string phaseName = phase.Name;
+
+                // ── 2. COLLECT ROOMS (primary entity) ───────────────────
                 List<Room> targetRooms;
                 if (RoomIds.Count > 0)
                 {
@@ -77,7 +97,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     targetRooms = allRooms.ToList();
                 }
 
-                // ── Filter service rooms ─────────────────────────────────
+                // ── 3. FILTER SERVICE ROOMS ─────────────────────────────
                 if (!IncludeServiceRooms)
                 {
                     var serviceKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -104,50 +124,62 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                         Message = "No matching rooms found",
                         Response = new
                         {
-                            summary = new { totalRooms = 0, compliant = 0, nonCompliant = 0, minRatioThreshold = MinRatio },
+                            summary = new { totalRooms = 0, compliant = 0, nonCompliant = 0, minRatioThreshold = MinRatio, phase = phaseName },
                             rooms = new List<object>()
                         }
                     };
                     return;
                 }
 
+                // ── 4. COLLECT WINDOWS ONCE, MAP TO ROOMS ───────────────
+                // Build room lookup set
                 var roomIdSet = new HashSet<long>(targetRooms.Select(r => r.Id.GetValue()));
-
-                // ── Collect windows per room ─────────────────────────────
                 var roomWindows = new Dictionary<long, List<FamilyInstance>>();
                 foreach (var r in targetRooms)
                     roomWindows[r.Id.GetValue()] = new List<FamilyInstance>();
 
-                var winCollector = new FilteredElementCollector(doc)
+                // Single pass over all windows, using the resolved phase for room association
+                foreach (FamilyInstance win in new FilteredElementCollector(doc)
                     .OfCategory(BuiltInCategory.OST_Windows)
-                    .WhereElementIsNotElementType();
-
-                foreach (FamilyInstance win in winCollector)
+                    .WhereElementIsNotElementType())
                 {
-                    long fromId = win.get_FromRoom(phase)?.Id.GetValue() ?? -1;
-                    long toId = win.get_ToRoom(phase)?.Id.GetValue() ?? -1;
+                    // get_FromRoom/get_ToRoom with the correct phase
+                    var fromRoom = win.get_FromRoom(phase);
+                    var toRoom = win.get_ToRoom(phase);
 
+                    long fromId = fromRoom?.Id.GetValue() ?? -1;
+                    long toId = toRoom?.Id.GetValue() ?? -1;
+
+                    // A window illuminates the room it faces — count for both sides
                     if (fromId > 0 && roomIdSet.Contains(fromId))
                         roomWindows[fromId].Add(win);
                     if (toId > 0 && toId != fromId && roomIdSet.Contains(toId))
                         roomWindows[toId].Add(win);
                 }
 
-                // ── Type cache with NUMERIC dimensions ───────────────────
+                // ── 5. TYPE CACHE FOR WINDOW DIMENSIONS ─────────────────
                 var typeCache = new Dictionary<long, (string familyName, string typeName, double widthM, double heightM, double areaM2)>();
 
-                // ── Build per-room results ───────────────────────────────
+                // ── 6. PER-ROOM RAI CALCULATION ─────────────────────────
                 var results = new List<object>();
                 int totalCompliant = 0, totalNonCompliant = 0;
 
                 foreach (var room in targetRooms)
                 {
                     var rid = room.Id.GetValue();
-                    var windows = roomWindows[rid];
-
+                    var roomName = (room.get_Parameter(BuiltInParameter.ROOM_NAME)?.AsString() ?? "").Trim();
+                    var roomNumber = room.get_Parameter(BuiltInParameter.ROOM_NUMBER)?.AsString() ?? "";
+                    var levelName = room.Level?.Name ?? "";
                     double floorAreaM2 = Math.Round(room.Area * SQFT_TO_M2, 2);
 
-                    // Process windows
+                    // Get room's created phase for output info
+                    var roomPhaseParam = room.get_Parameter(BuiltInParameter.ROOM_PHASE);
+                    var roomPhaseName = roomPhaseParam != null
+                        ? (doc.GetElement(roomPhaseParam.AsElementId()) as Phase)?.Name ?? phaseName
+                        : phaseName;
+
+                    // Process windows for this room
+                    var windows = roomWindows[rid];
                     var windowList = new List<object>();
                     double totalWindowAreaM2 = 0;
 
@@ -192,8 +224,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     totalWindowAreaM2 = Math.Round(totalWindowAreaM2, 2);
                     double ratio = floorAreaM2 > 0 ? totalWindowAreaM2 / floorAreaM2 : 0;
 
-                    // Determine applicable threshold: check overrides first, fallback to MinRatio
-                    var roomName = (room.get_Parameter(BuiltInParameter.ROOM_NAME)?.AsString() ?? "").Trim();
+                    // Determine applicable threshold
                     double effectiveMinRatio = MinRatio;
                     string overrideMatch = null;
                     if (RatioOverrides != null && RatioOverrides.Count > 0)
@@ -221,8 +252,9 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                     {
                         roomId = rid,
                         roomName,
-                        roomNumber = room.get_Parameter(BuiltInParameter.ROOM_NUMBER)?.AsString() ?? "",
-                        level = room.Level?.Name ?? "",
+                        roomNumber,
+                        level = levelName,
+                        phase = roomPhaseName,
                         floorAreaM2,
                         totalWindowAreaM2,
                         ratio = Math.Round(ratio, 4),
@@ -243,7 +275,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                 Result = new AIResult<object>
                 {
                     Success = true,
-                    Message = $"RAI calculated for {targetRooms.Count} room(s): {totalCompliant} compliant, {totalNonCompliant} non-compliant (threshold {minFraction})",
+                    Message = $"RAI calculated for {targetRooms.Count} room(s): {totalCompliant} compliant, {totalNonCompliant} non-compliant (threshold {minFraction}, phase '{phaseName}')",
                     Response = new
                     {
                         summary = new
@@ -253,7 +285,8 @@ namespace RevitMCPCommandSet.Services.DataExtraction
                             nonCompliant = totalNonCompliant,
                             minRatioThreshold = MinRatio,
                             minRatioFraction = minFraction,
-                            serviceRoomsExcluded = !IncludeServiceRooms
+                            serviceRoomsExcluded = !IncludeServiceRooms,
+                            phase = phaseName
                         },
                         rooms = results
                     }

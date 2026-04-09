@@ -35,6 +35,12 @@ export function registerCalculateRaiTool(server: McpServer) {
         .describe(
           "Include rooms typically exempt from RAI (bagni, corridoi, ripostigli). Default false."
         ),
+      phaseName: z
+        .string()
+        .optional()
+        .describe(
+          "Phase name for window-room association (partial match). Default: active view phase, then last project phase."
+        ),
       ratioOverrides: z
         .record(z.string(), z.number())
         .optional()
@@ -51,6 +57,7 @@ export function registerCalculateRaiTool(server: McpServer) {
             levelName: args.levelName ?? "",
             minRatio: args.minRatio ?? 0.125,
             includeServiceRooms: args.includeServiceRooms ?? false,
+            phaseName: args.phaseName ?? "",
             ratioOverrides: args.ratioOverrides,
           });
         });

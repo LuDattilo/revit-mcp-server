@@ -28,6 +28,7 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
                     _handler.LevelName = parameters?["levelName"]?.Value<string>() ?? "";
                     _handler.MinRatio = parameters?["minRatio"]?.Value<double>() ?? 0.125;
                     _handler.IncludeServiceRooms = parameters?["includeServiceRooms"]?.Value<bool>() ?? false;
+                    _handler.PhaseName = parameters?["phaseName"]?.Value<string>() ?? "";
                     _handler.RatioOverrides = parameters?["ratioOverrides"]?.ToObject<Dictionary<string, double>>()
                         ?? new Dictionary<string, double>();
 
