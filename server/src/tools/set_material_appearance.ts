@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerSetMaterialAppearanceTool(server: McpServer) {
   server.tool(
@@ -137,9 +137,9 @@ export function registerSetMaterialAppearanceTool(server: McpServer) {
             args
           );
         });
-        return rawToolResponse("set_material_appearance", response);
+        return toolResponse("set_material_appearance", response);
       } catch (error) {
-        return rawToolError(
+        return toolError(
           "set_material_appearance",
           `Set material appearance failed: ${errorMessage(error)}`
         );

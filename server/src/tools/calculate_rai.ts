@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerCalculateRaiTool(server: McpServer) {
   server.tool(
@@ -54,9 +54,9 @@ export function registerCalculateRaiTool(server: McpServer) {
             ratioOverrides: args.ratioOverrides,
           });
         });
-        return rawToolResponse("calculate_rai", response);
+        return toolResponse("calculate_rai", response);
       } catch (error) {
-        return rawToolError(
+        return toolError(
           "calculate_rai",
           `RAI calculation failed: ${errorMessage(error)}`
         );

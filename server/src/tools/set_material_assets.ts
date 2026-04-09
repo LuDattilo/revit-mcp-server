@@ -2,7 +2,7 @@ import { errorMessage } from "../utils/errorUtils.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
-import { rawToolResponse, rawToolError } from "../utils/compactTool.js";
+import { toolResponse, toolError } from "../utils/compactTool.js";
 
 export function registerSetMaterialAssetsTool(server: McpServer) {
   server.tool(
@@ -86,9 +86,9 @@ export function registerSetMaterialAssetsTool(server: McpServer) {
           return await revitClient.sendCommand("set_material_assets", args);
         });
 
-        return rawToolResponse("set_material_assets", response);
+        return toolResponse("set_material_assets", response);
       } catch (error) {
-        return rawToolError(
+        return toolError(
           "set_material_assets",
           `Set material assets failed: ${errorMessage(error)}`
         );
