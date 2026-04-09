@@ -47,6 +47,7 @@ import * as CreateSurfaceBasedElement from "./create_surface_based_element.js";
 import * as CreateTextNote from "./create_text_note.js";
 import * as CreateWorkset from "./create_workset.js";
 import * as CreateView from "./create_view.js";
+import * as CreateViewTemplate from "./create_view_template.js";
 import * as CreateViewFilter from "./create_view_filter.js";
 import * as CreateViewListSchedule from "./create_view_list_schedule.js";
 import * as CreateViewsFromRooms from "./create_views_from_rooms.js";
@@ -95,6 +96,7 @@ import * as ListSchedulableFields from "./list_schedulable_fields.js";
 import * as LoadFamily from "./load_family.js";
 import * as LoadSelection from "./load_selection.js";
 import * as ManageLinks from "./manage_links.js";
+import * as NavigateView from "./navigate_view.js";
 import * as ManageProjectParameters from "./manage_project_parameters.js";
 import * as ManageUnplacedViews from "./manage_unplaced_views.js";
 import * as ManageViewTemplates from "./manage_view_templates.js";
@@ -116,6 +118,7 @@ import * as SayHello from "./say_hello.js";
 import * as SectionBoxFromSelection from "./section_box_from_selection.js";
 import * as SendCodeToRevit from "./send_code_to_revit.js";
 import * as SetElementParameters from "./set_element_parameters.js";
+import * as SetViewCrop from "./set_view_crop.js";
 import * as SetMaterialAppearance from "./set_material_appearance.js";
 import * as SetMaterialAssets from "./set_material_assets.js";
 import * as SetMaterialProperties from "./set_material_properties.js";
@@ -185,6 +188,7 @@ export async function registerTools(server: McpServer) {
     { name: "create_text_note", module: CreateTextNote },
     { name: "create_workset", module: CreateWorkset },
     { name: "create_view", module: CreateView },
+    { name: "create_view_template", module: CreateViewTemplate },
     { name: "create_view_filter", module: CreateViewFilter },
     { name: "create_view_list_schedule", module: CreateViewListSchedule },
     { name: "create_views_from_rooms", module: CreateViewsFromRooms },
@@ -233,6 +237,7 @@ export async function registerTools(server: McpServer) {
     { name: "load_family", module: LoadFamily },
     { name: "load_selection", module: LoadSelection },
     { name: "manage_links", module: ManageLinks },
+    { name: "navigate_view", module: NavigateView },
     { name: "manage_project_parameters", module: ManageProjectParameters },
     { name: "manage_unplaced_views", module: ManageUnplacedViews },
     { name: "manage_view_templates", module: ManageViewTemplates },
@@ -254,6 +259,7 @@ export async function registerTools(server: McpServer) {
     { name: "section_box_from_selection", module: SectionBoxFromSelection },
     { name: "send_code_to_revit", module: SendCodeToRevit },
     { name: "set_element_parameters", module: SetElementParameters },
+    { name: "set_view_crop", module: SetViewCrop },
     { name: "set_material_appearance", module: SetMaterialAppearance },
     { name: "set_material_assets", module: SetMaterialAssets },
     { name: "set_material_properties", module: SetMaterialProperties },

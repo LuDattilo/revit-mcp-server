@@ -324,6 +324,21 @@
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
+      "commandName": "create_view_template",
+      "description": "Create a view template from an existing view",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_view_crop",
+      "description": "Control the crop box of a view: enable/disable, set bounds from elements or coordinates",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "navigate_view",
+      "description": "Navigate views: activate, zoom to fit, zoom to elements, zoom in/out, close",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
       "commandName": "copy_elements",
       "description": "Copy elements between views within the same document",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
