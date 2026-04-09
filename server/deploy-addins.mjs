@@ -13,6 +13,7 @@ const RELATIVE_PATH = join("revit_mcp_plugin", "Commands", "RevitMCPCommandSet")
 const SOURCE_BUILD = join(import.meta.dirname, "build", "index.js");
 const SOURCE_WASM = join(import.meta.dirname, "build", "sql-wasm.wasm");
 const SOURCE_SCHEMAS = join(import.meta.dirname, "..", "tool-schemas.txt");
+const SOURCE_JSON_SCHEMAS = join(import.meta.dirname, "..", "plugin", "tool_schemas.json");
 
 let deployed = 0;
 
@@ -30,6 +31,13 @@ for (const year of YEARS) {
     }
     if (existsSync(SOURCE_SCHEMAS)) {
       cpSync(SOURCE_SCHEMAS, join(targetDir, "tool-schemas.txt"));
+    }
+    // Deploy tool_schemas.json to plugin root (sibling of Commands/)
+    if (existsSync(SOURCE_JSON_SCHEMAS)) {
+      const pluginRoot = join(ADDINS_BASE, year, "revit_mcp_plugin");
+      if (existsSync(pluginRoot)) {
+        cpSync(SOURCE_JSON_SCHEMAS, join(pluginRoot, "tool_schemas.json"));
+      }
     }
     deployed++;
     console.error(`Deployed to Revit ${year} addins`);

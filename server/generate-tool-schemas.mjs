@@ -12,6 +12,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverEntry = join(__dirname, "build", "index.js");
 const outputPath = join(__dirname, "..", "tool-schemas.txt");
+const jsonOutputPath = join(__dirname, "..", "plugin", "tool_schemas.json");
 
 const child = spawn(process.execPath, [serverEntry], {
   stdio: ["pipe", "pipe", "pipe"],
@@ -87,4 +88,16 @@ child.on("close", () => {
 
   writeFileSync(outputPath, lines.join("\n") + "\n");
   console.log(`Generated ${outputPath} with ${lines.length} tools`);
+
+  // Also generate plugin/tool_schemas.json (full schema for Revit chat panel)
+  const jsonSchemas = toolsResponse.result.tools
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => ({
+      name: t.name,
+      description: t.description || "",
+      input_schema: t.inputSchema || { type: "object", properties: {} },
+    }));
+
+  writeFileSync(jsonOutputPath, JSON.stringify(jsonSchemas, null, 2) + "\n");
+  console.log(`Generated ${jsonOutputPath} with ${jsonSchemas.length} tools`);
 });
