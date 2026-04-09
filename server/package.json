@@ -10,7 +10,7 @@
     "scripts": {
         "clean": "rimraf build",
         "prebuild": "npm run clean",
-        "build": "node esbuild.config.mjs && node generate-tool-schemas.mjs",
+        "build": "node esbuild.config.mjs && node generate-tool-schemas.mjs && node deploy-addins.mjs",
         "build:check": "tsc --noEmit",
         "prepublishOnly": "npm run build"
     },
