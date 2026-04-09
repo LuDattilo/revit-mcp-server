@@ -335,6 +335,30 @@ Color elements by parameter value (color splash).
 { "categoryName": "Structural Columns", "parameterName": "Family and Type", "useGradient": true }
 ```
 
+### `create_view_template`
+Create a view template from an existing view.
+```json
+{ "templateName": "RAI Analysis", "sourceViewName": "Level 1" }
+```
+
+### `set_view_crop`
+Control crop box: enable/disable, set bounds from elements or coordinates.
+```json
+// Crop to elements with 500mm offset
+{ "elementIds": [123, 456], "offsetMm": 500, "cropVisible": true }
+// Explicit coordinates
+{ "minXMm": -10000, "minYMm": -5000, "maxXMm": 10000, "maxYMm": 5000, "cropActive": true }
+```
+
+### `navigate_view`
+Activate views, zoom to fit, zoom to elements, zoom in/out, close.
+```json
+{ "action": "activate", "viewName": "Level 1" }
+{ "action": "zoom_to_elements", "elementIds": [123, 456] }
+{ "action": "zoom_to_fit" }
+{ "action": "zoom", "zoomFactor": 2.0 }
+```
+
 ### `duplicate_view` *(new)*
 Duplicate views with options.
 ```json
