@@ -93,14 +93,22 @@ namespace RevitMCPCommandSet.Services
                     {
                         elements.Add(new
                         {
+#if REVIT2024_OR_GREATER
                             elementId = elem.Id.Value,
+#else
+                            elementId = (long)elem.Id.IntegerValue,
+#endif
                             name = elem.Name,
                             category = categoryName,
                             familyName = (elem is FamilyInstance fi) ? fi.Symbol?.Family?.Name : null,
                             typeName = elem.GetTypeId() != ElementId.InvalidElementId
                                 ? doc.GetElement(elem.GetTypeId())?.Name
                                 : null,
+#if REVIT2024_OR_GREATER
                             levelId = elem.LevelId?.Value,
+#else
+                            levelId = elem.LevelId != null ? (long?)elem.LevelId.IntegerValue : null,
+#endif
                             levelName = elem.LevelId != null && elem.LevelId != ElementId.InvalidElementId
                                 ? doc.GetElement(elem.LevelId)?.Name
                                 : null
