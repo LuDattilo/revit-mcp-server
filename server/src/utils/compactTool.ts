@@ -13,7 +13,7 @@ export function toolResponse(toolName: string, response: any, args?: { compact?:
     stripNulls: true,
     maxArrayItems: 100,
   });
-  const text = JSON.stringify(compacted, null, 2);
+  const text = JSON.stringify(compacted);
   logTokenUsage(toolName, text, false);
   return {
     content: [{ type: "text" as const, text }],
@@ -33,7 +33,7 @@ export function toolError(toolName: string, message: string) {
  * Logs token usage and returns the standard MCP response format.
  */
 export function rawToolResponse(toolName: string, response: any) {
-  const text = JSON.stringify(response, null, 2);
+  const text = JSON.stringify(response);
   logTokenUsage(toolName, text, false);
   return {
     content: [{ type: "text" as const, text }],
