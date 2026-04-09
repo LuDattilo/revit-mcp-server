@@ -31,6 +31,7 @@ import * as CreateFloor from "./create_floor.js";
 import * as CreateGrid from "./create_grid.js";
 import * as CreateLevel from "./create_level.js";
 import * as CreateLineBasedElement from "./create_line_based_element.js";
+import * as CreateMaterial from "./create_material.js";
 import * as CreateMaterialTakeoffSchedule from "./create_material_takeoff_schedule.js";
 import * as CreatePlaceholderSheets from "./create_placeholder_sheets.js";
 import * as CreatePointBasedElement from "./create_point_based_element.js";
@@ -43,12 +44,14 @@ import * as CreateSheetListSchedule from "./create_sheet_list_schedule.js";
 import * as CreateStructuralFramingSystem from "./create_structural_framing_system.js";
 import * as CreateSurfaceBasedElement from "./create_surface_based_element.js";
 import * as CreateTextNote from "./create_text_note.js";
+import * as CreateWorkset from "./create_workset.js";
 import * as CreateView from "./create_view.js";
 import * as CreateViewFilter from "./create_view_filter.js";
 import * as CreateViewListSchedule from "./create_view_list_schedule.js";
 import * as CreateViewsFromRooms from "./create_views_from_rooms.js";
 import * as CreateWindowScheduleByRoom from "./create_window_schedule_by_room.js";
 import * as DeleteElement from "./delete_element.js";
+import * as DeleteWorkset from "./delete_workset.js";
 import * as DeleteSchedule from "./delete_schedule.js";
 import * as DeleteSelection from "./delete_selection.js";
 import * as DuplicateSchedule from "./duplicate_schedule.js";
@@ -65,6 +68,8 @@ import * as FilterByParameterValue from "./filter_by_parameter_value.js";
 import * as FindUndimensionedElements from "./find_undimensioned_elements.js";
 import * as FindUntaggedElements from "./find_untagged_elements.js";
 import * as GetAvailableFamilyTypes from "./get_available_family_types.js";
+import * as GetCompoundStructure from "./get_compound_structure.js";
+import * as GetElementsByWorkset from "./get_elements_by_workset.js";
 import * as GetCurrentViewElements from "./get_current_view_elements.js";
 import * as GetCurrentViewInfo from "./get_current_view_info.js";
 import * as GetElementParameters from "./get_element_parameters.js";
@@ -103,14 +108,19 @@ import * as PurgeUnused from "./purge_unused.js";
 import * as QueryStoredData from "./query_stored_data.js";
 import * as RenameFamilies from "./rename_families.js";
 import * as RenameViews from "./rename_views.js";
+import * as RenameWorkset from "./rename_workset.js";
 import * as RenumberElements from "./renumber_elements.js";
 import * as SaveSelection from "./save_selection.js";
 import * as SayHello from "./say_hello.js";
 import * as SectionBoxFromSelection from "./section_box_from_selection.js";
 import * as SendCodeToRevit from "./send_code_to_revit.js";
 import * as SetElementParameters from "./set_element_parameters.js";
+import * as SetMaterialAppearance from "./set_material_appearance.js";
+import * as SetMaterialAssets from "./set_material_assets.js";
 import * as SetMaterialProperties from "./set_material_properties.js";
 import * as SetElementPhase from "./set_element_phase.js";
+import * as SetActiveWorkset from "./set_active_workset.js";
+import * as SetCompoundStructure from "./set_compound_structure.js";
 import * as SetElementWorkset from "./set_element_workset.js";
 import * as StoreProjectData from "./store_project_data.js";
 import * as StoreRoomData from "./store_room_data.js";
@@ -158,6 +168,7 @@ export async function registerTools(server: McpServer) {
     { name: "create_grid", module: CreateGrid },
     { name: "create_level", module: CreateLevel },
     { name: "create_line_based_element", module: CreateLineBasedElement },
+    { name: "create_material", module: CreateMaterial },
     { name: "create_material_takeoff_schedule", module: CreateMaterialTakeoffSchedule },
     { name: "create_placeholder_sheets", module: CreatePlaceholderSheets },
     { name: "create_point_based_element", module: CreatePointBasedElement },
@@ -170,12 +181,14 @@ export async function registerTools(server: McpServer) {
     { name: "create_structural_framing_system", module: CreateStructuralFramingSystem },
     { name: "create_surface_based_element", module: CreateSurfaceBasedElement },
     { name: "create_text_note", module: CreateTextNote },
+    { name: "create_workset", module: CreateWorkset },
     { name: "create_view", module: CreateView },
     { name: "create_view_filter", module: CreateViewFilter },
     { name: "create_view_list_schedule", module: CreateViewListSchedule },
     { name: "create_views_from_rooms", module: CreateViewsFromRooms },
     { name: "create_window_schedule_by_room", module: CreateWindowScheduleByRoom },
     { name: "delete_element", module: DeleteElement },
+    { name: "delete_workset", module: DeleteWorkset },
     { name: "delete_schedule", module: DeleteSchedule },
     { name: "delete_selection", module: DeleteSelection },
     { name: "duplicate_schedule", module: DuplicateSchedule },
@@ -192,6 +205,8 @@ export async function registerTools(server: McpServer) {
     { name: "find_undimensioned_elements", module: FindUndimensionedElements },
     { name: "find_untagged_elements", module: FindUntaggedElements },
     { name: "get_available_family_types", module: GetAvailableFamilyTypes },
+    { name: "get_compound_structure", module: GetCompoundStructure },
+    { name: "get_elements_by_workset", module: GetElementsByWorkset },
     { name: "get_current_view_elements", module: GetCurrentViewElements },
     { name: "get_current_view_info", module: GetCurrentViewInfo },
     { name: "get_element_parameters", module: GetElementParameters },
@@ -230,14 +245,19 @@ export async function registerTools(server: McpServer) {
     { name: "query_stored_data", module: QueryStoredData },
     { name: "rename_families", module: RenameFamilies },
     { name: "rename_views", module: RenameViews },
+    { name: "rename_workset", module: RenameWorkset },
     { name: "renumber_elements", module: RenumberElements },
     { name: "save_selection", module: SaveSelection },
     { name: "say_hello", module: SayHello },
     { name: "section_box_from_selection", module: SectionBoxFromSelection },
     { name: "send_code_to_revit", module: SendCodeToRevit },
     { name: "set_element_parameters", module: SetElementParameters },
+    { name: "set_material_appearance", module: SetMaterialAppearance },
+    { name: "set_material_assets", module: SetMaterialAssets },
     { name: "set_material_properties", module: SetMaterialProperties },
     { name: "set_element_phase", module: SetElementPhase },
+    { name: "set_active_workset", module: SetActiveWorkset },
+    { name: "set_compound_structure", module: SetCompoundStructure },
     { name: "set_element_workset", module: SetElementWorkset },
     { name: "store_project_data", module: StoreProjectData },
     { name: "store_room_data", module: StoreRoomData },

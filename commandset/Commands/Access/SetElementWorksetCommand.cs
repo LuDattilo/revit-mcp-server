@@ -30,7 +30,7 @@ namespace RevitMCPCommandSet.Commands.Access
 
                     _handler.Requests = requests;
 
-                    if (RaiseAndWaitForCompletion(15000))
+                    if (RaiseAndWaitForCompletion(120000))
                     {
                         return _handler.Result;
                     }

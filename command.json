@@ -139,6 +139,21 @@
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
+      "commandName": "create_material",
+      "description": "Create a new material or duplicate an existing one with color, transparency, and class",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_material_appearance",
+      "description": "Modify visual appearance of a material: shading color, transparency, shininess, smoothness, pattern colors, and rendering properties",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_material_assets",
+      "description": "Modify structural and thermal asset properties of a material (density, Young's modulus, conductivity, etc.)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
       "commandName": "set_material_properties",
       "description": "Set identity and product information on materials (Comments, Description, Manufacturer, Model, URL, Cost, Mark, Keynote, Name)",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
@@ -206,6 +221,41 @@
     {
       "commandName": "get_worksets",
       "description": "List all worksets with properties including name, kind, open/editable status",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_compound_structure",
+      "description": "Get the compound structure (layer stratigraphy) of a system family type",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_compound_structure",
+      "description": "Set or replace the compound structure layers of a system family type",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_workset",
+      "description": "Create a new user workset in the current workshared project",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_elements_by_workset",
+      "description": "Get all elements belonging to a specific workset with category summary",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "rename_workset",
+      "description": "Rename an existing user workset",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "delete_workset",
+      "description": "Delete a user workset and move its elements to another workset",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_active_workset",
+      "description": "Set the active workset for new element creation",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {

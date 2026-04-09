@@ -54,6 +54,13 @@ namespace RevitMCPCommandSet.Services
 
                 var results = new List<SetWorksetResult>();
 
+                // Build workset lookup dictionary once (instead of per-element)
+                var worksetLookup = new Dictionary<string, Workset>(StringComparer.OrdinalIgnoreCase);
+                foreach (var ws in new FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset))
+                {
+                    worksetLookup[ws.Name] = ws;
+                }
+
                 using (var transaction = new Transaction(doc, "Set Element Workset"))
                 {
                     transaction.Start();
@@ -69,21 +76,7 @@ namespace RevitMCPCommandSet.Services
 
                         try
                         {
-                            // Find the target workset by name
-                            var wsCollector = new FilteredWorksetCollector(doc)
-                                .OfKind(WorksetKind.UserWorkset);
-
-                            Workset targetWorkset = null;
-                            foreach (var ws in wsCollector)
-                            {
-                                if (ws.Name.Equals(request.WorksetName, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    targetWorkset = ws;
-                                    break;
-                                }
-                            }
-
-                            if (targetWorkset == null)
+                            if (!worksetLookup.TryGetValue(request.WorksetName, out var targetWorkset))
                             {
                                 result.Success = false;
                                 result.Message = $"Workset '{request.WorksetName}' not found";

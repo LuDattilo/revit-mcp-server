@@ -91,4 +91,22 @@ namespace RevitMCPCommandSet.Models.Common
         [JsonProperty("message")]
         public string Message { get; set; }
     }
+
+    public class CompoundLayerInput
+    {
+        [JsonProperty("function")]
+        public string Function { get; set; }
+
+        [JsonProperty("widthMm")]
+        public double WidthMm { get; set; }
+
+        [JsonProperty("materialName")]
+        public string MaterialName { get; set; }
+
+        [JsonProperty("materialId")]
+        public long? MaterialId { get; set; }
+
+        [JsonProperty("wraps")]
+        public bool? Wraps { get; set; }
+    }
 }
