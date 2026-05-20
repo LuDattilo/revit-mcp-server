@@ -73,12 +73,17 @@ namespace RevitMCPCommandSet.Services
                         guidString = externalDef.GUID.ToString();
                     }
 
+#if REVIT2022_OR_GREATER
                     var dataType = (definition as InternalDefinition)?.GetDataType()
                                    ?? (definition as ExternalDefinition)?.GetDataType();
                     var paramTypeName = dataType != null ? dataType.TypeId : "Unknown";
 
                     var groupTypeId = definition.GetGroupTypeId();
                     var groupName = groupTypeId != null ? groupTypeId.TypeId : "";
+#else
+                    var paramTypeName = definition.ParameterType.ToString();
+                    var groupName = (definition as InternalDefinition)?.ParameterGroup.ToString() ?? "";
+#endif
 
                     parameterList.Add(new
                     {

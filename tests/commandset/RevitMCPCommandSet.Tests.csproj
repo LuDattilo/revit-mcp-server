@@ -1,4 +1,5 @@
 <Project Sdk="Nice3point.Revit.Sdk/6.0.2">
+  <!-- Tests not supported on R21/R22 due to test framework requirements (Nice3point.TUnit.Revit requires Revit 2025+) -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <Configurations>Debug.R25;Debug.R26;Debug.R27</Configurations>

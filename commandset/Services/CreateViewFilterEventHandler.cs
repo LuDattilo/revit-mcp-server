@@ -276,19 +276,43 @@ namespace RevitMCPCommandSet.Services
                 case "Equals":
                     if (int.TryParse(value, out int eqIntVal))
                         return ParameterFilterRuleFactory.CreateEqualsRule(paramId, eqIntVal);
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateEqualsRule(paramId, value);
+#else
+                    return ParameterFilterRuleFactory.CreateEqualsRule(paramId, value, true);
+#endif
                 case "DoesNotEqual":
                     if (int.TryParse(value, out int neqIntVal))
                         return ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, neqIntVal);
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, value);
+#else
+                    return ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, value, true);
+#endif
                 case "Contains":
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateContainsRule(paramId, value);
+#else
+                    return ParameterFilterRuleFactory.CreateContainsRule(paramId, value, true);
+#endif
                 case "DoesNotContain":
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateNotContainsRule(paramId, value);
+#else
+                    return ParameterFilterRuleFactory.CreateNotContainsRule(paramId, value, true);
+#endif
                 case "BeginsWith":
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateBeginsWithRule(paramId, value);
+#else
+                    return ParameterFilterRuleFactory.CreateBeginsWithRule(paramId, value, true);
+#endif
                 case "EndsWith":
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateEndsWithRule(paramId, value);
+#else
+                    return ParameterFilterRuleFactory.CreateEndsWithRule(paramId, value, true);
+#endif
                 case "HasValue":
                     return ParameterFilterRuleFactory.CreateHasValueParameterRule(paramId);
                 case "HasNoValue":
@@ -296,11 +320,19 @@ namespace RevitMCPCommandSet.Services
                 case "IsGreaterThan":
                     if (int.TryParse(value, out int gtVal))
                         return ParameterFilterRuleFactory.CreateGreaterRule(paramId, gtVal);
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateGreaterRule(paramId, value);
+#else
+                    throw new NotSupportedException("String-based GreaterThan filter requires Revit 2023 or newer.");
+#endif
                 case "IsLessThan":
                     if (int.TryParse(value, out int ltVal))
                         return ParameterFilterRuleFactory.CreateLessRule(paramId, ltVal);
+#if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateLessRule(paramId, value);
+#else
+                    throw new NotSupportedException("String-based LessThan filter requires Revit 2023 or newer.");
+#endif
                 default:
                     throw new ArgumentException($"Unknown filter rule type: {ruleType}");
             }

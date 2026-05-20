@@ -80,6 +80,7 @@ namespace RevitMCPCommandSet.Services
                 var taggedElementIds = new HashSet<long>();
                 foreach (IndependentTag tag in tagCollector)
                 {
+#if REVIT2022_OR_GREATER
                     foreach (var id in tag.GetTaggedLocalElementIds())
                     {
                         if (id != ElementId.InvalidElementId)
@@ -89,6 +90,11 @@ namespace RevitMCPCommandSet.Services
                             taggedElementIds.Add(id.IntegerValue);
 #endif
                     }
+#else
+                    var taggedId = tag.TaggedLocalElementId;
+                    if (taggedId != null && taggedId != ElementId.InvalidElementId)
+                        taggedElementIds.Add(taggedId.IntegerValue);
+#endif
                 }
 
                 // Also collect SpatialElementTags (room tags, space tags, area tags)

@@ -199,7 +199,11 @@ namespace RevitMCPCommandSet.Services
                                 CurveLoop curveLoop = CurveLoop.Create(data.Boundary.OuterLoop.Select(l => JZLine.ToLine(l) as Curve).ToList());
 
                                 // Multi-version - Floor.Create introduced in Revit 2022 but stable in 2023+
+#if REVIT2022_OR_GREATER
                                 floor = Floor.Create(doc, new List<CurveLoop> { curveLoop }, floorType.Id, baseLevel.Id);
+#else
+                                throw new NotSupportedException("Floor.Create requires Revit 2022 or newer.");
+#endif
                                 // Set floor parameters
                                 if (floor != null)
                                 {
@@ -236,6 +240,7 @@ namespace RevitMCPCommandSet.Services
                             case BuiltInCategory.OST_Ceilings:
                                 CurveLoop ceilingCurveLoop = CurveLoop.Create(data.Boundary.OuterLoop.Select(l => JZLine.ToLine(l) as Curve).ToList());
 
+#if REVIT2022_OR_GREATER
                                 Ceiling ceiling = Ceiling.Create(doc, new List<CurveLoop> { ceilingCurveLoop }, ceilingType.Id, baseLevel.Id);
                                 if (ceiling != null)
                                 {
@@ -247,6 +252,9 @@ namespace RevitMCPCommandSet.Services
                                     }
                                     elementIds.Add(ceiling.Id.GetIntValue());
                                 }
+#else
+                                throw new NotSupportedException("Ceiling.Create requires Revit 2022 or newer.");
+#endif
                                 break;
                             default:
                                 break;

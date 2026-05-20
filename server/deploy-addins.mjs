@@ -2,11 +2,11 @@
  * Post-build step: copies server build + tool-schemas to all Revit Addins folders (2023-2027).
  * Runs automatically as part of `npm run build`.
  */
-import { cpSync, existsSync } from "fs";
+import { cpSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
 const APPDATA = process.env.APPDATA || "";
-const YEARS = ["2023", "2024", "2025", "2026", "2027"];
+const YEARS = ["2021", "2022", "2023", "2024", "2025", "2026", "2027"];
 const ADDINS_BASE = join(APPDATA, "Autodesk", "Revit", "Addins");
 const RELATIVE_PATH = join("revit_mcp_plugin", "Commands", "RevitMCPCommandSet");
 
@@ -22,7 +22,9 @@ for (const year of YEARS) {
   if (!existsSync(targetDir)) continue;
 
   const targetBuildDir = join(targetDir, "server", "build");
-  if (!existsSync(targetBuildDir)) continue;
+  if (!existsSync(targetBuildDir)) {
+    try { mkdirSync(targetBuildDir, { recursive: true }); } catch { continue; }
+  }
 
   try {
     cpSync(SOURCE_BUILD, join(targetBuildDir, "index.js"));

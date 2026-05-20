@@ -100,6 +100,7 @@ namespace RevitMCPCommandSet.Services
                     try
                     {
                         // Check if the tag has a valid host
+#if REVIT2022_OR_GREATER
                         var localIds = tag.GetTaggedLocalElementIds();
                         if (localIds == null || localIds.Count == 0)
                         {
@@ -124,6 +125,19 @@ namespace RevitMCPCommandSet.Services
                                 reason = "All tagged elements are invalid";
                             }
                         }
+#else
+                        var taggedLocalId = tag.TaggedLocalElementId;
+                        if (taggedLocalId == null || taggedLocalId == ElementId.InvalidElementId)
+                        {
+                            isEmpty = true;
+                            reason = "No tagged references";
+                        }
+                        else if (doc.GetElement(taggedLocalId) == null)
+                        {
+                            isEmpty = true;
+                            reason = "All tagged elements are invalid";
+                        }
+#endif
 
                         // Check if tag text is empty
                         if (!isEmpty)

@@ -51,7 +51,7 @@
     # One-liner install directly from GitHub
 #>
 param(
-    [ValidateSet('2023','2024','2025','2026','2027')]
+    [ValidateSet('2021','2022','2023','2024','2025','2026','2027')]
     [string]$RevitVersion,
     [string]$Tag = 'latest',
     [switch]$Uninstall,
@@ -85,7 +85,7 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     $NPM_PACKAGE   = 'mcp-server-for-revit'
     $ADDIN_FILE    = "$PLUGIN_NAME.addin"
     $MIN_NODE      = 18
-    $REVIT_YEARS   = 2023..2027
+    $REVIT_YEARS   = 2021..2027
 
     # Inline fallback: shared functions
     function Get-RevitVersions {
