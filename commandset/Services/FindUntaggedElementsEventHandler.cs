@@ -80,7 +80,7 @@ namespace RevitMCPCommandSet.Services
                 var taggedElementIds = new HashSet<long>();
                 foreach (IndependentTag tag in tagCollector)
                 {
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                     foreach (var id in tag.GetTaggedLocalElementIds())
                     {
                         if (id != ElementId.InvalidElementId)

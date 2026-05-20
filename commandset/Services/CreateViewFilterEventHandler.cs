@@ -320,18 +320,22 @@ namespace RevitMCPCommandSet.Services
                 case "IsGreaterThan":
                     if (int.TryParse(value, out int gtVal))
                         return ParameterFilterRuleFactory.CreateGreaterRule(paramId, gtVal);
+                    if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double gtDbl))
+                        return ParameterFilterRuleFactory.CreateGreaterRule(paramId, gtDbl, 0.001);
 #if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateGreaterRule(paramId, value);
 #else
-                    throw new NotSupportedException("String-based GreaterThan filter requires Revit 2023 or newer.");
+                    return null;
 #endif
                 case "IsLessThan":
                     if (int.TryParse(value, out int ltVal))
                         return ParameterFilterRuleFactory.CreateLessRule(paramId, ltVal);
+                    if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double ltDbl))
+                        return ParameterFilterRuleFactory.CreateLessRule(paramId, ltDbl, 0.001);
 #if REVIT2023_OR_GREATER
                     return ParameterFilterRuleFactory.CreateLessRule(paramId, value);
 #else
-                    throw new NotSupportedException("String-based LessThan filter requires Revit 2023 or newer.");
+                    return null;
 #endif
                 default:
                     throw new ArgumentException($"Unknown filter rule type: {ruleType}");

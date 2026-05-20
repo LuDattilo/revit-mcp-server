@@ -272,7 +272,7 @@ namespace RevitMCPCommandSet.Services
                         try
                         {
                             // Try to get data type and check if it's a boolean
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                             var paramTypeId = internalDef.GetDataType();
                             bool isBoolean = paramTypeId != null &&
                                            paramTypeId.Equals(SpecTypeId.Boolean.YesNo);

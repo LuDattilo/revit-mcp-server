@@ -1076,7 +1076,7 @@ namespace RevitMCPCommandSet.Services
         public static bool IsDimensionParameter(Parameter param)
         {
 
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
             // Use Definition.GetDataType() to get parameter type (Revit 2022+)
             ForgeTypeId paramTypeId = param.Definition.GetDataType();
 

@@ -79,7 +79,7 @@ namespace RevitMCPCommandSet.Services
                     .GetElementCount();
 
                 // Check if deletion is possible
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                 var deleteSettings = new DeleteWorksetSettings(
                     DeleteWorksetOption.MoveElementsToWorkset, destinationWorkset.Id);
 
@@ -115,7 +115,7 @@ namespace RevitMCPCommandSet.Services
                     transaction.Start();
                     try
                     {
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                         WorksetTable.DeleteWorkset(doc, targetWorkset.Id, deleteSettings);
 #else
                         throw new NotSupportedException("DeleteWorkset requires Revit 2022 or newer.");

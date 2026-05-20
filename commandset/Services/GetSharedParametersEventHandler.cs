@@ -73,7 +73,7 @@ namespace RevitMCPCommandSet.Services
                         guidString = externalDef.GUID.ToString();
                     }
 
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                     var dataType = (definition as InternalDefinition)?.GetDataType()
                                    ?? (definition as ExternalDefinition)?.GetDataType();
                     var paramTypeName = dataType != null ? dataType.TypeId : "Unknown";

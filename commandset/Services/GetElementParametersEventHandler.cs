@@ -112,7 +112,7 @@ namespace RevitMCPCommandSet.Services
                 IsShared = param.IsShared,
                 HasValue = param.HasValue,
                 StorageType = param.StorageType.ToString(),
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                 GroupName = param.Definition?.GetGroupTypeId()?.TypeId ?? ""
 #else
                 GroupName = (param.Definition as InternalDefinition)?.ParameterGroup.ToString() ?? ""

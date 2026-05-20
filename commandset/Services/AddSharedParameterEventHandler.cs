@@ -58,7 +58,7 @@ namespace RevitMCPCommandSet.Services
                 ExternalDefinition externalDef = defGroup.Definitions.get_Item(ParameterName) as ExternalDefinition;
                 if (externalDef == null)
                 {
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                     var creationOptions = new ExternalDefinitionCreationOptions(ParameterName, SpecTypeId.String.Text);
 #else
                     var creationOptions = new ExternalDefinitionCreationOptions(ParameterName, ParameterType.Text);
@@ -114,7 +114,7 @@ namespace RevitMCPCommandSet.Services
                     try
                     {
                         // Resolve the parameter group (BuiltInParameterGroup -> GroupTypeId)
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
                         ForgeTypeId groupTypeId = ResolveGroupTypeId(ParameterGroup);
                         bool inserted = doc.ParameterBindings.Insert(externalDef, binding, groupTypeId);
 
@@ -174,7 +174,7 @@ namespace RevitMCPCommandSet.Services
             }
         }
 
-#if REVIT2022_OR_GREATER
+#if REVIT2023_OR_GREATER
         private static readonly Dictionary<string, ForgeTypeId> _groupTypeIdCache =
             BuildGroupTypeIdCache();
 
