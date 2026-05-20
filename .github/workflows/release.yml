@@ -21,6 +21,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup .NET Framework 4.8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 4.8.x
+
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -140,11 +145,11 @@ jobs:
 
           $zips = Get-ChildItem "$outputDir/*.zip"
           if ($zips.Count -lt 6) {
-              Write-Error "Expected at least 6 ZIP files (2021-2026), found $($zips.Count). Build may have failed."
+              Write-Error "Expected at least 6 ZIP files (2021-2026, R27 optional), found $($zips.Count). Build may have failed."
               exit 1
           }
           if ($zips.Count -lt 7) {
-              Write-Host "Note: $($zips.Count) ZIP files created (Revit 2027 SDK may not be available yet)"
+              Write-Host "Note: $($zips.Count) ZIP files created. Revit 2027 ZIP may be missing if .NET 10 SDK was unavailable."
           }
         shell: pwsh
 

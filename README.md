@@ -1,4 +1,4 @@
-[![Cover Image](./assets/cover.png?v=2)](https://github.com/LuDattilo/revit-mcp-server)
+[![Cover Image](./assets/cover.png?v=2)](https://github.com/AmrCodesHere/revit-mcp-server)
 
 # mcp-servers-for-revit
 
@@ -6,7 +6,7 @@
 
 ---
 
-mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 138 tools covering project info, model analysis, element creation, batch operations, data export, and more.
+mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects in real time. It exposes 124 tools covering project info, model analysis, element creation, batch operations, data export, and more.
 
 > [!NOTE]
 > This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
@@ -14,7 +14,7 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 ## Key Features
 
 - **124 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
-- **Revit 2021, 2022, 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
+- **Revit 2021, 2022, 2023, 2024, 2025, 2026, 2027** — built for all seven versions (2021–2027), fully tested on R23, R25, and R26
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
 - **Real-time execution** — AI requests are executed immediately on the active model via TCP/JSON-RPC 2.0
@@ -73,7 +73,7 @@ flowchart LR
 Open PowerShell and paste this command:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/install.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/AmrCodesHere/revit-mcp-server/main/scripts/install.ps1 | iex"
 ```
 
 The script:
@@ -98,7 +98,7 @@ The script:
 #### Option B: Manual install
 
 > [!IMPORTANT]
-> **Download the pre-built ZIP from the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page.** Do NOT clone the repository or copy the source code — the source contains `.cs` files, not compiled `.dll` files. The plugin will not work without compiled binaries.
+> **Download the pre-built ZIP from the [Releases](https://github.com/AmrCodesHere/revit-mcp-server/releases) page.** Do NOT clone the repository or copy the source code — the source contains `.cs` files, not compiled `.dll` files. The plugin will not work without compiled binaries.
 
 Extract the ZIP to:
 
@@ -141,6 +141,12 @@ Addins/2025/
 claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
 ```
 
+> **Note:** The `npx` command above pulls the upstream package from npm.
+> If you built this fork locally, replace it with the path to your built server:
+> `node /path/to/revit-mcp-server/server/build/index.js`
+> Alternatively, install from a pre-built ZIP (see Releases) — the server is
+> bundled inside and no separate npm install is required.
+
 **Claude Desktop**
 
 Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json`:
@@ -155,6 +161,12 @@ Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_co
     }
 }
 ```
+
+> **Note:** The `npx` command above pulls the upstream package from npm.
+> If you built this fork locally, replace it with the path to your built server:
+> `node /path/to/revit-mcp-server/server/build/index.js`
+> Alternatively, install from a pre-built ZIP (see Releases) — the server is
+> bundled inside and no separate npm install is required.
 
 ### 3. Start Revit
 
@@ -341,7 +353,7 @@ The Revit plugin includes a dockable chat panel that connects directly to the An
 
 1. Close Revit
 2. Delete the old installation from `%AppData%\Autodesk\Revit\Addins\<version>\`
-3. Download the correct ZIP from the [Releases](https://github.com/LuDattilo/revit-mcp-server/releases) page
+3. Download the correct ZIP from the [Releases](https://github.com/AmrCodesHere/revit-mcp-server/releases) page
 4. Extract and verify the folder structure matches the one shown in [Step 1](#1-install-the-revit-plugin)
 5. Restart Revit
 
@@ -384,6 +396,8 @@ Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both th
 
 | Configuration | Target | .NET |
 |---------------|--------|------|
+| `Debug R21` / `Release R21` | Revit 2021 | .NET Framework 4.8 |
+| `Debug R22` / `Release R22` | Revit 2022 | .NET Framework 4.8 |
 | `Debug R23` / `Release R23` | Revit 2023 | .NET Framework 4.8 |
 | `Debug R24` / `Release R24` | Revit 2024 | .NET Framework 4.8 |
 | `Debug R25` / `Release R25` | Revit 2025 | .NET 8 |
@@ -412,8 +426,12 @@ dotnet test -c Debug.R25 -r win-x64 tests/commandset
 mcp-servers-for-revit/
 ├── mcp-servers-for-revit.sln    # Combined solution (plugin + commandset + tests)
 ├── command.json                 # Command set manifest
+├── knip.json                    # Dead-code analysis config for the TypeScript server (knip.dev)
+├── tool-schemas.txt             # Auto-generated tool schema reference; do not edit manually
+├── nuget.config                 # NuGet source configuration for resolving Revit API packages
+├── docs/superpowers/            # Extended documentation and capability guides
 ├── server/                      # MCP server (TypeScript) - tools exposed to AI clients
-│   └── src/tools/               # One .ts file per tool (138 tools)
+│   └── src/tools/               # One .ts file per tool (124 tools)
 ├── plugin/                      # Revit add-in (C#) - TCP bridge + chat panel
 │   └── UI/                      # Dockable chat panel (XAML + code-behind)
 ├── commandset/                  # Command implementations (C#) - Revit API operations
@@ -431,7 +449,7 @@ mcp-servers-for-revit/
 
 A single `v*` tag drives the entire release. The [release workflow](.github/workflows/release.yml) automatically:
 
-- Builds the Revit plugin + command set for Revit 2023-2027
+- Builds the Revit plugin + command set for Revit 2021-2027
 - Creates a GitHub release with `mcp-servers-for-revit-vX.Y.Z-Revit<year>.zip` assets
 - Publishes the MCP server to npm as [`mcp-server-for-revit`](https://www.npmjs.com/package/mcp-server-for-revit)
 
