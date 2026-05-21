@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Nice3point.TUnit.Revit;
@@ -258,3 +259,4 @@ public class CreateFloorTests : RevitApiTest
         return curveLoop;
     }
 }
+#endif

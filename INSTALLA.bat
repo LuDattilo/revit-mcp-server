@@ -7,7 +7,7 @@ echo   ================================================================
 echo.
 echo   Installing...
 echo.
-powershell -ExecutionPolicy Bypass -File "%~dp0scripts\install.ps1" -LocalZip "%~dp0"
+powershell -ExecutionPolicy Bypass -File "%~dp0scripts\install.ps1"
 echo.
 echo   Press any key to close.
 pause >nul

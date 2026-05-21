@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Nice3point.TUnit.Revit;
 using Nice3point.TUnit.Revit.Executors;
@@ -283,3 +284,4 @@ public class CreateGridTests : RevitApiTest
         }
     }
 }
+#endif

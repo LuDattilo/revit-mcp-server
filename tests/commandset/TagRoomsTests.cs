@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Nice3point.TUnit.Revit;
@@ -200,3 +201,4 @@ public class TagRoomsTests : RevitApiTest
         Wall.Create(doc, Line.CreateBound(p4, p1), levelId, false);
     }
 }
+#endif

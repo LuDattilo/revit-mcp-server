@@ -416,9 +416,22 @@ dotnet test -c Debug.R26 -r win-x64 tests/commandset
 
 # Revit 2025
 dotnet test -c Debug.R25 -r win-x64 tests/commandset
+
+# Revit 2024 (compiles; no tests run — Nice3point.TUnit.Revit requires Revit 2025+)
+dotnet test -c Debug.R24 -r win-x64 tests/commandset
+
+# Revit 2023
+dotnet test -c Debug.R23 -r win-x64 tests/commandset
+
+# Revit 2022
+dotnet test -c Debug.R22 -r win-x64 tests/commandset
+
+# Revit 2021
+dotnet test -c Debug.R21 -r win-x64 tests/commandset
 ```
 
 > **Note:** The `-r win-x64` flag is required on ARM64 machines because the Revit API assemblies are x64-only.
+> R21–R24 builds compile successfully but produce no runnable tests; `Nice3point.TUnit.Revit` requires .NET 8 (Revit 2025+).
 
 ## Project Structure
 

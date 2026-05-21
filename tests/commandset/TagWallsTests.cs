@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Nice3point.TUnit.Revit;
 using Nice3point.TUnit.Revit.Executors;
@@ -199,3 +200,4 @@ public class TagWallsTests : RevitApiTest
         await Assert.That(stillExists).IsNotNull();
     }
 }
+#endif

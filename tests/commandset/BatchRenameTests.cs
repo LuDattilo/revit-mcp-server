@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Nice3point.TUnit.Revit;
 using Nice3point.TUnit.Revit.Executors;
@@ -234,3 +235,4 @@ public class BatchRenameTests : RevitApiTest
         await Assert.That(level.Name).IsEqualTo("Original Name");
     }
 }
+#endif
