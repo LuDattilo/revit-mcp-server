@@ -83,7 +83,11 @@ namespace RevitMCPCommandSet.Services
                             {
                                 name = extDef.Name,
                                 guid = extDef.GUID.ToString(),
+#if REVIT2023_OR_GREATER
                                 parameterType = extDef.GetDataType().TypeId ?? "Text"
+#else
+                                parameterType = extDef.ParameterType.ToString()
+#endif
                             });
                         }
                         else if (definition is InternalDefinition intDef)

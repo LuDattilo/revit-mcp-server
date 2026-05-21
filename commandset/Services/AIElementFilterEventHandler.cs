@@ -1076,7 +1076,8 @@ namespace RevitMCPCommandSet.Services
         public static bool IsDimensionParameter(Parameter param)
         {
 
-            // Use Definition.GetDataType() to get parameter type (Revit 2023+)
+#if REVIT2023_OR_GREATER
+            // Use Definition.GetDataType() to get parameter type (Revit 2022+)
             ForgeTypeId paramTypeId = param.Definition.GetDataType();
 
             // Check if parameter is a dimension-related type
@@ -1086,6 +1087,13 @@ namespace RevitMCPCommandSet.Services
                                    paramTypeId.Equals(SpecTypeId.Volume);
             // Only store dimension type parameters
             return isDimensionType;
+#else
+            var paramType = param.Definition.ParameterType;
+            return paramType == ParameterType.Length ||
+                   paramType == ParameterType.Angle ||
+                   paramType == ParameterType.Area ||
+                   paramType == ParameterType.Volume;
+#endif
         }
 
     }

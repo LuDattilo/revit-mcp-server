@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Nice3point.TUnit.Revit;
 using Nice3point.TUnit.Revit.Executors;
@@ -235,3 +236,4 @@ public class CopyElementsTests : RevitApiTest
         await Assert.That(copiedWall.WallType.Id.Value).IsEqualTo(wall.WallType.Id.Value);
     }
 }
+#endif

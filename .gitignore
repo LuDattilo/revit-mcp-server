@@ -5,6 +5,9 @@ server/node_modules/
 server/build/
 server/revit-data.db
 
+# Generated build artefacts (do not edit manually)
+tool-schemas.txt
+
 # Environment variables
 .env
 .env.*

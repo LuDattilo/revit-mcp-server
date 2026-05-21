@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Nice3point.TUnit.Revit;
 using Nice3point.TUnit.Revit.Executors;
@@ -245,3 +246,4 @@ public class CreateArrayTests : RevitApiTest
         await Assert.That(wallCountAfter).IsEqualTo(wallCountBefore);
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if REVIT2025_OR_GREATER
 using Autodesk.Revit.DB;
 using Nice3point.TUnit.Revit;
 using Nice3point.TUnit.Revit.Executors;
@@ -207,3 +208,4 @@ public class ColorSplashTests : RevitApiTest
         await Assert.That(colorMap["Mid"][2]).IsEqualTo(90);
     }
 }
+#endif

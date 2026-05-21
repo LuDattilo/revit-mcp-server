@@ -12,13 +12,13 @@
 #>
 
 # -- Constants -----------------------------------------------------------------
-$script:REPO           = 'LuDattilo/revit-mcp-server'
+$script:REPO           = 'AmrCodesHere/revit-mcp-server'
 $script:PLUGIN_NAME    = 'mcp-servers-for-revit'
 $script:PLUGIN_FOLDER  = 'revit_mcp_plugin'
 $script:NPM_PACKAGE    = 'mcp-server-for-revit'
 $script:ADDIN_FILE     = "$PLUGIN_NAME.addin"
 $script:MIN_NODE       = 18
-$script:REVIT_YEARS    = 2023..2027
+$script:REVIT_YEARS    = 2021..2027
 $script:MCP_HOST       = '127.0.0.1'
 $script:MCP_PORT       = 8080
 
@@ -43,10 +43,12 @@ function Get-RevitVersions {
         if ($Limit.Count -gt 0 -and $year.ToString() -notin $Limit) { continue }
         $addinsDir = "$env:APPDATA\Autodesk\Revit\Addins\$year"
         $regPaths  = @(
+            "HKLM:\SOFTWARE\Autodesk\Revit\$year",
+            "HKLM:\SOFTWARE\WOW6432Node\Autodesk\Revit\$year",
             "HKLM:\SOFTWARE\Autodesk\Revit\Autodesk Revit $year",
             "HKLM:\SOFTWARE\WOW6432Node\Autodesk\Revit\Autodesk Revit $year"
         )
-        $exePath = "C:\Program Files\Autodesk\Revit $year\Revit.exe"
+        $exePath = "$env:ProgramFiles\Autodesk\Revit $year\Revit.exe"
         $inRegistry = ($regPaths | Where-Object { Test-Path $_ }).Count -gt 0
         $inAddins   = Test-Path $addinsDir
         $inExe      = Test-Path $exePath
@@ -71,10 +73,12 @@ function Test-RevitInstalled {
     param([int]$Year)
     $addinsDir = "$env:APPDATA\Autodesk\Revit\Addins\$Year"
     $regPaths  = @(
+        "HKLM:\SOFTWARE\Autodesk\Revit\$Year",
+        "HKLM:\SOFTWARE\WOW6432Node\Autodesk\Revit\$Year",
         "HKLM:\SOFTWARE\Autodesk\Revit\Autodesk Revit $Year",
         "HKLM:\SOFTWARE\WOW6432Node\Autodesk\Revit\Autodesk Revit $Year"
     )
-    $exePath   = "C:\Program Files\Autodesk\Revit $Year\Revit.exe"
+    $exePath   = "$env:ProgramFiles\Autodesk\Revit $Year\Revit.exe"
     $inReg     = ($regPaths | Where-Object { Test-Path $_ }).Count -gt 0
     $inExe     = Test-Path $exePath
     $inAddins  = Test-Path $addinsDir

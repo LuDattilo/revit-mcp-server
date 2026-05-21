@@ -58,7 +58,11 @@ namespace RevitMCPCommandSet.Services
                 ExternalDefinition externalDef = defGroup.Definitions.get_Item(ParameterName) as ExternalDefinition;
                 if (externalDef == null)
                 {
+#if REVIT2023_OR_GREATER
                     var creationOptions = new ExternalDefinitionCreationOptions(ParameterName, SpecTypeId.String.Text);
+#else
+                    var creationOptions = new ExternalDefinitionCreationOptions(ParameterName, ParameterType.Text);
+#endif
                     externalDef = defGroup.Definitions.Create(creationOptions) as ExternalDefinition;
                 }
 
@@ -110,12 +114,20 @@ namespace RevitMCPCommandSet.Services
                     try
                     {
                         // Resolve the parameter group (BuiltInParameterGroup -> GroupTypeId)
+#if REVIT2023_OR_GREATER
                         ForgeTypeId groupTypeId = ResolveGroupTypeId(ParameterGroup);
                         bool inserted = doc.ParameterBindings.Insert(externalDef, binding, groupTypeId);
 
                         // If already bound, re-insert to update the binding
                         if (!inserted)
                             inserted = doc.ParameterBindings.ReInsert(externalDef, binding, groupTypeId);
+#else
+                        bool inserted = doc.ParameterBindings.Insert(externalDef, binding, BuiltInParameterGroup.PG_DATA);
+
+                        // If already bound, re-insert to update the binding
+                        if (!inserted)
+                            inserted = doc.ParameterBindings.ReInsert(externalDef, binding, BuiltInParameterGroup.PG_DATA);
+#endif
 
                         transaction.Commit();
 
@@ -162,6 +174,7 @@ namespace RevitMCPCommandSet.Services
             }
         }
 
+#if REVIT2023_OR_GREATER
         private static readonly Dictionary<string, ForgeTypeId> _groupTypeIdCache =
             BuildGroupTypeIdCache();
 
@@ -186,6 +199,7 @@ namespace RevitMCPCommandSet.Services
                 ? typeId
                 : GroupTypeId.Data;
         }
+#endif
 
         public string GetName() => "Add Shared Parameter";
     }
