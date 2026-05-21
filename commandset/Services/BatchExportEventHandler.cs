@@ -75,7 +75,7 @@ namespace RevitMCPCommandSet.Services
 
         private void ExportPdf(Document doc, string exportPath)
         {
-#if REVIT2023_OR_GREATER
+#if REVIT2022_OR_GREATER
             var viewIds = GetViewOrSheetIds(doc);
             if (viewIds.Count == 0)
                 throw new Exception("No sheets/views to export");
@@ -98,7 +98,7 @@ namespace RevitMCPCommandSet.Services
             doc.Export(exportPath, viewIds, options);
             Result = BuildExportResult("PDF", "*.pdf", exportPath);
 #else
-            throw new NotSupportedException("PDF export requires Revit 2022 or newer.");
+            throw new NotSupportedException("PDF export is not supported on Revit 2021.");
 #endif
         }
 

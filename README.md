@@ -138,7 +138,7 @@ Addins/2025/
 **Claude Code**
 
 ```bash
-claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
+claude mcp add mcp-servers-for-revit -- npx -y mcp-servers-for-revit
 ```
 
 > **Note:** The `npx` command above pulls the upstream package from npm.
@@ -154,9 +154,9 @@ Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_co
 ```json
 {
     "mcpServers": {
-        "mcp-server-for-revit": {
+        "mcp-servers-for-revit": {
             "command": "npx",
-            "args": ["-y", "mcp-server-for-revit"]
+            "args": ["-y", "mcp-servers-for-revit"]
         }
     }
 }
@@ -464,7 +464,7 @@ A single `v*` tag drives the entire release. The [release workflow](.github/work
 
 - Builds the Revit plugin + command set for Revit 2021-2027
 - Creates a GitHub release with `mcp-servers-for-revit-vX.Y.Z-Revit<year>.zip` assets
-- Publishes the MCP server to npm as [`mcp-server-for-revit`](https://www.npmjs.com/package/mcp-server-for-revit)
+- Creates versioned ZIP files for Revit 2021–2027 and attaches them to the GitHub release.
 
 ```powershell
 # Bump version, commit, and tag
@@ -481,7 +481,7 @@ git push origin main --tags
 | **Original concept** | **Roman Zarkhin** — created the first MCP server for Revit (15 tools) | [romanzarkhin/revit-mcp](https://github.com/romanzarkhin/revit-mcp) |
 | **Expansion to 80+ tools** | **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) community** — lisiting01, jmcouffin, huyan1458, bobbyg603, chuongmep and others expanded the project across three repos | [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp), [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin), [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) |
 | **Consolidated repo** | **[sparx-fire](https://sparx-fire.com)** (Bobby Galli) — merged the three repos into a single solution | [mcp-servers-for-revit/mcp-servers-for-revit](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) |
-| **Current maintainer** | **LuDattilo** — language-independent operation, embedded Claude chat panel, PowerShell installer | [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server) |
+| **Upstream fork author** | **LuDattilo** — language-independent operation, embedded Claude chat panel, PowerShell installer | [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server) |
 | **Fork maintainer** | **AmrCodesHere** — Revit 2021/2022 support, corrected `#if` version guards, CI/CD release pipeline | [AmrCodesHere/revit-mcp-server](https://github.com/AmrCodesHere/revit-mcp-server) |
 
 ## License
