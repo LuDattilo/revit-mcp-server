@@ -469,6 +469,7 @@ git push origin main --tags
 | **Expansion to 80+ tools** | **[mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) community** — lisiting01, jmcouffin, huyan1458, bobbyg603, chuongmep and others expanded the project across three repos | [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp), [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin), [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) |
 | **Consolidated repo** | **[sparx-fire](https://sparx-fire.com)** (Bobby Galli) — merged the three repos into a single solution | [mcp-servers-for-revit/mcp-servers-for-revit](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) |
 | **Current maintainer** | **LuDattilo** — language-independent operation, embedded Claude chat panel, PowerShell installer | [LuDattilo/revit-mcp-server](https://github.com/LuDattilo/revit-mcp-server) |
+| **Fork maintainer** | **AmrCodesHere** — Revit 2021/2022 support, corrected `#if` version guards, CI/CD release pipeline | [AmrCodesHere/revit-mcp-server](https://github.com/AmrCodesHere/revit-mcp-server) |
 
 ## License
 

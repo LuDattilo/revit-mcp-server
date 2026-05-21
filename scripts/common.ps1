@@ -12,7 +12,7 @@
 #>
 
 # -- Constants -----------------------------------------------------------------
-$script:REPO           = 'LuDattilo/revit-mcp-server'
+$script:REPO           = 'AmrCodesHere/revit-mcp-server'
 $script:PLUGIN_NAME    = 'mcp-servers-for-revit'
 $script:PLUGIN_FOLDER  = 'revit_mcp_plugin'
 $script:NPM_PACKAGE    = 'mcp-server-for-revit'
