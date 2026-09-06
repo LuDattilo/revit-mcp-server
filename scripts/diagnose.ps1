@@ -106,9 +106,11 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
             )
             $exePath = "C:\Program Files\Autodesk\Revit $year\Revit.exe"
             $inRegistry = ($regPaths | Where-Object { Test-Path $_ }).Count -gt 0
-            $inAddins   = Test-Path $addinsDir
             $inExe      = Test-Path $exePath
-            if ($inRegistry -or $inAddins -or $inExe) {
+            # An Addins folder on its own proves nothing: other add-ins create one for Revit
+            # versions that were never installed. It counts only when our plugin is there.
+            $hasPlugin  = Test-Path (Join-Path $addinsDir $ADDIN_FILE)
+            if ($inRegistry -or $inExe -or $hasPlugin) {
                 $found += [PSCustomObject]@{ Year = $year; AddinsDir = $addinsDir }
             }
         }
@@ -410,8 +412,13 @@ foreach ($year in $REVIT_YEARS) {
         FileOk "  $registryFile"
         try {
             $reg = Get-Content $registryFile -Raw | ConvertFrom-Json
-            $totalCount   = $reg.Commands.Count
-            $enabledCount = ($reg.Commands | Where-Object { $_.Enabled }).Count
+            $totalCount = $reg.Commands.Count
+            # A missing "enabled" field means enabled: the plugin's CommandConfig.Enabled
+            # defaults to true and the shipped registry omits the field, so treating it as
+            # disabled reported a healthy install as "ALL DISABLED".
+            $enabled  = @($reg.Commands | Where-Object { $null -eq $_.enabled -or $_.enabled })
+            $disabled = @($reg.Commands | Where-Object { $null -ne $_.enabled -and -not $_.enabled })
+            $enabledCount = $enabled.Count
             if ($totalCount -eq 0) {
                 Fail "  commandRegistry.json is EMPTY (no commands)"
                 Info "  Open Revit -> Add-Ins -> Settings -> Select All -> Save"
@@ -421,13 +428,10 @@ foreach ($year in $REVIT_YEARS) {
             } else {
                 Pass "  commandRegistry.json: $enabledCount/$totalCount commands enabled"
             }
-            Sub "  Enabled commands:"
-            $reg.Commands | Where-Object { $_.Enabled } |
-                ForEach-Object { Info "    $($_.CommandId)" }
-            $disabled = $reg.Commands | Where-Object { -not $_.Enabled }
-            if ($disabled) {
+            # The registry entries are keyed by "commandName" - $_.CommandId printed blanks.
+            if ($disabled.Count -gt 0) {
                 Sub "  Disabled commands:"
-                $disabled | ForEach-Object { Info "    $($_.CommandId)" }
+                $disabled | ForEach-Object { Info "    $($_.commandName)" }
             }
         } catch {
             Fail "  commandRegistry.json parse error: $_"

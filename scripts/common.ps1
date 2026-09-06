@@ -48,9 +48,13 @@ function Get-RevitVersions {
         )
         $exePath = "C:\Program Files\Autodesk\Revit $year\Revit.exe"
         $inRegistry = ($regPaths | Where-Object { Test-Path $_ }).Count -gt 0
-        $inAddins   = Test-Path $addinsDir
         $inExe      = Test-Path $exePath
-        if ($inRegistry -or $inAddins -or $inExe) {
+        # An Addins folder on its own proves nothing: other add-ins (pyRevit, RevitLookup,
+        # ...) create one for Revit versions that were never installed, and installing into
+        # those wastes ~50 MB each. It counts only when our plugin is already there, so that
+        # uninstall and repair still find existing installations.
+        $hasPlugin  = Test-Path (Join-Path $addinsDir $ADDIN_FILE)
+        if ($inRegistry -or $inExe -or $hasPlugin) {
             $found += [PSCustomObject]@{ Year = $year; AddinsDir = $addinsDir }
         }
     }
@@ -77,8 +81,9 @@ function Test-RevitInstalled {
     $exePath   = "C:\Program Files\Autodesk\Revit $Year\Revit.exe"
     $inReg     = ($regPaths | Where-Object { Test-Path $_ }).Count -gt 0
     $inExe     = Test-Path $exePath
-    $inAddins  = Test-Path $addinsDir
-    return ($inReg -or $inExe -or $inAddins)
+    # See Get-RevitVersions: an Addins folder alone is created by other add-ins too.
+    $hasPlugin = Test-Path (Join-Path $addinsDir $ADDIN_FILE)
+    return ($inReg -or $inExe -or $hasPlugin)
 }
 
 # ==============================================================================
@@ -95,7 +100,7 @@ function Test-RevitInstalled {
     String full path to node.exe, or $null if not found anywhere.
 #>
 function Get-NodePath {
-    # 1. System node (already in PATH — preferred for developers)
+    # 1. System node (already in PATH -- preferred for developers)
     $sysNode = Get-Command node -ErrorAction SilentlyContinue
     if ($sysNode) { return $sysNode.Source }
 

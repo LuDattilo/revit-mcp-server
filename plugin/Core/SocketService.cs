@@ -23,6 +23,13 @@ namespace revit_mcp_plugin.Core
         private Thread _listenerThread;
         private volatile bool _isRunning;
         private int _port = 8080;
+
+        /// <summary>
+        /// Upper bound on a single command execution. Commands carry their own (shorter)
+        /// timeouts; this is the backstop that keeps a stuck command from leaving the
+        /// caller without a response.
+        /// </summary>
+        private const int CommandHardTimeoutMs = 300000;
         private UIApplication _uiApp;
         private ICommandRegistry _commandRegistry;
         private ILogger _logger;
@@ -337,10 +344,37 @@ namespace revit_mcp_plugin.Core
                 }
 
                 // Execute command.
+                // A command waits on a Revit external event, and those only fire while Revit is
+                // idle: with a modal dialog open, a long operation running or the model still
+                // loading, a command can wait forever. Cap the wait so the caller always gets an
+                // answer instead of silence on an open socket.
                 try
                 {
                     var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                    object result = command.Execute(request.GetParamsObject(), request.Id);
+                    var execution = System.Threading.Tasks.Task.Run(
+                        () => command.Execute(request.GetParamsObject(), request.Id));
+
+                    if (!execution.Wait(CommandHardTimeoutMs))
+                    {
+                        stopwatch.Stop();
+                        McpLogger.Warn("SocketService",
+                            $"Command '{request.Method}' produced no response within {CommandHardTimeoutMs / 1000}s");
+
+                        try
+                        {
+                            UI.MCPDockablePanel.Instance?.LogCommand(
+                                request.Method, false, "No response from Revit", stopwatch.ElapsedMilliseconds);
+                        }
+                        catch { }
+
+                        return CreateErrorResponse(request.Id, JsonRPCErrorCodes.InternalError,
+                            $"Command '{request.Method}' produced no response within {CommandHardTimeoutMs / 1000}s. " +
+                            "Revit is busy or waiting on a dialog: bring the Revit window to the front, " +
+                            "close any open dialog, wait for the model to finish loading, then retry.");
+                    }
+
+                    // GetResult() rethrows the original exception instead of an AggregateException.
+                    object result = execution.GetAwaiter().GetResult();
                     stopwatch.Stop();
 
                     // Log to dockable panel

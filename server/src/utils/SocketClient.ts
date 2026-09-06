@@ -160,7 +160,11 @@ export class RevitClientConnection {
           if (this.responseCallbacks.has(requestId)) {
             this.responseCallbacks.delete(requestId);
             this.timeoutHandles.delete(requestId);
-            reject(new Error(`Command '${command}' timed out after ${Math.round(timeout / 1000)}s. For large models, try filtering by category or reducing scope.`));
+            reject(new Error(
+              `Command '${command}' timed out after ${Math.round(timeout / 1000)}s: Revit accepted the connection but sent no response. ` +
+              `Check the Revit window - a modal dialog, an unfinished model load or a long running operation blocks every command until it is dismissed. ` +
+              `Also make sure the MCP Switch is still on. For large models, try filtering by category or reducing scope.`
+            ));
             this.socket.destroy();
           }
         }, timeout);
