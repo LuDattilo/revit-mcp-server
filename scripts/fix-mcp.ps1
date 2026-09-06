@@ -30,7 +30,7 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     $NPM_PACKAGE   = 'mcp-server-for-revit'
     $ADDIN_FILE    = "$PLUGIN_NAME.addin"
     $MIN_NODE      = 18
-    $REVIT_YEARS   = 2023..2027
+    $REVIT_YEARS   = 2020..2027
     $MCP_HOST      = '127.0.0.1'
     $MCP_PORT      = 8080
     function Get-NodePath {
@@ -322,7 +322,7 @@ foreach ($year in $REVIT_YEARS) {
 }
 
 if (-not $anyRevit) {
-    WARN "No Revit installation detected (2023-2027)"
+    WARN "No Revit installation detected (2020-2027)"
 }
 
 

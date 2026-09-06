@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 
 namespace RevitMCPCommandSet.Services
@@ -58,7 +59,7 @@ namespace RevitMCPCommandSet.Services
                 ExternalDefinition externalDef = defGroup.Definitions.get_Item(ParameterName) as ExternalDefinition;
                 if (externalDef == null)
                 {
-                    var creationOptions = new ExternalDefinitionCreationOptions(ParameterName, SpecTypeId.String.Text);
+                    var creationOptions = SharedParameterCompat.CreateTextOptions(ParameterName);
                     externalDef = defGroup.Definitions.Create(creationOptions) as ExternalDefinition;
                 }
 
@@ -109,13 +110,12 @@ namespace RevitMCPCommandSet.Services
                     transaction.Start();
                     try
                     {
-                        // Resolve the parameter group (BuiltInParameterGroup -> GroupTypeId)
-                        ForgeTypeId groupTypeId = ResolveGroupTypeId(ParameterGroup);
-                        bool inserted = doc.ParameterBindings.Insert(externalDef, binding, groupTypeId);
+                        // Bind under the requested parameter group (unknown names fall back to Data)
+                        bool inserted = SharedParameterCompat.InsertBinding(doc, externalDef, binding, ParameterGroup);
 
                         // If already bound, re-insert to update the binding
                         if (!inserted)
-                            inserted = doc.ParameterBindings.ReInsert(externalDef, binding, groupTypeId);
+                            inserted = SharedParameterCompat.ReInsertBinding(doc, externalDef, binding, ParameterGroup);
 
                         transaction.Commit();
 
@@ -160,31 +160,6 @@ namespace RevitMCPCommandSet.Services
             {
                 _resetEvent.Set();
             }
-        }
-
-        private static readonly Dictionary<string, ForgeTypeId> _groupTypeIdCache =
-            BuildGroupTypeIdCache();
-
-        private static Dictionary<string, ForgeTypeId> BuildGroupTypeIdCache()
-        {
-            var cache = new Dictionary<string, ForgeTypeId>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in typeof(GroupTypeId).GetProperties(
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
-            {
-                if (prop.GetValue(null) is ForgeTypeId value)
-                    cache[prop.Name] = value;
-            }
-            return cache;
-        }
-
-        private static ForgeTypeId ResolveGroupTypeId(string parameterGroup)
-        {
-            if (string.IsNullOrEmpty(parameterGroup))
-                return GroupTypeId.Data;
-
-            return _groupTypeIdCache.TryGetValue(parameterGroup, out var typeId)
-                ? typeId
-                : GroupTypeId.Data;
         }
 
         public string GetName() => "Add Shared Parameter";

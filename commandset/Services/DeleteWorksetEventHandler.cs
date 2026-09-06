@@ -73,6 +73,7 @@ namespace RevitMCPCommandSet.Services
                     return;
                 }
 
+#if REVIT2022_OR_GREATER
                 // Count elements in workset for confirmation
                 var elementCount = new FilteredElementCollector(doc)
                     .WherePasses(new ElementWorksetFilter(targetWorkset.Id, false))
@@ -133,6 +134,15 @@ namespace RevitMCPCommandSet.Services
                         throw;
                     }
                 }
+#else
+                // DeleteWorksetSettings, WorksetTable.CanDeleteWorkset and
+                // WorksetTable.DeleteWorkset arrived in Revit 2022
+                Result = new AIResult<object>
+                {
+                    Success = false,
+                    Message = $"Deleting workset '{WorksetName}' requires Revit 2022 or newer"
+                };
+#endif
             }
             catch (Exception ex)
             {

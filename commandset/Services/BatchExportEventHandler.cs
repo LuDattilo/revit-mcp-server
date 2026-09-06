@@ -75,6 +75,10 @@ namespace RevitMCPCommandSet.Services
 
         private void ExportPdf(Document doc, string exportPath)
         {
+#if !REVIT2022_OR_GREATER
+            // PDFExportOptions / Document.Export to PDF arrived in Revit 2022
+            throw new Exception("PDF export requires Revit 2022 or newer");
+#else
             var viewIds = GetViewOrSheetIds(doc);
             if (viewIds.Count == 0)
                 throw new Exception("No sheets/views to export");
@@ -96,6 +100,7 @@ namespace RevitMCPCommandSet.Services
 
             doc.Export(exportPath, viewIds, options);
             Result = BuildExportResult("PDF", "*.pdf", exportPath);
+#endif
         }
 
         private void ExportDwg(Document doc, string exportPath)

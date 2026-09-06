@@ -18,7 +18,7 @@ $script:PLUGIN_FOLDER  = 'revit_mcp_plugin'
 $script:NPM_PACKAGE    = 'mcp-server-for-revit'
 $script:ADDIN_FILE     = "$PLUGIN_NAME.addin"
 $script:MIN_NODE       = 18
-$script:REVIT_YEARS    = 2023..2027
+$script:REVIT_YEARS    = 2020..2027
 $script:MCP_HOST       = '127.0.0.1'
 $script:MCP_PORT       = 8080
 

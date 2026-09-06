@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 
 namespace RevitMCPCommandSet.Services
@@ -73,12 +74,10 @@ namespace RevitMCPCommandSet.Services
                         guidString = externalDef.GUID.ToString();
                     }
 
-                    var dataType = (definition as InternalDefinition)?.GetDataType()
-                                   ?? (definition as ExternalDefinition)?.GetDataType();
-                    var paramTypeName = dataType != null ? dataType.TypeId : "Unknown";
+                    var dataTypeName = definition.GetDataTypeName();
+                    var paramTypeName = string.IsNullOrEmpty(dataTypeName) ? "Unknown" : dataTypeName;
 
-                    var groupTypeId = definition.GetGroupTypeId();
-                    var groupName = groupTypeId != null ? groupTypeId.TypeId : "";
+                    var groupName = definition.GetGroupName();
 
                     parameterList.Add(new
                     {
