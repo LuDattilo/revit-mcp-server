@@ -276,19 +276,19 @@ namespace RevitMCPCommandSet.Services
                 case "Equals":
                     if (int.TryParse(value, out int eqIntVal))
                         return ParameterFilterRuleFactory.CreateEqualsRule(paramId, eqIntVal);
-                    return ParameterFilterRuleFactory.CreateEqualsRule(paramId, value);
+                    return EqualsRule(paramId, value);
                 case "DoesNotEqual":
                     if (int.TryParse(value, out int neqIntVal))
                         return ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, neqIntVal);
-                    return ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, value);
+                    return NotEqualsRule(paramId, value);
                 case "Contains":
-                    return ParameterFilterRuleFactory.CreateContainsRule(paramId, value);
+                    return ContainsRule(paramId, value);
                 case "DoesNotContain":
-                    return ParameterFilterRuleFactory.CreateNotContainsRule(paramId, value);
+                    return NotContainsRule(paramId, value);
                 case "BeginsWith":
-                    return ParameterFilterRuleFactory.CreateBeginsWithRule(paramId, value);
+                    return BeginsWithRule(paramId, value);
                 case "EndsWith":
-                    return ParameterFilterRuleFactory.CreateEndsWithRule(paramId, value);
+                    return EndsWithRule(paramId, value);
                 case "HasValue":
                     return ParameterFilterRuleFactory.CreateHasValueParameterRule(paramId);
                 case "HasNoValue":
@@ -296,15 +296,38 @@ namespace RevitMCPCommandSet.Services
                 case "IsGreaterThan":
                     if (int.TryParse(value, out int gtVal))
                         return ParameterFilterRuleFactory.CreateGreaterRule(paramId, gtVal);
-                    return ParameterFilterRuleFactory.CreateGreaterRule(paramId, value);
+                    return GreaterRule(paramId, value);
                 case "IsLessThan":
                     if (int.TryParse(value, out int ltVal))
                         return ParameterFilterRuleFactory.CreateLessRule(paramId, ltVal);
-                    return ParameterFilterRuleFactory.CreateLessRule(paramId, value);
+                    return LessRule(paramId, value);
                 default:
                     throw new ArgumentException($"Unknown filter rule type: {ruleType}");
             }
         }
+
+        // Revit 2023 removed the trailing caseSensitive argument from the string-based
+        // rule factories (string comparison became case-insensitive). Revit 2020-2022
+        // still require it, so pass false there to keep the same behaviour.
+#if REVIT2023_OR_GREATER
+        private static FilterRule EqualsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateEqualsRule(paramId, value);
+        private static FilterRule NotEqualsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, value);
+        private static FilterRule ContainsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateContainsRule(paramId, value);
+        private static FilterRule NotContainsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateNotContainsRule(paramId, value);
+        private static FilterRule BeginsWithRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateBeginsWithRule(paramId, value);
+        private static FilterRule EndsWithRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateEndsWithRule(paramId, value);
+        private static FilterRule GreaterRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateGreaterRule(paramId, value);
+        private static FilterRule LessRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateLessRule(paramId, value);
+#else
+        private static FilterRule EqualsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateEqualsRule(paramId, value, false);
+        private static FilterRule NotEqualsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateNotEqualsRule(paramId, value, false);
+        private static FilterRule ContainsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateContainsRule(paramId, value, false);
+        private static FilterRule NotContainsRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateNotContainsRule(paramId, value, false);
+        private static FilterRule BeginsWithRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateBeginsWithRule(paramId, value, false);
+        private static FilterRule EndsWithRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateEndsWithRule(paramId, value, false);
+        private static FilterRule GreaterRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateGreaterRule(paramId, value, false);
+        private static FilterRule LessRule(ElementId paramId, string value) => ParameterFilterRuleFactory.CreateLessRule(paramId, value, false);
+#endif
 
         private ElementId ToElementId(long id)
         {

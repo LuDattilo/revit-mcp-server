@@ -6,7 +6,7 @@
 .DESCRIPTION
     Designed to work on a clean machine with only Revit and PowerShell installed.
     - Forces TLS 1.2 (required for GitHub API on older Windows)
-    - Detects installed Revit versions (2023-2027) via registry and filesystem
+    - Detects installed Revit versions (2020-2027) via registry and filesystem
     - Detects any previous installation and asks: Replace / Skip / Abort
     - Checks that target Revit is not running before installing (files would be locked)
     - Downloads the latest (or specified) pre-built Release from GitHub
@@ -18,7 +18,7 @@
     - Optionally configures Claude Desktop claude_desktop_config.json
 
 .PARAMETER RevitVersion
-    Target a specific Revit version (2023, 2024, 2025, 2026).
+    Target a specific Revit version (2020-2027).
     If omitted, all detected Revit installations are targeted.
 
 .PARAMETER Tag
@@ -51,7 +51,7 @@
     # One-liner install directly from GitHub
 #>
 param(
-    [ValidateSet('2023','2024','2025','2026','2027')]
+    # NOTE: deliberately no [ValidateSet] here - see the validation after the constants.
     [string]$RevitVersion,
     [string]$Tag = 'latest',
     [switch]$Uninstall,
@@ -85,7 +85,7 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
     $NPM_PACKAGE   = 'mcp-server-for-revit'
     $ADDIN_FILE    = "$PLUGIN_NAME.addin"
     $MIN_NODE      = 18
-    $REVIT_YEARS   = 2023..2027
+    $REVIT_YEARS   = 2020..2027
 
     # Inline fallback: shared functions
     function Get-RevitVersions {
@@ -100,9 +100,13 @@ if ($_commonPath -and (Test-Path $_commonPath)) {
             )
             $exePath = "C:\Program Files\Autodesk\Revit $year\Revit.exe"
             $inRegistry = ($regPaths | Where-Object { Test-Path $_ }).Count -gt 0
-            $inAddins   = Test-Path $addinsDir
             $inExe      = Test-Path $exePath
-            if ($inRegistry -or $inAddins -or $inExe) {
+            # An Addins folder on its own proves nothing: other add-ins (pyRevit, RevitLookup,
+            # ...) create one for Revit versions that were never installed, and installing into
+            # those wastes ~50 MB each. It counts only when our plugin is already there, so that
+            # uninstall and repair still find existing installations.
+            $hasPlugin  = Test-Path (Join-Path $addinsDir $ADDIN_FILE)
+            if ($inRegistry -or $inExe -or $hasPlugin) {
                 $found += [PSCustomObject]@{ Year = $year; AddinsDir = $addinsDir }
             }
         }
@@ -188,6 +192,21 @@ function Write-Warn { param([string]$m) Write-Host "  [!] $m" -ForegroundColor Y
 function Write-Err  { param([string]$m) Write-Host "  [-] $m" -ForegroundColor Red    }
 function Write-Info { param([string]$m) Write-Host "      $m" -ForegroundColor Gray   }
 
+# -- Validate -RevitVersion ----------------------------------------------------
+# Done here instead of with [ValidateSet] on the param: run via `irm ... | iex` the
+# script executes in the caller's scope, and attaching a ValidateSet attribute to the
+# (empty) $RevitVersion variable there fails before the script even starts with
+# "The attribute cannot be added because variable RevitVersion with value  would no
+# longer be valid".
+if ($RevitVersion) {
+    $RevitVersion   = $RevitVersion.Trim()
+    $supportedYears = $REVIT_YEARS | ForEach-Object { "$_" }
+    if ($supportedYears -notcontains $RevitVersion) {
+        Write-Err "Unsupported -RevitVersion '$RevitVersion'. Supported: $($supportedYears -join ', ')"
+        exit 1
+    }
+}
+
 # -- Banner --------------------------------------------------------------------
 Write-Host ""
 Write-Host "  ================================================================" -ForegroundColor Cyan
@@ -239,12 +258,19 @@ $revitInstalls = Get-RevitVersions -Limit $limit
 
 if ($revitInstalls.Count -eq 0) {
     if ($RevitVersion) {
-        Write-Err "Revit $RevitVersion was not detected on this machine."
+        # Naming a version explicitly is the documented override: Revit may live outside
+        # the default folder and without the usual registry keys.
+        Write-Warn "Revit $RevitVersion was not detected (no registry entry, no Revit.exe in the default location)."
+        Write-Info "Installing anyway because -RevitVersion $RevitVersion was given."
+        $revitInstalls = @([PSCustomObject]@{
+            Year      = [int]$RevitVersion
+            AddinsDir = "$env:APPDATA\Autodesk\Revit\Addins\$RevitVersion"
+        })
     } else {
-        Write-Err "No Revit installation found (checked 2023-2027)."
+        Write-Err "No Revit installation found (checked 2020-2027)."
+        Write-Info "Use -RevitVersion to override: .\install.ps1 -RevitVersion 2025"
+        exit 1
     }
-    Write-Info "Use -RevitVersion to override: .\install.ps1 -RevitVersion 2025"
-    exit 1
 }
 
 foreach ($rv in $revitInstalls) {

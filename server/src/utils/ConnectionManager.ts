@@ -16,7 +16,7 @@ const BACKOFF_MS = [1000, 2000, 4000];
  */
 function readPortFromFile(): number {
   const appData = process.env.APPDATA || "";
-  const years = ["2027", "2026", "2025", "2024", "2023"];
+  const years = ["2027", "2026", "2025", "2024", "2023", "2022", "2021", "2020"];
   for (const year of years) {
     const portFile = join(appData, "Autodesk", "Revit", "Addins", year, "revit_mcp_plugin", "mcp-port.txt");
     if (existsSync(portFile)) {

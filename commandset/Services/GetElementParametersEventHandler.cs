@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPSDK.API.Interfaces;
 
 namespace RevitMCPCommandSet.Services
@@ -112,7 +113,7 @@ namespace RevitMCPCommandSet.Services
                 IsShared = param.IsShared,
                 HasValue = param.HasValue,
                 StorageType = param.StorageType.ToString(),
-                GroupName = param.Definition?.GetGroupTypeId()?.TypeId ?? ""
+                GroupName = param.Definition?.GetGroupName() ?? ""
             };
 
             if (param.HasValue)

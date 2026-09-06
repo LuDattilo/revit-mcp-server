@@ -14,7 +14,7 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 ## Key Features
 
 - **124 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
-- **Revit 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
+- **Revit 2020–2027** — 2023–2027 fully tested; 2020–2022 build against the legacy parameter API (see limitations)
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
 - **Real-time execution** — AI requests are executed immediately on the active model via TCP/JSON-RPC 2.0
@@ -49,7 +49,7 @@ flowchart LR
 | Requirement | Details |
 |-------------|---------|
 | **Node.js** | 18+ (for the MCP server) |
-| **Autodesk Revit** | 2023, 2024, 2025, 2026, or 2027 |
+| **Autodesk Revit** | 2020–2027 |
 | **OS** | Windows 10/11 (Revit is Windows-only) |
 | **Anthropic API key** (optional) | Required only for the built-in chat panel. Set via `%USERPROFILE%\.claude\api_key.txt` or env `ANTHROPIC_API_KEY` |
 
@@ -58,7 +58,7 @@ flowchart LR
 | Requirement | Details |
 |-------------|---------|
 | **Visual Studio 2022** | With .NET desktop development workload |
-| **.NET Framework 4.8 SDK** | For Revit 2023-2024 builds |
+| **.NET Framework 4.8 SDK** | For Revit 2020-2024 builds |
 | **.NET 8 SDK** | For Revit 2025-2026 builds |
 | **.NET 10 SDK** (preview) | For Revit 2027 builds |
 | **Node.js 18+** | For the MCP server |
@@ -177,6 +177,9 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 
 | Version | .NET Target | Status | Notes |
 |---------|-------------|--------|-------|
+| **Revit 2020** | .NET Framework 4.8 | Builds, needs field testing | Legacy parameter API, see limitations below |
+| **Revit 2021** | .NET Framework 4.8 | Builds, needs field testing | Legacy parameter API, see limitations below |
+| **Revit 2022** | .NET Framework 4.8 | Builds, needs field testing | Full tool set |
 | **Revit 2023** | .NET Framework 4.8 | Fully tested | Italian localization verified |
 | **Revit 2024** | .NET Framework 4.8 | Built & compatible | Same codebase as R23 |
 | **Revit 2025** | .NET 8 | Fully tested | Structural model (Snowdon Towers) |
@@ -184,6 +187,19 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 | **Revit 2027** | .NET 10 | Fully tested | .NET 10 SDK (preview) required |
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
+
+### Revit 2020–2021 limitations
+
+Revit 2022 introduced several APIs this project relies on. On Revit 2020 and 2021 the affected tools report the limitation instead of failing silently:
+
+| Tool / behaviour | On Revit 2020–2021 |
+|------------------|--------------------|
+| `batch_export` to PDF | Not available (`PDFExportOptions` arrived in Revit 2022) — DWG/IFC/CSV export still work |
+| Ceiling creation (`create_surface_element`) | Not available (no ceiling creation API before Revit 2022) |
+| `delete_workset` | Not available (`WorksetTable.DeleteWorkset` arrived in Revit 2022) |
+| Floor creation | Uses the legacy `Document.Create.NewFloor` — only the outer boundary is used, inner loops (openings) are ignored |
+| Parameter data type / group names | Reported as `ParameterType` / `BuiltInParameterGroup` enum names instead of Forge type ids |
+| Tag tools | Tags expose a single tagged element (multi-reference tags arrived in Revit 2022) |
 
 ## Supported Tools (124)
 
@@ -378,10 +394,13 @@ The server compiles TypeScript to `server/build/`. During development you can ru
 
 ### Revit Plugin + Command Set
 
-Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both the plugin and command set projects. Build configurations target Revit 2023-2027:
+Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both the plugin and command set projects. Build configurations target Revit 2020-2027:
 
 | Configuration | Target | .NET |
 |---------------|--------|------|
+| `Debug R20` / `Release R20` | Revit 2020 | .NET Framework 4.8 |
+| `Debug R21` / `Release R21` | Revit 2021 | .NET Framework 4.8 |
+| `Debug R22` / `Release R22` | Revit 2022 | .NET Framework 4.8 |
 | `Debug R23` / `Release R23` | Revit 2023 | .NET Framework 4.8 |
 | `Debug R24` / `Release R24` | Revit 2024 | .NET Framework 4.8 |
 | `Debug R25` / `Release R25` | Revit 2025 | .NET 8 |
@@ -429,7 +448,7 @@ mcp-servers-for-revit/
 
 A single `v*` tag drives the entire release. The [release workflow](.github/workflows/release.yml) automatically:
 
-- Builds the Revit plugin + command set for Revit 2023-2027
+- Builds the Revit plugin + command set for Revit 2020-2027
 - Creates a GitHub release with `mcp-servers-for-revit-vX.Y.Z-Revit<year>.zip` assets
 - Publishes the MCP server to npm as [`mcp-server-for-revit`](https://www.npmjs.com/package/mcp-server-for-revit)
 

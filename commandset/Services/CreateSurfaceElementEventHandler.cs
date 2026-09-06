@@ -198,8 +198,9 @@ namespace RevitMCPCommandSet.Services
                                 }
                                 CurveLoop curveLoop = CurveLoop.Create(data.Boundary.OuterLoop.Select(l => JZLine.ToLine(l) as Curve).ToList());
 
-                                // Multi-version - Floor.Create introduced in Revit 2022 but stable in 2023+
-                                floor = Floor.Create(doc, new List<CurveLoop> { curveLoop }, floorType.Id, baseLevel.Id);
+                                // Multi-version - Floor.Create introduced in Revit 2022,
+                                // Revit 2020-2021 fall back to Document.Create.NewFloor
+                                floor = SurfaceElementCompat.CreateFloor(doc, new List<CurveLoop> { curveLoop }, floorType.Id, baseLevel.Id);
                                 // Set floor parameters
                                 if (floor != null)
                                 {
@@ -236,7 +237,7 @@ namespace RevitMCPCommandSet.Services
                             case BuiltInCategory.OST_Ceilings:
                                 CurveLoop ceilingCurveLoop = CurveLoop.Create(data.Boundary.OuterLoop.Select(l => JZLine.ToLine(l) as Curve).ToList());
 
-                                Ceiling ceiling = Ceiling.Create(doc, new List<CurveLoop> { ceilingCurveLoop }, ceilingType.Id, baseLevel.Id);
+                                Ceiling ceiling = SurfaceElementCompat.CreateCeiling(doc, new List<CurveLoop> { ceilingCurveLoop }, ceilingType.Id, baseLevel.Id);
                                 if (ceiling != null)
                                 {
                                     // Set the ceiling height offset from level

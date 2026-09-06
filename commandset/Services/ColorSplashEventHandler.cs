@@ -272,11 +272,7 @@ namespace RevitMCPCommandSet.Services
                         try
                         {
                             // Try to get data type and check if it's a boolean
-                            var paramTypeId = internalDef.GetDataType();
-                            bool isBoolean = paramTypeId != null &&
-                                           paramTypeId.Equals(SpecTypeId.Boolean.YesNo);
-
-                            if (isBoolean)
+                            if (internalDef.IsYesNoDataType())
                             {
                                 return parameter.AsInteger() == 1 ? "True" : "False";
                             }
