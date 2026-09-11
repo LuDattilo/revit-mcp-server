@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same PR/branch supersedes the running build.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build MCP Server
+        working-directory: server
+        run: |
+          npm ci
+          npm run build
+
+      # `npm run build` regenerates tool-schemas.txt and plugin/tool_schemas.json
+      # from the TypeScript tool definitions. Fail if a PR changed tools but
+      # forgot to commit the regenerated schemas. --ignore-cr-at-eol keeps
+      # Windows autocrlf checkouts from producing a false line-ending diff.
+      - name: Check generated tool schemas are committed
+        run: git diff --exit-code --ignore-cr-at-eol -- tool-schemas.txt plugin/tool_schemas.json
+
+      # "Release R27" maps to the test project's Release.R27 configuration in the
+      # solution, so this compiles plugin, commandset AND the tests in one pass.
+      # Only R27 is built here: it is the configuration the tests target, and the
+      # R23/R24 configurations need MSBuild + .NET Framework 4.8 (covered by the
+      # release workflow).
+      - name: Build Revit 2027 solution (plugin, commandset, tests)
+        run: dotnet build mcp-servers-for-revit.sln -c "Release R27"
+
+  # The tests derive from Nice3point.TUnit.Revit's RevitApiTest, which boots a
+  # licensed Revit install from "C:\Program Files\Autodesk\Revit 2027". Hosted
+  # runners have no Revit, so this job only runs when a repository variable
+  # HAS_REVIT_2027_RUNNER=true declares that a self-hosted runner labelled
+  # revit-2027 exists. Without the gate the job would queue forever.
+  revit-tests:
+    if: vars.HAS_REVIT_2027_RUNNER == 'true'
+    needs: build
+    runs-on: [self-hosted, windows, revit-2027]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run Revit API tests
+        run: dotnet test tests/commandset/RevitMCPCommandSet.Tests.csproj -c "Release R27"

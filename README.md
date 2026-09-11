@@ -60,7 +60,7 @@ flowchart LR
 | **Visual Studio 2022** | With .NET desktop development workload |
 | **.NET Framework 4.8 SDK** | For Revit 2023-2024 builds |
 | **.NET 8 SDK** | For Revit 2025-2026 builds |
-| **.NET 10 SDK** (preview) | For Revit 2027 builds |
+| **.NET 10 SDK** | For Revit 2027 builds |
 | **Node.js 18+** | For the MCP server |
 | **Revit API assemblies** | Installed with Revit (referenced automatically via NuGet) |
 
@@ -181,7 +181,7 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 | **Revit 2024** | .NET Framework 4.8 | Built & compatible | Same codebase as R23 |
 | **Revit 2025** | .NET 8 | Fully tested | Structural model (Snowdon Towers) |
 | **Revit 2026** | .NET 8 | Fully tested | Primary development target |
-| **Revit 2027** | .NET 10 | Fully tested | .NET 10 SDK (preview) required |
+| **Revit 2027** | .NET 10 | Fully tested | .NET 10 SDK required |
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 

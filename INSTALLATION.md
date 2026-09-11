@@ -44,7 +44,7 @@ Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Re
 | **npm** | Included with Node.js | To install dependencies |
 | **.NET Framework 4.8 SDK** | 4.8+ | Revit 2023-2024 |
 | **.NET 8.0 SDK** | 8.0+ | Revit 2025-2026 |
-| **.NET 10.0 SDK** | 10.0+ (preview) | Revit 2027 |
+| **.NET 10.0 SDK** | 10.0+ | Revit 2027 |
 | **Visual Studio 2022** | 17.x (optional) | Build and debug |
 | **MSBuild** | Included with VS or .NET SDK | CLI build |
 
@@ -134,7 +134,7 @@ cd mcp-servers-for-revit
 
 ### Step 2: Build the MCP Server
 
-> **Note**: `server/build/` is already included in the repository — this step is only needed if you modify the TypeScript source.
+> **Note**: `server/build/` is gitignored, so this step is **required** when building from source — without it the plugin's "Revit MCP Switch" fails its health check with *"index.js not found"*.
 
 ```bash
 cd server
@@ -164,7 +164,7 @@ dotnet build mcp-servers-for-revit.sln -c "Release R26"
 dotnet build mcp-servers-for-revit.sln -c "Release R27"
 ```
 
-> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient. For Revit 2027, the .NET 10 SDK (preview) is required.
+> **Note**: For Revit 2023/2024, MSBuild is required (included with Visual Studio). For Revit 2025/2026, the .NET 8 SDK is sufficient. For Revit 2027, the .NET 10 SDK is required.
 
 ### Step 4: Automatic Deploy (Debug)
 
@@ -185,6 +185,16 @@ For a Release build, manually copy the output:
 
 # Copy all contents to the Revit Addins folder
 ```
+
+Then copy the compiled server into the deployed add-in (release ZIPs bundle it, but the Release build output does not include it):
+
+```bash
+node server/deploy-addins.mjs
+```
+
+> **Note on ordering**: `deploy-addins.mjs` only copies into Addins folders where `revit_mcp_plugin/Commands/RevitMCPCommandSet/` already exists (the plugin folder alone is not enough). `npm run build` runs it automatically, but if you built the server *before* deploying the plugin (the step order above), run it again now — otherwise the "Revit MCP Switch" button fails with *"index.js not found"*.
+
+> **Node.js required for from-source deploys**: unlike release ZIPs, a from-source deploy has no bundled `server/runtime/node.exe`; the plugin's health check falls back to `node.exe` on Revit's `PATH`, so Node.js must be installed system-wide.
 
 ---
 

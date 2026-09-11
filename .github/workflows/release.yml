@@ -78,8 +78,14 @@ jobs:
       - name: Build Revit 2026 (.NET 8)
         run: dotnet build mcp-servers-for-revit.sln -c "Release R26"
 
+      # Deliberately NOT continue-on-error. No release ever shipped a 2027 asset
+      # because the 2027 NuGet packages did not exist when this step was added
+      # (feac735 made it optional "until SDK is on NuGet"), so restore failed
+      # and continue-on-error hid it while the README advertised 2027 support
+      # (#5). RevitMCPSDK 2027.0.0.5 (2026-07-08) and
+      # Nice3point.Revit.Api.RevitAPI 2027.1.0 (2026-06-24) are on NuGet now,
+      # so this build should succeed and any failure must fail the release.
       - name: Build Revit 2027 (.NET 10)
-        continue-on-error: true
         run: dotnet build mcp-servers-for-revit.sln -c "Release R27"
 
       # ---------------------------------------------------------------
@@ -131,12 +137,9 @@ jobs:
           }
 
           $zips = Get-ChildItem "$outputDir/*.zip"
-          if ($zips.Count -lt 4) {
-              Write-Error "Expected at least 4 ZIP files (2023-2026), found $($zips.Count). Build may have failed."
+          if ($zips.Count -ne 5) {
+              Write-Error "Expected exactly 5 ZIP files (2023-2027), found $($zips.Count). Build may have failed."
               exit 1
-          }
-          if ($zips.Count -lt 5) {
-              Write-Host "Note: $($zips.Count) ZIP files created (Revit 2027 SDK may not be available yet)"
           }
         shell: pwsh
 
