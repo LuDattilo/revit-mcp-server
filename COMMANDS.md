@@ -1,6 +1,6 @@
 # Revit MCP Server - Complete Reference
 
-> **124 MCP tools** | **140 unit tests** | **Revit 2023–2027** | Coordinates in **millimeters (mm)**
+> **147 MCP tools** | **156 Revit API tests** | **Revit 2023–2027** | Coordinates in **millimeters (mm)**
 
 ---
 
@@ -15,6 +15,7 @@
 - [Project Management](#project-management)
 - [Documentation & Annotation](#documentation--annotation)
 - [Model Audit & Cleanup](#model-audit--cleanup)
+- [Site, Coordinates, MEP & IFC](#site-coordinates-mep--ifc)
 - [Advanced Automation (New)](#advanced-automation-new)
 - [Chat Panel](#chat-panel)
 - [Troubleshooting](#troubleshooting)
@@ -655,6 +656,95 @@ Find and remove tags with empty text or invalid references. **Defaults to dryRun
 
 ---
 
+## Site, Coordinates, MEP & IFC
+
+Lengths are **mm**, angles **degrees**. Coordinates are Revit **internal** unless a tool
+says otherwise; tools with `coordinateSystem: "shared"` convert through the active
+ProjectLocation (`shared = R(rotation) * internal + origin`, see `get_project_location`).
+Every write tool runs in a single transaction named after the tool; `dryRun: true` performs
+the work, reports the result, then rolls the transaction back (default `false`).
+Revit logic lives in `commandset/Services/SiteMep/SiteMepCore.cs` and is exercised by
+`tests/commandset/SiteMep/SiteMepCoreTests.cs`.
+
+### `get_project_location`
+No parameters. Returns
+`{ activeLocationName, surveyPoint: {eastWest_mm, northSouth_mm, elevation_mm, internal_mm, clipped}, projectBasePoint: {eastWest_mm, northSouth_mm, elevation_mm, angleToTrueNorth_deg, internal_mm}, sharedTransform: {origin_mm: {x,y,z}, rotation_deg}, siteLatitude, siteLongitude, siteName, projectLocations }`.
+`sharedTransform.origin_mm` is the shared position of the internal origin; `rotation_deg` is
+the counter-clockwise rotation from internal to shared axes (equal to `angleToTrueNorth_deg`
+on Revit 2027 — verified by the Revit API tests).
+
+### `set_shared_coordinates`
+`ProjectLocation.SetProjectPosition` so `internalPoint_mm` (default 0,0,0) lands on the given
+shared coordinates. Returns `before` / `after` (same shape as `get_project_location`) and
+`internalPointSharedBefore_mm` / `internalPointSharedAfter_mm`.
+```json
+{ "eastWest_mm": 500000, "northSouth_mm": 4000000, "elevation_mm": 100000,
+  "angleToTrueNorth_deg": 0, "internalPoint_mm": {"x": 0, "y": 0, "z": 0},
+  "locationName": "Survey", "dryRun": true }
+```
+
+### `create_toposolid`
+`Toposolid.Create(doc, points, typeId, levelId)` (Revit 2024+). At least 3 points, no two with
+the same x,y. `name` is written to the Comments parameter. Returns `elementId`, `pointCount`
+(slab-shape vertices), `inputPointCount`, `boundingBox_mm` (internal), `typeName`, `levelName`.
+```json
+{ "points_mm": [ {"x": 550000, "y": 4050000, "z": 100000}, {"x": 570000, "y": 4050000, "z": 100000},
+                 {"x": 570000, "y": 4070000, "z": 100500}, {"x": 560000, "y": 4060000, "z": 103000} ],
+  "coordinateSystem": "shared", "toposolidTypeName": "Toposolid", "levelName": "Level 1",
+  "name": "Existing ground", "dryRun": false }
+```
+
+### `get_toposolids`
+`{ "includePoints": true }` — list with `elementId, typeName, levelName, comments, pointCount,
+isSubDivision, boundingBox_mm` and, when requested, `points_mm` (internal coordinates).
+
+### `create_pipe`
+All pipes in one transaction, all-or-nothing (the error names the failing index). Z is an
+absolute elevation, not an offset. `diameter_mm` may snap to the nearest size in the pipe
+type's routing preferences; the returned `diameter_mm` is the actual value.
+```json
+{ "pipes": [ { "start_mm": {"x": 0, "y": 0, "z": 3000}, "end_mm": {"x": 6000, "y": 0, "z": 3000},
+               "diameter_mm": 100, "systemTypeName": "Domestic Cold Water",
+               "pipeTypeName": "Default", "levelName": "Level 1" } ],
+  "coordinateSystem": "internal", "dryRun": false }
+```
+
+### `create_duct`
+Give `diameter_mm` (round) or `width_mm` + `height_mm` (rectangular/oval). Without
+`ductTypeName` the first duct type of the matching shape is used. Also accepts
+`coordinateSystem` and `dryRun`.
+```json
+{ "ducts": [ { "start_mm": {"x": 0, "y": 0, "z": 3500}, "end_mm": {"x": 8000, "y": 0, "z": 3500},
+               "width_mm": 400, "height_mm": 300, "systemTypeName": "Supply Air", "levelName": "Level 1" },
+             { "start_mm": {"x": 0, "y": 2000, "z": 3500}, "end_mm": {"x": 8000, "y": 2000, "z": 3500},
+               "diameter_mm": 250, "systemTypeName": "Supply Air", "levelName": "Level 1" } ] }
+```
+
+### `get_mep_systems`
+No parameters. Piping and mechanical systems: `elementId, name, domain, classification,
+systemClassificationEnum, systemTypeName, elementCount, curveCount, fittingCount, otherCount,
+totalLength_mm, isEmpty`.
+
+### `get_mep_elements`
+`{ "category": "all" | "pipes" | "ducts" | "fittings", "systemName": "...", "limit": 500 }` —
+pipes/ducts with system, size, diameter or width/height, length and end points; fittings and
+accessories with system, size and location. `totalMatched` / `truncated` report the full count.
+
+### `export_ifc`
+Revit's built-in IFC exporter. `outputFolder` must exist; `.ifc` is appended to `fileName` when
+missing; an existing file is overwritten. `ifcVersion`: `IFC2x3` → IFC2x3CV2, `IFC4` (default)
+→ IFC4RV, `IFC4x3` → IFC4x3. `useSharedCoordinates` (default true) sets the exporter's
+`SitePlacement` option to Shared (IfcSite at shared coordinates) or Internal (internal origin).
+`viewName` restricts the export to elements visible in that view. The export's transaction is
+rolled back afterwards so the model is not modified. Returns `path, sizeBytes, ifcVersion,
+viewName, fileExistedBefore`.
+```json
+{ "outputFolder": "C:\\exports", "fileName": "site-model", "ifcVersion": "IFC4x3",
+  "viewName": "{3D}", "exportBaseQuantities": true, "useSharedCoordinates": true, "dryRun": false }
+```
+
+---
+
 ## Advanced Automation
 
 These 15 tools were added based on research of the most commonly automated BIM tasks:
@@ -744,8 +834,8 @@ mcp-servers-for-revit/
 │   ├── Services/              # 67 event handlers
 │   └── Models/                # Data models
 ├── server/                    # MCP Server (TypeScript)
-│   └── src/tools/             # 124 tool definitions
-├── tests/                     # Unit tests (140 tests, TUnit)
+│   └── src/tools/             # 147 tool definitions
+├── tests/                     # Revit API tests (156 tests, TUnit)
 ├── command.json               # Command registry
 └── COMMANDS.md                # This file
 ```

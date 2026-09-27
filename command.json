@@ -652,6 +652,51 @@
       "commandName": "duplicate_schedule",
       "description": "Duplicate a schedule by ID or name with a new name",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_project_location",
+      "description": "Get survey point, project base point, angle to true north, internal-to-shared transform and site latitude/longitude (mm, degrees)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "set_shared_coordinates",
+      "description": "Set shared coordinates so an internal point maps to given E/W, N/S, elevation (mm) and angle to true north (deg); supports dryRun",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_toposolid",
+      "description": "Create a toposolid from (x,y,z) points in mm, internal or shared coordinates (Revit 2024+); supports dryRun",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_toposolids",
+      "description": "List toposolids with type, level, bounding box and slab-shape vertex count/points (mm)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_pipe",
+      "description": "Create straight pipes between points (mm) with diameter, piping system type and level; all-or-nothing; supports dryRun",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_duct",
+      "description": "Create straight round or rectangular ducts between points (mm) with system type and level; all-or-nothing; supports dryRun",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_mep_systems",
+      "description": "List piping and mechanical systems with classification, system type, element count and total length (mm)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_mep_elements",
+      "description": "List pipes, ducts, fittings and accessories with system, size and length (mm)",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "export_ifc",
+      "description": "Export the model to IFC (IFC2x3/IFC4/IFC4x3) with shared or internal site placement; supports dryRun",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     }
   ]
 }

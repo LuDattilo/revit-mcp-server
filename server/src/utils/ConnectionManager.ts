@@ -8,13 +8,24 @@ let connectionMutex: Promise<void> = Promise.resolve();
 
 const MAX_RETRIES = 3;
 const BACKOFF_MS = [1000, 2000, 4000];
+const CONNECT_TIMEOUT_MS = 5000;
 
 /**
- * Read the port from the plugin's mcp-port.txt file.
- * Scans Revit Addins folders from newest to oldest year.
+ * Resolve the port of the Revit plugin's socket service.
+ *
+ * REVIT_MCP_PORT (any valid TCP port) wins when set - useful when the plugin runs
+ * on a non-default port and for tests against a fake server. Otherwise read the
+ * plugin's mcp-port.txt (the plugin binds the first free port in 8080-8089 and
+ * writes it there), scanning Revit Addins folders from newest to oldest year.
  * Falls back to 8080 if no valid port file is found.
  */
-function readPortFromFile(): number {
+export function readPortFromFile(): number {
+  const override = process.env.REVIT_MCP_PORT?.trim();
+  if (override) {
+    const port = Number(override);
+    if (Number.isInteger(port) && port > 0 && port <= 65535) return port;
+  }
+
   const appData = process.env.APPDATA || "";
   const years = ["2027", "2026", "2025", "2024", "2023"];
   for (const year of years) {
@@ -45,15 +56,22 @@ async function attemptConnection<T>(
     // Connect to Revit client
     if (!revitClient.isConnected) {
       await new Promise<void>((resolve, reject) => {
-        const onConnect = () => {
+        // Cleared on every outcome: previously the 5 s timer was left running
+        // after a successful connect, holding the event loop open for 5 s.
+        let connectTimer: ReturnType<typeof setTimeout> | undefined;
+        const settle = () => {
+          clearTimeout(connectTimer);
           revitClient.socket.removeListener("connect", onConnect);
           revitClient.socket.removeListener("error", onError);
+        };
+
+        const onConnect = () => {
+          settle();
           resolve();
         };
 
         const onError = (error: any) => {
-          revitClient.socket.removeListener("connect", onConnect);
-          revitClient.socket.removeListener("error", onError);
+          settle();
           reject(new Error("Connect to Revit client failed"));
         };
 
@@ -62,11 +80,10 @@ async function attemptConnection<T>(
 
         revitClient.connect();
 
-        setTimeout(() => {
-          revitClient.socket.removeListener("connect", onConnect);
-          revitClient.socket.removeListener("error", onError);
+        connectTimer = setTimeout(() => {
+          settle();
           reject(new Error("Connection to Revit client timed out"));
-        }, 5000);
+        }, CONNECT_TIMEOUT_MS);
       });
     }
 

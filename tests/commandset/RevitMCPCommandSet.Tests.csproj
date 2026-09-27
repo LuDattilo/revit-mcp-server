@@ -3,7 +3,16 @@
     <OutputType>Exe</OutputType>
     <Configurations>Debug.R25;Debug.R26;Debug.R27</Configurations>
     <Configurations>$(Configurations);Release.R25;Release.R26;Release.R27</Configurations>
+    <!-- The SDK only generates OR_GREATER symbols for the configured versions (R25+); linked
+         commandset sources also test REVIT2022_OR_GREATER and REVIT2024_OR_GREATER, which every
+         configuration here satisfies. -->
+    <DefineConstants>$(DefineConstants);REVIT2022_OR_GREATER;REVIT2024_OR_GREATER</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Production logic with no RevitMCPSDK/Newtonsoft dependency, compiled into the tests directly. -->
+    <Compile Include="..\..\commandset\Models\SiteMep\SiteMepRequests.cs" Link="Linked\SiteMepRequests.cs" />
+    <Compile Include="..\..\commandset\Services\SiteMep\SiteMepCore.cs" Link="Linked\SiteMepCore.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" />
     <PackageReference Include="Nice3point.TUnit.Revit" Version="$(RevitVersion).*" />

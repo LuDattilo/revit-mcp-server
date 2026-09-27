@@ -138,6 +138,16 @@ import * as WorkflowDataRoundtrip from "./workflow_data_roundtrip.js";
 import * as WorkflowModelAudit from "./workflow_model_audit.js";
 import * as WorkflowRoomDocumentation from "./workflow_room_documentation.js";
 import * as WorkflowSheetSet from "./workflow_sheet_set.js";
+// Site / shared coordinates / MEP / IFC
+import * as CreateDuct from "./create_duct.js";
+import * as CreatePipe from "./create_pipe.js";
+import * as CreateToposolid from "./create_toposolid.js";
+import * as ExportIfc from "./export_ifc.js";
+import * as GetMepElements from "./get_mep_elements.js";
+import * as GetMepSystems from "./get_mep_systems.js";
+import * as GetProjectLocation from "./get_project_location.js";
+import * as GetToposolids from "./get_toposolids.js";
+import * as SetSharedCoordinates from "./set_shared_coordinates.js";
 
 export async function registerTools(server: McpServer) {
   const modules = [
@@ -279,6 +289,16 @@ export async function registerTools(server: McpServer) {
     { name: "workflow_model_audit", module: WorkflowModelAudit },
     { name: "workflow_room_documentation", module: WorkflowRoomDocumentation },
     { name: "workflow_sheet_set", module: WorkflowSheetSet },
+    // Site / shared coordinates / MEP / IFC
+    { name: "create_duct", module: CreateDuct },
+    { name: "create_pipe", module: CreatePipe },
+    { name: "create_toposolid", module: CreateToposolid },
+    { name: "export_ifc", module: ExportIfc },
+    { name: "get_mep_elements", module: GetMepElements },
+    { name: "get_mep_systems", module: GetMepSystems },
+    { name: "get_project_location", module: GetProjectLocation },
+    { name: "get_toposolids", module: GetToposolids },
+    { name: "set_shared_coordinates", module: SetSharedCoordinates },
   ];
 
   for (const { name, module } of modules) {
