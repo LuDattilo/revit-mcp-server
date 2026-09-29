@@ -1,4 +1,5 @@
 #Requires -Version 5.1
+
 <#
 .SYNOPSIS
     Installer for mcp-servers-for-revit  --  Revit plugin + MCP server.
@@ -18,7 +19,7 @@
     - Optionally configures Claude Desktop claude_desktop_config.json
 
 .PARAMETER RevitVersion
-    Target a specific Revit version (2023, 2024, 2025, 2026).
+    Target a specific Revit version (2023, 2024, 2025, 2026, 2027).
     If omitted, all detected Revit installations are targeted.
 
 .PARAMETER Tag
@@ -35,6 +36,10 @@
 
 .PARAMETER SkipMcpConfig
     Skip Claude Desktop MCP server configuration.
+
+.PARAMETER LocalZip
+    Path to a folder containing an already-extracted release ZIP. When set,
+    nothing is downloaded from GitHub and the plugin is installed from these files.
 
 .EXAMPLE
     .\install.ps1
