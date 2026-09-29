@@ -1,0 +1,7 @@
+# PowerShell scripts in scripts/ are run via `irm <raw-url> | iex` (see README).
+# Keep them UTF-8 *without* BOM: Invoke-RestMethod keeps a BOM as a leading
+# U+FEFF, and Windows PowerShell 5.1's Invoke-Expression then fails on line 1.
+# Also keep them ASCII-only: 5.1 reads BOM-less files from disk in the ANSI code
+# page, where non-ASCII characters in strings can break parsing.
+[*.ps1]
+charset = utf-8

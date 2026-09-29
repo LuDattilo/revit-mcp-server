@@ -1,4 +1,5 @@
 #Requires -Version 5.1
+
 <#
 .SYNOPSIS
     Shared constants and helper functions for mcp-servers-for-revit scripts.
@@ -95,7 +96,7 @@ function Test-RevitInstalled {
     String full path to node.exe, or $null if not found anywhere.
 #>
 function Get-NodePath {
-    # 1. System node (already in PATH — preferred for developers)
+    # 1. System node (already in PATH -- preferred for developers)
     $sysNode = Get-Command node -ErrorAction SilentlyContinue
     if ($sysNode) { return $sysNode.Source }
 
