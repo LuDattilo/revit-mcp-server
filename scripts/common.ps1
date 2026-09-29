@@ -1,4 +1,5 @@
 #Requires -Version 5.1
+
 <#
 .SYNOPSIS
     Shared constants and helper functions for mcp-servers-for-revit scripts.

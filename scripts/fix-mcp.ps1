@@ -1,4 +1,5 @@
 #Requires -Version 5.1
+
 <#
 .SYNOPSIS
     Check and auto-fix all prerequisites for mcp-servers-for-revit + Claude Desktop.
@@ -141,7 +142,7 @@ $nodeStatus = Get-NodeStatus
 if ($nodeStatus.Available) {
     if ($nodeStatus.MeetsMinimum) {
         if ($nodeStatus.IsBundled) {
-            OK "Node.js $($nodeStatus.Version)  (bundled portable runtime — $($nodeStatus.Path))"
+            OK "Node.js $($nodeStatus.Version)  (bundled portable runtime -- $($nodeStatus.Path))"
         } else {
             OK "Node.js $($nodeStatus.Version)  ($($nodeStatus.Path))"
         }

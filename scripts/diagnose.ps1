@@ -1,4 +1,5 @@
 #Requires -Version 5.1
+
 <#
 .SYNOPSIS
     Deep diagnostic for mcp-servers-for-revit -- checks every file, path, and connection.
