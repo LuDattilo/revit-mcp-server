@@ -58,7 +58,60 @@ namespace revit_mcp_plugin.Core
             mcp_settings_pushButtonData.LargeImage = new BitmapImage(new Uri("/RevitMCPPlugin;component/Core/Ressources/settings-32.png", UriKind.RelativeOrAbsolute));
             mcpPanel.AddItem(mcp_settings_pushButtonData);
 
+            // Optional auto-start, for unattended (agent-driven) sessions: start the socket server on the
+            // first Idling event when REVIT_MCP_AUTOSTART=1 or a file named "autostart" sits next to the plugin.
+            if (Environment.GetEnvironmentVariable("REVIT_MCP_AUTOSTART") == "1" || File.Exists(Path.Combine(pluginDir, "autostart")))
+            {
+                application.Idling += AutoStartOnIdling;
+                McpLogger.Info("Application", "Auto-start armed");
+            }
+
             return Result.Succeeded;
+        }
+
+        private static void AutoStartOnIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
+        {
+            var uiApp = sender as UIApplication;
+            if (uiApp == null) return;
+            uiApp.Idling -= AutoStartOnIdling;
+            try
+            {
+                var service = SocketService.Instance;
+                // The autostart file may name a project to open: "open=C:\path\model.rvt", and a template
+                // to create it from when it does not exist yet: "template=C:\...\Default.rte".
+                var pluginDir = Path.GetDirectoryName(typeof(Application).Assembly.Location);
+                var cfg = Path.Combine(pluginDir, "autostart");
+                string openPath = null, template = null;
+                if (File.Exists(cfg))
+                    foreach (var line in File.ReadAllLines(cfg))
+                    {
+                        var t = line.Trim();
+                        if (t.StartsWith("open=", StringComparison.OrdinalIgnoreCase)) openPath = t.Substring(5).Trim();
+                        else if (t.StartsWith("template=", StringComparison.OrdinalIgnoreCase)) template = t.Substring(9).Trim();
+                    }
+                if (!string.IsNullOrEmpty(openPath) && uiApp.ActiveUIDocument == null)
+                {
+                    if (!File.Exists(openPath) && !string.IsNullOrEmpty(template))
+                    {
+                        var doc = uiApp.Application.NewProjectDocument(template);
+                        Directory.CreateDirectory(Path.GetDirectoryName(openPath));
+                        doc.SaveAs(openPath);
+                        doc.Close(false);
+                        McpLogger.Info("Application", $"Created project {openPath} from {template}");
+                    }
+                    if (File.Exists(openPath)) uiApp.OpenAndActivateDocument(openPath);
+                }
+                if (!service.IsRunning)
+                {
+                    service.Initialize(uiApp);
+                    service.Start();
+                    McpLogger.Info("Application", "Auto-started MCP socket server");
+                }
+            }
+            catch (Exception ex)
+            {
+                McpLogger.Info("Application", $"Auto-start failed: {ex.Message}");
+            }
         }
 
         public Result OnShutdown(UIControlledApplication application)
