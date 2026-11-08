@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdirSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
+import net from "net";
 import { readPortFromFile, withRevitConnection } from "../src/utils/ConnectionManager.js";
 import { startFakeRevit, unusedPort, type FakeRevitServer } from "./helpers/fakeRevit.js";
 
@@ -187,5 +188,22 @@ describe("withRevitConnection against a fake plugin socket", () => {
     await withRevitConnection((c) => c.sendCommand("x", {}));
     expect(timers()).toBeLessThanOrEqual(before);
   });
-});
 
+  it("reaches the plugin on 127.0.0.1 even when another server holds [::1] on the same port", async () => {
+    fake = await startFakeRevit();
+    // A decoy on IPv6 loopback that drops every connection, like a dev web server on [::1]:8080.
+    // With "localhost" the client connected here first and failed with "Socket closed".
+    const decoy = net.createServer((s) => s.destroy());
+    const ipv6 = await new Promise<boolean>((resolve) => {
+      decoy.once("error", () => resolve(false));
+      decoy.listen(fake!.port, "::1", () => resolve(true));
+    });
+    try {
+      if (!ipv6) return; // no IPv6 loopback on this machine: nothing to prove
+      vi.stubEnv("REVIT_MCP_PORT", String(fake.port));
+      await expect(withRevitConnection((c) => c.sendCommand("ping", {}))).resolves.toMatchObject({ echo: "ping" });
+    } finally {
+      await new Promise<void>((r) => decoy.close(() => r()));
+    }
+  });
+});

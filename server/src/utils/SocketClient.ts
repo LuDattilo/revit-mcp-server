@@ -72,6 +72,28 @@ export class RevitClientConnection {
     this.cleanupAllPending(new Error("Disconnected from Revit"));
   }
 
+  /**
+   * Graceful close: send FIN and wait until the socket has closed (the plugin answers a FIN by closing
+   * its side), so the next serialised call does not open its connection while this one is still being
+   * torn down. Falls back to destroy() after graceMs; the timer never outlives the call.
+   */
+  public close(graceMs = 1000): Promise<void> {
+    if (this.socket.destroyed || !this.isConnected) {
+      this.disconnect();
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      const timer = setTimeout(() => this.socket.destroy(), graceMs);
+      this.socket.once("close", () => {
+        clearTimeout(timer);
+        this.isConnected = false;
+        this.cleanupAllPending(new Error("Disconnected from Revit"));
+        resolve();
+      });
+      this.socket.end();
+    });
+  }
+
   private cleanupAllPending(error: Error): void {
     for (const timeoutHandle of this.timeoutHandles.values()) {
       clearTimeout(timeoutHandle);

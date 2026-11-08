@@ -49,7 +49,10 @@ async function attemptConnection<T>(
   operation: (client: RevitClientConnection) => Promise<T>,
   timeoutMs: number
 ): Promise<T> {
-  const revitClient = new RevitClientConnection("localhost", port);
+  // The plugin listens on IPv4 loopback only (IPAddress.Loopback). "localhost" resolves to ::1 first
+  // on current Node, so another local server on [::1]:<port> (a dev web server on 8080, say) would get
+  // these connections and close them ("Socket closed"). Connect to the address the plugin binds.
+  const revitClient = new RevitClientConnection("127.0.0.1", port);
   revitClient.defaultTimeout = timeoutMs;
 
   try {
@@ -90,8 +93,8 @@ async function attemptConnection<T>(
     // Execute operation
     return await operation(revitClient);
   } finally {
-    // Disconnect
-    revitClient.disconnect();
+    // Close gracefully and wait for it, so the caller's mutex is released only once this connection is gone.
+    await revitClient.close();
   }
 }
 
