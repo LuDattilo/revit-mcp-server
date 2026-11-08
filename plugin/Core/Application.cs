@@ -66,6 +66,10 @@ namespace revit_mcp_plugin.Core
                 McpLogger.Info("Application", "Auto-start armed");
             }
 
+            // Opt-in ("dialogs=auto" in the autostart file): answer dialogs and failures without a human.
+            try { DialogGuard.Register(application, pluginDir); }
+            catch (Exception ex) { McpLogger.Error("Application", "DialogGuard registration failed", ex); }
+
             return Result.Succeeded;
         }
 

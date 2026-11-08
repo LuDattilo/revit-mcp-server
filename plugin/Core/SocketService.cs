@@ -351,11 +351,12 @@ namespace revit_mcp_plugin.Core
                     }
                     catch { }
 
-                    return CreateSuccessResponse(request.Id, result);
+                    return CreateSuccessResponse(request.Id, AttachDialogs(result));
                 }
                 catch (Exception ex)
                 {
                     McpLogger.Error("SocketService", $"Command '{request.Method}' failed", ex);
+                    var dialogs = DialogGuard.Enabled ? DialogGuard.Drain() : null;
 
                     // Log error to dockable panel
                     try
@@ -366,7 +367,8 @@ namespace revit_mcp_plugin.Core
                     catch { }
 
                     return CreateErrorResponse(request.Id, JsonRPCErrorCodes.InternalError,
-                        $"Command '{request.Method}' failed: {ex.Message}. Check the MCP log for details.");
+                        $"Command '{request.Method}' failed: {ex.Message}. Check the MCP log for details.",
+                        dialogs != null && dialogs.Count > 0 ? new JObject { ["_revitDialogs"] = dialogs } : null);
                 }
             }
             catch (JsonException)
@@ -388,6 +390,24 @@ namespace revit_mcp_plugin.Core
                     $"Request processing failed: {ex.Message}. Check the MCP log for details."
                 );
             }
+        }
+
+        /// <summary>
+        /// When unattended dialog handling is on, adds the dialogs and failures Revit raised since the
+        /// last response as "_revitDialogs". Only object results get the field, so other shapes are unchanged.
+        /// </summary>
+        private static object AttachDialogs(object result)
+        {
+            if (!DialogGuard.Enabled) return result;
+            JToken token;
+            try { token = result is JToken jt ? jt : (result == null ? null : JToken.FromObject(result)); }
+            catch { return result; }
+            var obj = token as JObject;
+            if (obj == null) return result;
+            var dialogs = DialogGuard.Drain();
+            if (dialogs.Count == 0) return result;
+            obj["_revitDialogs"] = dialogs;
+            return obj;
         }
 
         private string CreateSuccessResponse(string id, object result)
