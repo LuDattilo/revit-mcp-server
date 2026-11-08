@@ -282,3 +282,28 @@ describe.each(toolNames)("tool %s", (name) => {
     expectMcpResult(result);
   });
 });
+
+describe("send_code_to_revit result handling", () => {
+  const tool = reg.tools.get("send_code_to_revit")!;
+  const input = { code: "return 1;" };
+
+  it("reports a transaction Revit rolled back as an MCP error, with the failures", async () => {
+    behaviour = {
+      kind: "respond",
+      value: { success: false, errorMessage: "Revit rolled the change back (transaction RolledBack)", failures: ["Error: walls overlap"] },
+    };
+    const { result } = await invoke(tool, input);
+    expectMcpResult(result);
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("rolled the change back");
+    expect(result.content[0].text).toContain("walls overlap");
+  });
+
+  it("keeps a committed run (with warnings) a normal result", async () => {
+    behaviour = { kind: "respond", value: { success: true, result: "1", errorMessage: "", failures: ["Warning: slightly off axis"] } };
+    const { result } = await invoke(tool, input);
+    expectMcpResult(result);
+    expect(result.isError).toBeFalsy();
+    expect(result.content[0].text).toContain("slightly off axis");
+  });
+});
