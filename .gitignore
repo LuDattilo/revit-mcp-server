@@ -395,3 +395,6 @@ FodyWeavers.xsd
 .DS_Store
 .mcp.json
 docs/internal/
+
+# Local code-signing certificate export (scripts/sign-plugin.ps1)
+.signing/
