@@ -238,6 +238,9 @@
 | "Family type not found" | Use `get_available_family_types` for exact type names |
 | "Tool not available" | Restart Claude Desktop to refresh MCP tool list |
 | "Timeout" | Large operations may take time, try with fewer elements |
+| Revit crashes during an IFC export from `send_code_to_revit` | `Document.Export` with `IFCExportOptions` inside `send_code_to_revit` crashed Revit 2027. Use the `export_ifc` tool. |
+| Navisworks shows nothing from the appended RVT | The Navisworks Revit reader exports the 3D view named `Navisworks`. Create one (a default 3D view renamed is enough) before appending. |
+| Building large geometry with `send_code_to_revit` | See the worked example in [docs/examples/bridge](docs/examples/bridge/README.md): one transaction, generated from data, idempotent reruns. |
 | `send_code_to_revit` compilation error (CS1704) | Caused by Autodesk BIM360 add-in loading duplicate assemblies. Fixed in v1.1+. Update the plugin via `install.ps1`. |
 | Claude Desktop shows no tools / "revit-mcp not connected" | Run `scripts\fix-mcp.ps1` to repair the Claude Desktop configuration automatically |
 
