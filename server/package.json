@@ -11,7 +11,9 @@
         "clean": "rimraf build",
         "prebuild": "npm run clean",
         "build": "node esbuild.config.mjs && node generate-tool-schemas.mjs && node deploy-addins.mjs",
-        "build:check": "tsc --noEmit",
+        "build:check": "tsc --noEmit && tsc -p tsconfig.test.json",
+        "test": "vitest run",
+        "test:watch": "vitest",
         "prepublishOnly": "npm run build"
     },
     "files": [
@@ -52,6 +54,7 @@
         "@types/sql.js": "^1.4.11",
         "esbuild": "^0.28.0",
         "rimraf": "^5.0.10",
-        "typescript": "^5.8.2"
+        "typescript": "^5.8.2",
+        "vitest": "^4.1.11"
     }
 }

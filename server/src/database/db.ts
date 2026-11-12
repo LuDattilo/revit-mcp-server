@@ -2,7 +2,8 @@ import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
-import { mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { createRequire } from 'module';
 
 // Resolve WASM path relative to this file (works in bundled builds)
 const __bundledir = dirname(fileURLToPath(import.meta.url));
@@ -35,12 +36,25 @@ function flushDatabase() {
   }
 }
 
+// The bundled build ships sql-wasm.wasm next to build/index.js (esbuild.config.mjs
+// copies it). When running from source (tests, tsx) there is no copy next to this
+// file, so fall back to the one inside the sql.js package.
+function locateSqlJsFile(file: string): string {
+  const bundled = join(__bundledir, file);
+  if (existsSync(bundled)) return bundled;
+  try {
+    return createRequire(import.meta.url).resolve(`sql.js/dist/${file}`);
+  } catch {
+    return bundled;
+  }
+}
+
 // Initialize database connection
 export async function getDatabase(): Promise<SqlJsDatabase> {
   if (db) return db;
 
   const SQL = await initSqlJs({
-    locateFile: (file: string) => join(__bundledir, file),
+    locateFile: locateSqlJsFile,
   });
 
   try {

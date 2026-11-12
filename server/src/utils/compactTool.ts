@@ -13,7 +13,10 @@ export function toolResponse(toolName: string, response: any, args?: { compact?:
     stripNulls: true,
     maxArrayItems: 100,
   });
-  const text = JSON.stringify(compacted);
+  // stripEmpty collapses null / {} / all-empty objects to undefined, and
+  // JSON.stringify(undefined) is undefined - which would put `text: undefined` in
+  // the MCP result and make the client reject it. Fall back to the raw value.
+  const text = compacted === undefined ? JSON.stringify(response ?? null) : JSON.stringify(compacted);
   logTokenUsage(toolName, text, false);
   return {
     content: [{ type: "text" as const, text }],
@@ -33,7 +36,8 @@ export function toolError(toolName: string, message: string) {
  * Logs token usage and returns the standard MCP response format.
  */
 export function rawToolResponse(toolName: string, response: any) {
-  const text = JSON.stringify(response);
+  // `?? null`: a command whose JSON-RPC reply has no `result` resolves to undefined.
+  const text = JSON.stringify(response ?? null);
   logTokenUsage(toolName, text, false);
   return {
     content: [{ type: "text" as const, text }],

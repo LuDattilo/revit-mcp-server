@@ -70,6 +70,10 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                     using (var transaction = new Transaction(doc, "Execute AI Code"))
                     {
                         transaction.Start();
+                        // Records what Revit reports at commit without changing how it is handled
+                        // (interactive dialogs, or the plugin's DialogGuard in unattended sessions).
+                        var recorder = new FailureRecorder();
+                        transaction.SetFailureHandlingOptions(transaction.GetFailureHandlingOptions().SetFailuresPreprocessor(recorder));
 
                         var result = CompileAndExecuteCode(
                             code: _generatedCode,
@@ -77,10 +81,21 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                             parameters: _executionParameters
                         );
 
-                        transaction.Commit();
+                        // Commit can roll back (an error, or a failure dialog answered with Cancel): the code
+                        // ran, but none of its changes are in the model, so this is not a success.
+                        var status = transaction.Commit();
+                        if (status != TransactionStatus.Committed)
+                        {
+                            ResultInfo.Success = false;
+                            ResultInfo.ErrorMessage = $"Revit rolled the change back (transaction {status})"
+                                + (recorder.Messages.Count > 0 ? ": " + string.Join("; ", recorder.Messages) : "");
+                            ResultInfo.Failures = recorder.Messages.Count > 0 ? recorder.Messages : null;
+                            return;
+                        }
 
                         ResultInfo.Success = true;
                         ResultInfo.Result = JsonConvert.SerializeObject(result);
+                        ResultInfo.Failures = recorder.Messages.Count > 0 ? recorder.Messages : null;
                     }
                 }
             }
@@ -178,5 +193,25 @@ namespace AIGeneratedCode
 
         [JsonProperty("errorMessage")]
         public string ErrorMessage { get; set; } = string.Empty;
+
+        /// <summary>Warnings and errors Revit reported at commit ("Warning: ..."), when there were any.</summary>
+        [JsonProperty("failures", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Failures { get; set; }
+    }
+
+    /// <summary>Passive failures preprocessor: notes each message and lets Revit continue as it would have.</summary>
+    internal sealed class FailureRecorder : IFailuresPreprocessor
+    {
+        public List<string> Messages { get; } = new List<string>();
+
+        public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
+        {
+            foreach (var m in failuresAccessor.GetFailureMessages())
+            {
+                var text = $"{m.GetSeverity()}: {m.GetDescriptionText()}";
+                if (!Messages.Contains(text)) Messages.Add(text);
+            }
+            return FailureProcessingResult.Continue;
+        }
     }
 }

@@ -8,6 +8,7 @@ import { spawn } from "child_process";
 import { writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { formatToolSchemasTxt, formatToolSchemasJson } from "./tool-schema-format.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverEntry = join(__dirname, "build", "index.js");
@@ -59,45 +60,14 @@ child.on("close", () => {
     process.exit(1);
   }
 
-  const lines = toolsResponse.result.tools
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((t) => {
-      const props = t.inputSchema?.properties || {};
-      const required = new Set(t.inputSchema?.required || []);
+  const tools = toolsResponse.result.tools;
 
-      const params = Object.entries(props)
-        .map(([k, v]) => {
-          let sig;
-          if (v.type === "object" && v.properties) {
-            const sub = Object.entries(v.properties)
-              .map(([pk, pv]) => `${pk}:${pv.type || "?"}`)
-              .join(",");
-            sig = `${k}:{${sub}}`;
-          } else if (v.enum) {
-            sig = `${k}:${v.enum.join("|")}`;
-          } else {
-            sig = `${k}:${v.type || "?"}`;
-          }
-          if (required.has(k)) sig += "!";
-          return sig;
-        })
-        .join(", ");
-
-      return `${t.name}(${params})`;
-    });
-
-  writeFileSync(outputPath, lines.join("\n") + "\n");
-  console.log(`Generated ${outputPath} with ${lines.length} tools`);
+  // Formatting lives in tool-schema-format.mjs so the vitest drift test can
+  // compare the committed files against the live registration.
+  writeFileSync(outputPath, formatToolSchemasTxt(tools));
+  console.log(`Generated ${outputPath} with ${tools.length} tools`);
 
   // Also generate plugin/tool_schemas.json (full schema for Revit chat panel)
-  const jsonSchemas = toolsResponse.result.tools
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((t) => ({
-      name: t.name,
-      description: t.description || "",
-      input_schema: t.inputSchema || { type: "object", properties: {} },
-    }));
-
-  writeFileSync(jsonOutputPath, JSON.stringify(jsonSchemas, null, 2) + "\n");
-  console.log(`Generated ${jsonOutputPath} with ${jsonSchemas.length} tools`);
+  writeFileSync(jsonOutputPath, formatToolSchemasJson(tools));
+  console.log(`Generated ${jsonOutputPath} with ${tools.length} tools`);
 });

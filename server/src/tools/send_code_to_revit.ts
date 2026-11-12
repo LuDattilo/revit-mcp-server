@@ -37,6 +37,14 @@ export function registerSendCodeToRevitTool(server: McpServer) {
           return await revitClient.sendCommand("send_code_to_revit", params);
         }, 300000);
 
+        // The plugin reports compile errors, exceptions in the code and transactions Revit rolled back
+        // as { success: false, errorMessage }: surface those as MCP errors, not as a normal result.
+        if (response && typeof response === "object" && (response as any).success === false) {
+          const r = response as any;
+          const failures = Array.isArray(r.failures) && r.failures.length ? `
+Revit failures: ${r.failures.join("; ")}` : "";
+          return rawToolError("send_code_to_revit", `Code execution failed: ${r.errorMessage || "no error message"}${failures}`);
+        }
         return rawToolResponse("send_code_to_revit", response);
       } catch (error) {
         return rawToolError("send_code_to_revit", `Code execution failed: ${
