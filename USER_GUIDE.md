@@ -240,6 +240,7 @@
 | "Timeout" | Large operations may take time, try with fewer elements |
 | `send_code_to_revit` compilation error (CS1704) | Caused by Autodesk BIM360 add-in loading duplicate assemblies. Fixed in v1.1+. Update the plugin via `install.ps1`. |
 | Claude Desktop shows no tools / "revit-mcp not connected" | Run `scripts\fix-mcp.ps1` to repair the Claude Desktop configuration automatically |
+| Unattended session stuck on a dialog or "Unsigned Add-In" prompt | See [Unattended Sessions](INSTALLATION.md#unattended-sessions): `autostart`, `dialogs=auto`, and signing the plugin. |
 
 ### Verifying Your Installation
 
