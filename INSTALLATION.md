@@ -14,6 +14,7 @@ Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Re
 - [Verifying the Installation](#verifying-the-installation)
 - [Updating](#updating)
 - [Uninstalling](#uninstalling)
+- [Unattended Sessions](#unattended-sessions)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -344,6 +345,90 @@ dotnet build mcp-servers-for-revit.sln -c "Debug R26"
    - `mcp-servers-for-revit.addin`
    - The `revit_mcp_plugin/` folder
 4. (Optional) Remove the MCP configuration from your AI client
+
+---
+
+## Unattended Sessions
+
+For agent-driven work where nobody is at the keyboard, three opt-in pieces remove the clicks Revit
+normally needs. None of them changes interactive use unless you turn it on.
+
+### Auto-start and auto-open
+
+Put a text file named `autostart` (no extension) next to `RevitMCPPlugin.dll`
+(`%AppData%\Autodesk\Revit\Addins\<version>\revit_mcp_plugin\autostart`), or set `REVIT_MCP_AUTOSTART=1`.
+On the first idle moment after Revit starts, the plugin starts the socket server without the ribbon click.
+Optional lines:
+
+```
+open=C:\path\to\model.rvt
+template=C:\ProgramData\Autodesk\RVT 2027\Templates\English-Imperial\Structural Analysis-Default.rte
+dialogs=auto
+warnings=dismiss
+dialog:TaskDialog_Some_Dialog_Id=1002
+```
+
+- `open=` opens (and activates) that model; with `template=`, a missing model is first created from the template.
+  Point `open=` at a working copy, not at the only copy of a model.
+- `dialogs=auto` (or `REVIT_MCP_DIALOGS=auto`) turns on unattended dialog and failure handling, below.
+- `dialog:<DialogId>=<result>` answers one specific dialog with a fixed result code
+  (1 = OK, 2 = Cancel, 6 = Yes, 7 = No, 8 = Close, 1001–1004 = command links 1–4). Dialog ids appear in the log.
+
+Delete the file (or remove the line) to go back to normal behaviour.
+
+### Unattended dialogs and failures (`dialogs=auto`)
+
+The policy is deliberately conservative:
+
+- **Warnings** raised by a transaction are recorded and left in the model, so Review Warnings and
+  `get_warnings` still list them. They are switched to Revit's non-modal "mini warnings", so the change is
+  committed and no dialog blocks. Add `warnings=dismiss` to delete them instead (they then no longer
+  appear in the model's warning list).
+- **Errors** are never resolved (Revit's resolutions can delete elements). The pending transaction is rolled
+  back instead, which is what Cancel in the error dialog does.
+- **Dialogs**: a `dialog:` mapping wins; then a short built-in list of known-safe answers (missing links on
+  open: "Ignore and continue opening"; the failures dialog `Dialog_Revit_DocWarnDialog` after an error
+  rollback: OK); otherwise Cancel, then Close; an OK-only message box gets OK.
+  A dialog that offers none of these stays open and is logged as not dismissed.
+- **Answering the failures dialog from code rolls the transaction back.** On Revit 2027.3, overriding
+  `Dialog_Revit_DocWarnDialog` with either OK or Cancel undid the whole transaction, and
+  `send_code_to_revit` still reported `success: true`. That is why warnings are handled before the dialog
+  (non-modal or deleted). A rolled-back write is listed in `_revitDialogs` ("transaction rolled back");
+  check it after every write, and test any `dialog:` mapping on a copy of the model first.
+
+Every dialog and failure is written to `revit_mcp_plugin\logs\` and attached to the next tool response as
+`_revitDialogs` (an array of `{kind, dialogId | severity, message, result, ...}`), so the agent sees what was
+answered on its behalf. Only responses whose result is a JSON object carry the field.
+
+### Signing the plugin (no "Unsigned Add-In" prompt)
+
+Revit asks before loading an unsigned add-in, and that prompt appears before the plugin can do anything
+about it. Usually you only see it once: answer **Always Load** and later rebuilds load silently (verified
+on Revit 2027.3). Signing is for machines where that is not enough. Do not ship a build signed with an
+**untrusted** certificate: Revit then shows "Security - Invalid Signature" on every start, which is worse
+than unsigned. The script below therefore refuses to sign until the certificate is trusted (`-Force`
+overrides, for testing only). Sign the plugin with a local certificate:
+
+```powershell
+pwsh -File scripts\sign-plugin.ps1 -RevitVersion 2027
+# or sign automatically on every Debug build:
+dotnet build plugin\RevitMCPPlugin.csproj -c "Debug R27" -p:SignPlugin=true
+```
+
+The first run creates a self-signed code-signing certificate (`CN=revit-mcp-server local build`) in
+`Cert:\CurrentUser\My` and exports its public part to `.signing\revit-mcp-local.cer` (git-ignored).
+The script does **not** change what your machine trusts. To trust the certificate, run once yourself
+from the repository root, then run the script again so it signs:
+
+```powershell
+Import-Certificate -FilePath ".signing\revit-mcp-local.cer" -CertStoreLocation Cert:\CurrentUser\Root
+Import-Certificate -FilePath ".signing\revit-mcp-local.cer" -CertStoreLocation Cert:\CurrentUser\TrustedPublisher
+```
+
+Windows asks you to confirm the Root import. Then start Revit once and choose **Always Load** for the
+publisher. Because every build is signed with the same certificate, the choice survives rebuilds.
+Trusting a self-signed root lets anything signed with that key run as trusted for your account, so keep
+the private key in your user store and don't export it.
 
 ---
 

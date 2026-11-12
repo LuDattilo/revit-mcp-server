@@ -97,4 +97,9 @@
         <Copy SourceFiles="@(AddinFiles)" DestinationFolder="$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)\%(RecursiveDir)" Condition="$(Configuration.Contains('Debug'))"/>
     </Target>
 
+    <!-- Optional: sign the plugin after the copy (dotnet build ... -p:SignPlugin=true). See scripts\sign-plugin.ps1. -->
+    <Target Name="SignPlugin" AfterTargets="CopyFiles" Condition="'$(SignPlugin)' == 'true'">
+        <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)..\scripts\sign-plugin.ps1&quot; -RevitVersion $(RevitVersion) -Configuration &quot;$(Configuration)&quot;"/>
+    </Target>
+
 </Project>
